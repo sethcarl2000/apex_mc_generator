@@ -1,0 +1,13 @@
+
+
+# vertex bounds for uniform generation. These reflect the approximate 'box'
+# from which the raster/ APEX tungsten foil targets may generate vertices. 
+
+/mydet/gunXLow  -3.5 mm
+/mydet/gunXHigh  3.5 mm
+
+/mydet/gunYLow  -3.5 mm
+/mydet/gunYHigh  3.5 mm
+
+/mydet/gunZLow  -240.0 mm
+/mydet/gunZHigh  330.0 mm

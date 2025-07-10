@@ -1,0 +1,43 @@
+#----------------------------------------------------------------------------
+# Setup the project
+#
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+project(g4mc)
+
+enable_language(Fortran)
+
+
+#----------------------------------------------------------------------------
+# Find Geant4 package, activating all available UI and Vis drivers by default
+# See the documentation for a guide on how to enable/disable specific components
+#
+find_package(Geant4 REQUIRED ui_all vis_all)
+
+
+#----------------------------------------------------------------------------
+# Find ROOT package
+#
+find_package(ROOT REQUIRED)
+
+
+#----------------------------------------------------------------------------
+# Locate sources and headers for this project
+# NB: headers are included so they will show up in IDEs
+#
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc
+		  ${PROJECT_SOURCE_DIR}/src/*.f)
+		  
+file(GLOB headers ${PROJECT_SOURCE_DIR}/src/*.hh)
+
+
+#----------------------------------------------------------------------------
+# Add the executable, use our local headers, and link it to the Geant4 libraries
+#
+add_executable(G4MC G4MC.cc ${sources} ${headers})
+target_include_directories(G4MC PRIVATE
+				src
+				${ROOT_INCLUDE_DIRS})
+
+target_link_libraries(G4MC PRIVATE
+			   ${Geant4_LIBRARIES}
+			   ${ROOT_LIBRARIES})

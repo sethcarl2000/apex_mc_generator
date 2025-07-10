@@ -1,0 +1,53 @@
+#ifndef TFILEHANDLER_HH
+#define TFILEHANDLER_HH
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  
+//  This is a placeholder class meant to be able to store the tracks 
+//  in a ROOT file, rather than ASCII output.
+//
+//  Most data is collected in HRSSteppingAction.cc.
+//  
+//////////////////////////////////////////////////////////////////////////////////////
+
+#include "TROOT.h"
+#include "TObject.h" 
+#include "TFile.h"
+#include "TTree.h"
+#include <memory>
+#include "TParameter.h"
+
+#include "TrackData_t.hh"
+
+class TFileHandler : public TObject {
+public: 
+  
+  TFileHandler(const char *const _path,
+	       bool is_RHRS, 
+	       const char *const _treeName="tracks_Q1");
+
+  ~TFileHandler();  
+  
+  void CloseFile();
+
+  void ClearTrack(bool write_track=false); 
+  
+  TrackData_t* Get_TData() { return &fTrackData; }
+
+  void WriteTrack(); 
+  
+private:
+  
+  TrackData_t fTrackData; 
+
+  
+  std::unique_ptr<TFile> fFile; 
+  
+  TTree *fTree; 
+
+  TParameter<bool> *fParam_isRHRS; 
+  
+  
+  ClassDef(TFileHandler,1); 
+};
+#endif

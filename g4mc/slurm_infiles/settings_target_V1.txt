@@ -1,0 +1,13 @@
+
+
+# vertex bounds for uniform generation. These reflect the surveyed position of the V1
+#  vertical wire. 
+
+/mydet/gunXLow  -3.225 mm
+/mydet/gunXHigh -3.225 mm
+
+/mydet/gunYLow  -1.0 mm
+/mydet/gunYHigh  1.0 mm
+
+/mydet/gunZLow  -196.214 mm
+/mydet/gunZHigh -196.214 mm

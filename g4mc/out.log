@@ -1,0 +1,328 @@
+seed = 2029051107
+ seed rand = 432733
+
+**************************************************************
+ Geant4 version Name: geant4-11-02-patch-01 [MT]   (16-February-2024)
+                       Copyright : Geant4 Collaboration
+                      References : NIM A 506 (2003), 250-303
+                                 : IEEE-TNS 53 (2006), 270-278
+                                 : NIM A 835 (2016), 186-225
+                             WWW : http://geant4.org/
+**************************************************************
+
+using Jixie physics list
+
+You are using the HRSPhysicsList.
+Full set of particles (barions bosons and mesons) will be created and
+Standard EM Physics and Low & High Energy parameterized models will be applied.
+HRSPhysicsList is optimized for robustness and not for any particular usage.
+For the hadronic physics, educated guesses of physics list are prepared for 
+various use cases. When you will start REAL calculations for your own interest,
+please consider the usage of hadronic_lists instead of HRSPhysicsLists.
+More information can also be found from the Geant4 HyperNews.
+http://geant4-hn.slac.stanford.edu:5090/Geant4-HyperNews/index
+http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml
+
+B limits: 2.037
+HRS angles: 0.218166 6.06502
+HRS momentums: 1.104  1.104
+setup     KAPPA1=0.00037157     KAPPA2=-0.000254923     KAPPA3=0.000235837     DipField=-0.000435369
+SeptumFieldScale=1
+     KAPPA1=2.81895e-07     KAPPA2=-1.934e-07     KAPPA3=1.7892e-07     DipField=-0.000435369
+<HRSEMField::HRSEMField()> - Creating Septum...
+arrrray       -3023.42
+arrrray       8314.77
+arrrray       117.062
+arrrray       29
+arrrray       9
+arrrray       -2
+HRSEMFieldSetup:: The minimal rung-kutha step is equal to 0.001 mm
+gradients: 0.37157 -0.254923 0.235837    q1rad=12.827  length=70       q1en171.1       q2en370.36
+ dip field: -0.435369
+HRSEMFieldSetup:: The minimal step for FZBL3 is equal to 0.001 mm
+ G4ChordFinder: stepperDriverId: 2
+HRSEMFieldSetup:: The minimal step for FZBR3 is equal to 0.001 mm
+ G4ChordFinder: stepperDriverId: 2
+HRSEMFieldSetup:: The minimal rung-kutha step is equal to 0.001 mm
+hall step is 2.037
+ -----> The Setup is ----------> 4
+mSetupLHRS=4    pQ1vacCenterZ=2411.05    pQ1vacCentery=0
+9961
+vdc1Z=20759.6    vdc1Y=7319.26
+focal plane angle is -45 deg
+ septum@ ka te che? 1
+
+-------- WWWW ------- G4Exception-START -------- WWWW -------
+*** G4Exception : GeomSolids1001
+      issued by : G4GenericTrap::CheckOrder()
+Vertices must be defined in clockwise XY planes - testTrap_cov_1_upRe-ordering...
+
+*** This is just a warning message. ***
+-------- WWWW -------- G4Exception-END --------- WWWW -------
+
+
+-------- WWWW ------- G4Exception-START -------- WWWW -------
+*** G4Exception : GeomSolids1001
+      issued by : G4GenericTrap::CheckOrder()
+Vertices must be defined in clockwise XY planes - testTrap_cov_2_upRe-ordering...
+
+*** This is just a warning message. ***
+-------- WWWW -------- G4Exception-END --------- WWWW -------
+
+The beam energy is: 2200
+ iNoSecondary = 1
+<G4MC::main>: Attempting to execute macro 'run_settings.mac'...
+HERE in HRSTrackingActionMessenger::SetNewValue(cmd==noSecondary)
+<G4MC::main>: Outfile path is: out_Q1.root
+Gun Z Lo/Hi :[ -240,   330]
+<G4MC::main>: Attempting to execute macro 'beam.mac'...
+=======================================================================
+======                 Electromagnetic Physics Parameters      ========
+=======================================================================
+LPM effect enabled                                 1
+Enable creation and use of sampling tables         0
+Apply cuts on all EM processes                     0
+Use combined TransportationWithMsc                 Disabled
+Use general process                                0
+Enable linear polarisation for gamma               0
+Enable photoeffect sampling below K-shell          1
+Enable sampling of quantum entanglement            0
+X-section factor for integral approach             0.8
+Min kinetic energy for tables                      100 eV 
+Max kinetic energy for tables                      100 TeV
+Number of bins per decade of a table               7
+Verbose level                                      1
+Verbose level for worker thread                    0
+Bremsstrahlung energy threshold above which 
+  primary e+- is added to the list of secondary    100 TeV
+Bremsstrahlung energy threshold above which primary
+  muon/hadron is added to the list of secondary    100 TeV
+Lowest triplet kinetic energy                      1 MeV
+Enable sampling of gamma linear polarisation       0
+5D gamma conversion model type                     0
+5D gamma conversion model on isolated ion          0
+Livermore data directory                           epics_2017
+=======================================================================
+======                 Ionisation Parameters                   ========
+=======================================================================
+Step function for e+-                              (0.2, 1 mm)
+Step function for muons/hadrons                    (0.2, 0.1 mm)
+Step function for light ions                       (0.2, 0.1 mm)
+Step function for general ions                     (0.2, 0.1 mm)
+Lowest e+e- kinetic energy                         1 keV
+Lowest muon/hadron kinetic energy                  1 keV
+Use ICRU90 data                                    0
+Fluctuations of dE/dx are enabled                  1
+Type of fluctuation model for leptons and hadrons  Universal
+Use built-in Birks satuaration                     0
+Build CSDA range enabled                           0
+Use cut as a final range enabled                   0
+Enable angular generator interface                 0
+Max kinetic energy for CSDA tables                 1 GeV
+Max kinetic energy for NIEL computation            0 eV 
+Linear loss limit                                  0.01
+Read data from file for e+e- pair production by mu 0
+=======================================================================
+======                 Multiple Scattering Parameters          ========
+=======================================================================
+Type of msc step limit algorithm for e+-           3
+Type of msc step limit algorithm for muons/hadrons 0
+Msc lateral displacement for e+- enabled           1
+Msc lateral displacement for muons and hadrons     0
+Urban msc model lateral displacement alg96         1
+Range factor for msc step limit for e+-            0.04
+Range factor for msc step limit for muons/hadrons  0.2
+Geometry factor for msc step limitation of e+-     2.5
+Safety factor for msc step limit for e+-           0.6
+Skin parameter for msc step limitation of e+-      1
+Lambda limit for msc step limit for e+-            1 mm
+Use Mott correction for e- scattering              0
+Factor used for dynamic computation of angular 
+  limit between single and multiple scattering     1
+Fixed angular limit between single 
+  and multiple scattering                          3.1416 rad
+Upper energy limit for e+- multiple scattering     100 MeV
+Type of electron single scattering model           0
+Type of nuclear form-factor                        1
+Screening factor                                   1
+=======================================================================
+
+conv:  for gamma SubType=14 BuildTable=1
+      Lambda table from 1.022 MeV to 100 TeV, 18 bins/decade, spline: 1
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+     BetheHeitlerLPM : Emin=    0 eV  Emax=  100 TeV  ModifiedTsai
+
+compt:  for gamma SubType=13 BuildTable=1
+      Lambda table from 100 eV  to 1 MeV, 7 bins/decade, spline: 1
+      LambdaPrime table from 1 MeV to 100 TeV in 56 bins 
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+       Klein-Nishina : Emin=    0 eV  Emax=  100 TeV
+
+phot:  for gamma SubType=12 BuildTable=0
+      LambdaPrime table from 200 keV to 100 TeV in 61 bins 
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+       PhotoElectric : Emin=    0 eV  Emax=  100 TeV  SauterGavrila
+
+msc:  for e-  SubType= 10
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+            UrbanMsc : Emin=    0 eV  Emax=  100 TeV Nbins=84 100 eV  - 100 TeV
+          StepLim=DistanceToBoundary Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
+
+eIoni:  for e-  XStype:3  SubType=2
+      dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
+      Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
+      StepFunction=(0.2, 1 mm), integ: 3, fluct: 1, linLossLim= 0.01
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+        MollerBhabha : Emin=    0 eV  Emax=  100 TeV
+
+eBrem:  for e-  XStype:4  SubType=3
+      dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
+      Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
+      LPM flag: 1 for E > 1 GeV,  VertexHighEnergyTh(GeV)= 100000
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+             eBremSB : Emin=    0 eV  Emax=    1 GeV  ModifiedTsai
+            eBremLPM : Emin=    1 GeV Emax=  100 TeV  ModifiedTsai
+
+msc:  for e+  SubType= 10
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+            UrbanMsc : Emin=    0 eV  Emax=  100 TeV Nbins=84 100 eV  - 100 TeV
+          StepLim=DistanceToBoundary Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
+
+eIoni:  for e+  XStype:3  SubType=2
+      dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
+      Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
+      StepFunction=(0.2, 1 mm), integ: 3, fluct: 1, linLossLim= 0.01
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+        MollerBhabha : Emin=    0 eV  Emax=  100 TeV
+
+Region <DefaultRegionForTheWorld> --  -- appears in <hallPhys> world volume
+ This region is in the mass world.
+ Root logical volume(s) : hallLogical 
+ Pointers : G4VUserRegionInformation[0], G4UserLimits[0], G4FastSimulationManager[0], G4UserSteppingAction[0]
+ Materials : Vacuum SiliconSteel Tungsten 
+ Production cuts :   gamma 700 um      e- 700 um      e+ 700 um  proton 700 um 
+
+Region <DefaultRegionForParallelWorld> --  -- is not associated to any world.
+ Root logical volume(s) : 
+ Pointers : G4VUserRegionInformation[0], G4UserLimits[0], G4FastSimulationManager[0], G4UserSteppingAction[0]
+ Materials : 
+ Production cuts :   gamma 700 um      e- 700 um      e+ 700 um  proton 700 um 
+
+========= Table of registered couples ============================
+
+Index : 0     used in the geometry : Yes
+ Material : Vacuum
+ Range cuts        :  gamma  700 um     e-  700 um     e+  700 um  proton 700 um 
+ Energy thresholds :  gamma  990 eV     e-  990 eV     e+  990 eV  proton -1 MeV
+ Region(s) which use this couple : 
+    DefaultRegionForTheWorld
+
+Index : 1     used in the geometry : Yes
+ Material : SiliconSteel
+ Range cuts        :  gamma  700 um     e-  700 um     e+  700 um  proton 700 um 
+ Energy thresholds :  gamma  16.7363 keV    e-  937.267 keV    e+  890.456 keV proton -1 MeV
+ Region(s) which use this couple : 
+    DefaultRegionForTheWorld
+
+Index : 2     used in the geometry : Yes
+ Material : Tungsten
+ Range cuts        :  gamma  700 um     e-  700 um     e+  700 um  proton 700 um 
+ Energy thresholds :  gamma  97.661 keV    e-  1.64512 MeV    e+  1.53536 MeV proton -1 MeV
+ Region(s) which use this couple : 
+    DefaultRegionForTheWorld
+
+==================================================================
+
+Start closing geometry.
+G4GeometryManager::ReportVoxelStats -- Voxel Statistics
+
+    Total memory consumed for geometry optimisation:   24 kByte
+    Total CPU time elapsed for geometry optimisation: 0.01 seconds
+
+    Voxelisation: top CPU users:
+    Percent   Total CPU    System CPU       Memory  Volume
+    -------   ----------   ----------     --------  ----------
+     100.00         0.01         0.00            9k RHRSContainerLogical
+       0.00         0.00         0.00            1k hallLogical
+       0.00         0.00         0.00            3k magneticLogical
+       0.00         0.00         0.00            9k LHRSContainerLogical
+       0.00         0.00         0.00            0k LQ1MagLogical
+       0.00         0.00         0.00            0k RQ1MagLogical
+       0.00         0.00         0.00            0k LQ2MagLogical
+       0.00         0.00         0.00            0k RQ2MagLogical
+       0.00         0.00         0.00            0k LDipoleTunnelLogical
+       0.00         0.00         0.00            0k RDipoleTunnelLogical
+
+    Voxelisation: top memory users:
+    Percent     Memory      Heads    Nodes   Pointers    Total CPU    Volume
+    -------   --------     ------   ------   --------   ----------    ----------
+      37.80          9k        26      118        256         0.01    RHRSContainerLogical
+      36.92          9k        26      113        258         0.00    LHRSContainerLogical
+      13.28          3k         7       28        190         0.00    magneticLogical
+       4.54          1k         4       13         30         0.00    hallLogical
+       0.98          0k         1        3          4         0.00    LQ1MagLogical
+       0.98          0k         1        3          4         0.00    RQ1MagLogical
+       0.98          0k         1        3          4         0.00    LQ2MagLogical
+       0.98          0k         1        3          4         0.00    RQ2MagLogical
+       0.98          0k         1        3          4         0.00    LQ3MagLogical
+       0.98          0k         1        3          4         0.00    RQ3MagLogical
+### Run 0 starts.
+ Run terminated.
+Run Summary
+  Number of events processed : 100
+  User=1.640000s Real=1.652657s Sys=0.000000s [Cpu=99.2%]
+G4 kernel has come to Quit state.
+UserDetectorConstruction deleted.
+UserPhysicsList deleted.
+UserActionInitialization deleted.
+UserWorkerInitialization deleted.
+UserWorkerThreadInitialization deleted.
+UserRunAction deleted.
+UserPrimaryGenerator deleted.
+RunManager is deleting RunManagerKernel.
+G4SDManager deleted.
+EventManager deleted.
+Units table cleared.
+TransportationManager deleted.
+Total navigation history collections cleaned: 9
+G4RNGHelper object is deleted.
+================== Deleting memory pools ===================
+Pool ID '20G4NavigationLevelRep', size : 0.0115 MB
+Pool ID '24G4ReferenceCountedHandleIvE', size : 0.000961 MB
+Pool ID '16G4SmartVoxelNode', size : 0.00961 MB
+Pool ID '17G4SmartVoxelProxy', size : 0.00577 MB
+Pool ID '7G4Event', size : 0.000961 MB
+Pool ID '15G4PrimaryVertex', size : 0.000961 MB
+Pool ID '17G4PrimaryParticle', size : 0.000961 MB
+Pool ID '15G4HCofThisEvent', size : 0.000961 MB
+Pool ID '17G4DynamicParticle', size : 0.0125 MB
+Pool ID '7G4Track', size : 0.024 MB
+Pool ID '18G4TouchableHistory', size : 0.000961 MB
+Pool ID '15G4CountedObjectIvE', size : 0.000961 MB
+Pool ID '17G4TrajectoryPoint', size : 0.0529 MB
+Pool ID '21G4TrajectoryContainer', size : 0.000961 MB
+Number of memory pools allocated: 19; of which, static: 5
+Dynamic pools deleted: 14 / Total memory freed: 0.14 MB
+============================================================
+G4Allocator objects are deleted.
+UImanager deleted.
+StateManager deleted.
+RunManagerKernel is deleted. Good bye :)
+RunManager is deleted.
+total 5.2M
+-rw-------. 1 sethhall a-apex 1.2K Jul  4 14:35 beam.mac~
+-rw-r--r--. 1 sethhall a-apex   15 Jul  4 14:35 beam.mac
+-rw-------. 1 sethhall a-apex 7.7K Jul  4 14:35 Detector.ini~
+-rw-r--r--. 1 sethhall a-apex 7.7K Jul  4 14:35 Detector.ini
+-rwxr-xr-x. 1 sethhall a-apex 8.2M Jul  4 14:35 G4MC
+-rw-r--r--. 1 sethhall a-apex  17K Jul  4 14:35 #geometry.mac#
+-rw-r--r--. 1 sethhall a-apex 1.8K Jul  4 14:35 gui.mac
+-rw-r--r--. 1 sethhall a-apex 443K Jul  4 14:35 gmon.out
+-rw-------. 1 sethhall a-apex  34K Jul  4 14:35 HRSUsage.ini~
+-rw-r--r--. 1 sethhall a-apex  34K Jul  4 14:35 HRSUsage.ini
+-rw-------. 1 sethhall a-apex 1.8K Jul  4 14:35 gui.mac~
+-rw-------. 1 sethhall a-apex 1.2K Jul  4 14:35 run_settings.mac~
+-rw-r--r--. 1 sethhall a-apex 1.2K Jul  4 14:35 run_settings.mac
+-rw-r--r--. 1 sethhall a-apex  12K Jul  4 14:35 G2P_G4Sim_Log.txt
+-rw-r--r--. 1 sethhall a-apex  17K Jul  4 14:35 geometry.mac
+-rw-r--r--. 1 sethhall a-apex  11K Jul  4 14:35 out_Q1.root

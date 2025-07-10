@@ -1,0 +1,4 @@
+<simc_hrs::main>: Info: No output file name given. going with default: 'out_fp.root'
+<simc_hrs::main>: Done with event loop.
+ --- Processed 43293 entries in 2.975 seconds (0.069 ms/event)
+ --- Out of 43293 input events, 0 were propagated (frac: 0.0000)

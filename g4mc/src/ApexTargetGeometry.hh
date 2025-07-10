@@ -1,0 +1,43 @@
+#ifndef ApexTargetGeometry_HH
+#define ApexTargetGeometry_HH
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+//  This is a quick and dirty way to make sure that any class who needs to know
+//  specifics on the position / location of the sieve can have access to it. 
+//
+//  - Seth H. 8 Jul 25
+//
+/////////////////////////////////////////////////////////////////////////////////////////
+
+#include "G4ThreeVector.hh"
+#include "CLHEP/Units/PhysicalConstants.h"
+
+
+namespace ApexTargetGeometry {
+  
+  inline double Get_sieve_angle(bool _is_RHRS) {
+    return ( _is_RHRS ? -5.372 : 5.366 ) * CLHEP::pi / 180.;
+  }
+  
+  inline double Get_HRS_angle(bool _is_RHRS) {
+    return ( _is_RHRS ? -12.50 : 12.50 ) * CLHEP::pi / 180.;
+  }
+
+  //units in mm. 
+  inline G4ThreeVector Get_APEX_Target_center() {
+    return G4ThreeVector( 0., 0., -1053.7952 );
+  }
+    
+  //units in mm. These are in Target coordinates (TCS), obtained by rotating hall
+  // coordinates first by '-sieve_angle' about the y-axis, then by pi/2 about the
+  // z-axis. 
+  inline G4ThreeVector Get_sieve_pos(bool _is_RHRS) {
+    return G4ThreeVector(  _is_RHRS ?  -1.101 :  -1.301,
+			   _is_RHRS ?  -3.885 :   6.672,
+			   _is_RHRS ? 794.609 : 795.766 ); 
+  } 
+  
+}; 
+
+#endif 

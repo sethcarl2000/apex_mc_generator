@@ -1,0 +1,51 @@
+//HRS Exp, v 1.0, 2010/12/26 , By Jixie Zhang
+// ********************************************************************
+//
+// $Id: HRSSteppingActionMessenger.hh,v 1.0, 2010/12/26   HRS Exp $
+// --------------------------------------------------------------
+//
+#ifndef HRSSteppingActionMessenger_h
+#define HRSSteppingActionMessenger_h 1
+
+class G4UIdirectory;
+class HRSSteppingAction;
+class G4UIcmdWithAnInteger;
+//class G4UIcmdWithAString;
+class G4UIcmdWithoutParameter;
+
+#include "G4UImessenger.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAString.hh"
+#include "globals.hh"
+#include <memory>
+
+class HRSSteppingActionMessenger: public G4UImessenger
+{
+public:
+  HRSSteppingActionMessenger(HRSSteppingAction* mpga);
+  ~HRSSteppingActionMessenger();
+  
+public:
+  void SetNewValue(G4UIcommand * command,G4String newValues);
+  G4String GetCurrentValue(G4UIcommand * command);
+  
+private:
+  HRSSteppingAction* target;
+  
+private: //commands
+
+  std::unique_ptr<G4UIcmdWithAString> outfile_pathCmd;
+  std::unique_ptr<G4UIcmdWithAString> TTree_nameCmd; 
+
+  std::unique_ptr<G4UIcmdWithABool>   TXToutCmd;
+  
+  G4UIdirectory*             stepDir;
+  std::unique_ptr<G4UIcmdWithAnInteger> verboseCmd;
+  G4UIcmdWithAString*        add2PrintListCmd;
+  G4UIcmdWithoutParameter*   emptyPrintListCmd;
+};
+
+#endif
+
+

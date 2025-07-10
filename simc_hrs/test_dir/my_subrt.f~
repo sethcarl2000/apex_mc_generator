@@ -1,0 +1,35 @@
+C     A very basic subroutine which is meant to test the linkage of fortran code to
+C     cpp code. 
+      
+      subroutine my_subrt (x, y, z, ans)
+      
+      implicit none
+      
+      real x,y,z
+      real ans
+      
+      real*8 test_fcn
+
+      real*8 gauss
+      
+      real*8 rslt
+
+      rslt = 1.0000000
+      
+C      write (*,*) 'Random val: ',call grnd
+      
+C      rslt = gauss()
+      
+C      write (*,*) 'test_fcn: ',rslt
+      
+      ans = gauss(rslt)
+C      sqrt(x*x + y*y + z*z)
+C      write (*,*) 'ans:',ans
+      
+C      write (*,*) 'Point: (',x,',',y,',',z,')'
+      
+C      write (*,*) 'Distance is: ', ans
+      
+      end
+
+      

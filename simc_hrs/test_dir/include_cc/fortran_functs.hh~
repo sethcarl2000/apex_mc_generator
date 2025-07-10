@@ -1,0 +1,27 @@
+#ifndef fortran_functs_HH
+#define fortran_functs_HH
+
+#include <iostream>
+#include <random>
+#include <stdio.h>
+
+//generates a random number on the interval [0,1]
+namespace fortran_functs {
+  float fcn_grnd();  {
+    
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(0., 1.);
+    
+    return dis(gen); 
+  };
+}; 
+
+extern "C" {
+  double test_fcn_(void) {
+    return fortran_functs::fcn_grnd();
+  }
+}
+
+
+#endif

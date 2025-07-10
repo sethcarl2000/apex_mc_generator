@@ -1,0 +1,373 @@
+#include <stdio.h>
+#include <iostream>
+#include <stdio.h>
+
+#include "simc_hrs.hh"
+#include "fortran_functs/fortran_functs.hh"
+
+using namespace std;
+
+//extern "C" void my_subrt_(float *x,float *y,float *z, float *ans); 
+extern "C" void mc_hrsl_(double *p_spec,
+			 double *dpp,
+			 double *x,
+			 double *y,
+			 double *z,
+			 double *dxdz,
+			 double *dydz,
+			 double *x_fp,
+			 double *dx_fp,
+			 double *y_fp,
+			 double *dy_fp,
+			 double *m2,
+			 double *fry,
+			 double *pathlen,
+			 bool *skipto_Q1_flag,
+			 bool *ok_spec); 
+
+
+//extern "C" void my_subrt_(float *x,float *y,float *z, float *ans); 
+extern "C" void mc_hrsr_(double *p_spec,
+			 double *dpp,
+			 double *x,
+			 double *y,
+			 double *z,
+			 double *dxdz,
+			 double *dydz,
+			 double *x_fp,
+			 double *dx_fp,
+			 double *y_fp,
+			 double *dy_fp,
+			 double *m2,
+			 double *fry,
+			 double *pathlen,
+			 bool *skipto_Q1_flag,
+			 bool *ok_spec); 
+
+#include "HRSTrack_t.hh"
+
+#include "ROOT/RDataFrame.hxx"
+
+#include "TROOT.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TVector3.h"
+
+#include "TStopwatch.h"
+#include "TParameter.h"
+//#include "RTypesCore.h"
+#include <string>
+#include <cstdio>
+#include <memory>
+#include <array>
+
+
+//This is set in CMakeLists.txt now; to enable it, compile with -DENABLE_DEBUG=ON. 
+#define DEBUG false
+
+#define KEEP_FP_TRACKS_ONLY false
+
+int main(int argc, char *argv[])
+{
+  //this is to disable implict MT... I don't trust Fortran to handle Implicit MT safely. 
+  if (ROOT::IsImplicitMTEnabled()) ROOT::DisableImplicitMT(); 
+  
+  const double hrs_momentum = 1104.0; //in MeV/c
+  
+  const char* const here = "simc_hrs::main"; 
+  //check if file was given. 
+  if (argc<=1) {
+    fprintf(stderr,
+	    "<%s>: Error, no '.root' file was given as argument.\n\n"
+	    "  usage: > simc_hrs 'path-to-my/file.root'\n",
+	    here); 
+    return 1; 
+  }
+
+  //use default outfile name, if none is given. 
+  string path_outfile = "out_fp.root"; 
+  string fp_tree_name = "tracks_fp"; 
+
+  
+  if (argc<=2) {
+    printf("<%s>: Info: No output file name given. going with default: '%s'\n",
+	   here, path_outfile.data());
+  } else       {
+    path_outfile = argv[2];
+  }
+    
+  
+  //now, attempt to open the input file
+  string path_infile(argv[1]);
+  
+  auto infile = new TFile(path_infile.data(), "READ");
+  
+  //check if it was opened successfully
+  if ( !infile ) {
+    fprintf(stderr, "<%s>: Error: TFile '%s' could not be opened.\n",
+	    here, path_infile.data()); 
+    return 1;
+  }
+  if ( infile->IsZombie() ) {
+    fprintf(stderr, "<%s>: Error: TFile '%s' is a zombie.\n",
+	    here, path_infile.data()); 
+    return 1;
+  }
+  
+  
+  //this is the name we expect for the input TTree
+  const char* Q1_tree_name = "tracks_Q1";
+
+  TTree *tree = (TTree*)infile->Get(Q1_tree_name); 
+
+  //check if the tree could be found
+  if (!tree) {
+    fprintf(stderr, "<%s>: Error: Could not find TTree '%s' in input file '%s'.\n",
+	    here, Q1_tree_name, path_infile.data());
+    return 1; 
+  }
+  //get total number of events in the tree
+  //long int n_events_read = tree->GetEntries(); 
+  
+
+  //this is the name of the TParamter<bool>* which tells us which HRS arm this data is for. 
+  const char* arm_flag_name = "is_RHRS"; 
+  
+  //check for which arm we're using
+  TParameter<bool> *param_is_RHRS = (TParameter<bool>*)infile->Get(arm_flag_name);
+
+  if ( !param_is_RHRS ) {
+    fprintf(stderr, "<%s>: Error: Could not find 'TParameter<bool> *%s' in TFile. "
+	    "This is needed to tell which HRS arm to use!\n",
+	    here, arm_flag_name);
+    return 1;
+  }
+  const bool is_RHRS = param_is_RHRS->GetVal(); 
+  
+
+  //now that we have checked that the TFile and desired TTree exist, we can open
+  //the file and use RDataFrame.
+  
+  
+  delete tree;
+  delete param_is_RHRS;
+  
+  infile->Close();
+  delete infile;
+
+  
+  bool _skipto_Q1_flag(true); 
+  
+  //long int n_success(0); 
+  
+  bool _print_debug(false);
+  /*#if DEBUG
+    _print_debug=true;
+  #endif*/ 
+  
+    
+  //Now, open RDataFrame.
+  ROOT::RDataFrame df(Q1_tree_name, path_infile.data());
+  
+  auto df_output_precut = df
+    
+    .Range(0,1e7)
+    .Define("track", [is_RHRS, hrs_momentum, &_print_debug,
+		      &_skipto_Q1_flag]
+	    (TVector3 position_vtx, TVector3 momentum_vtx,
+	     TVector3 position_Q1,  TVector3 momentum_Q1)
+    {
+      HRSTrack_t track;
+      
+      //track information at vertex (target)
+      track.tg.x = position_vtx.x();
+      track.tg.y = position_vtx.y();
+      track.tg.z = position_vtx.z();
+
+      track.tg.dxdz = momentum_vtx.x()/momentum_vtx.z();
+      track.tg.dydz = momentum_vtx.y()/momentum_vtx.z();
+    
+      track.tg.dpp = (momentum_vtx.Mag() - hrs_momentum)/hrs_momentum; 
+      
+      //track information at Q1 front window
+      track.Q1.x = position_Q1.x();
+      track.Q1.y = position_Q1.y();
+      track.Q1.z = position_Q1.z();
+
+      track.Q1.dxdz = momentum_Q1.x()/momentum_Q1.z();
+      track.Q1.dydz = momentum_Q1.y()/momentum_Q1.z();
+    
+      track.Q1.dpp = (momentum_Q1.Mag() - hrs_momentum)/hrs_momentum;
+      
+      //this will be passed to the fortran subroutines.
+#if DEBUG      
+      printf("Q1-coords (% 4.1f,% 4.1f,% .5f,% .5f,% .5f)...",
+	     track.Q1.x*100,
+	     track.Q1.y*100,
+	     track.Q1.dxdz,
+	     track.Q1.dydz,
+	     track.Q1.dpp);
+#endif
+      
+      //now, we are ready to call 'mc_hrsl_/mc_hrsr_'. 
+      double _p_spec(hrs_momentum);
+      double _dpp(track.Q1.dpp * 100);
+      double _x(track.Q1.x * 100.);
+      double _y(track.Q1.y * 100.);
+      double _z(172.050);
+      double _dxdz(track.Q1.dxdz);
+      double _dydz(track.Q1.dydz);
+      double _x_fp(0.);
+      double _dx_fp(0.);
+      double _y_fp(0.);
+      double _dy_fp(0.);
+      double _m2(0.510*0.510);
+      double _fry(0.);
+      bool   _ok_spec(false);
+      double _pathlen(0.);
+      
+      if (is_RHRS) { 
+	mc_hrsr_(&_p_spec, &_dpp, &_x, &_y, &_z, &_dxdz, &_dydz,
+		 &_x_fp, &_dx_fp, &_y_fp, &_dy_fp, &_m2, &_fry,
+		 &_pathlen, &_skipto_Q1_flag, &_ok_spec);
+      } else       {
+	mc_hrsl_(&_p_spec, &_dpp, &_x, &_y, &_z, &_dxdz, &_dydz,
+		 &_x_fp, &_dx_fp, &_y_fp, &_dy_fp, &_m2, &_fry,
+		 &_pathlen, &_skipto_Q1_flag, &_ok_spec);
+      }
+
+      
+#if DEBUG	
+      cout << "print debug? " << (_print_debug?"True":"False") << endl; 
+      
+      cout << (_ok_spec?"pass":"fail");
+      printf("pathlen:%-5.4f\n",_pathlen);
+#endif
+
+      //      if (_ok_spec) n_success++; 
+      
+      //just initialize this as null, for now
+      track.fp.x    = _x_fp/100.;
+      track.fp.y    = _y_fp/100.;
+      track.fp.dxdz = _dx_fp;
+      track.fp.dydz = _dy_fp;
+
+      track.flag_keep = _ok_spec; 
+
+      track.path_length = _pathlen; 
+      
+      return track;
+    }, {"position_vtx", "momentum_vtx", "position_Q1", "momentum_Q1"});
+
+  
+  auto df_output_postcut = df_output_precut
+
+#if KEEP_FP_TRACKS_ONLY
+    //Only keep an event if the track 'made it' to the focal plane.
+    .Filter([](const HRSTrack_t &track){return track.flag_keep;}, {"track"})
+#endif 
+    
+    //Deifine final output variables. This way, no one needs our class dictionary
+    // to intepret the HRSTrack_t or HRSCoord_t structs
+    .Define("x_fp",    [](const HRSTrack_t &track){return track.fp.x;}, {"track"})
+    .Define("y_fp",    [](const HRSTrack_t &track){return track.fp.y;}, {"track"})
+    .Define("dxdz_fp", [](const HRSTrack_t &track){return track.fp.dxdz;}, {"track"})
+    .Define("dydz_fp", [](const HRSTrack_t &track){return track.fp.dydz;}, {"track"})
+    .Define("is_at_fp",[](const HRSTrack_t &track){return track.flag_keep;},{"track"})
+    .Define("path_length",[](const HRSTrack_t &track){return track.path_length;},{"track"});
+  
+  
+  //track how many tracks 'make it through' the spectrometer.
+  auto n_events_read_rslt = df_output_precut .Count();
+  auto n_success_rslt     = df_output_postcut.Count(); 
+
+
+  printf("<%s>: Starting event loop...",here); cout << flush; 
+  
+  //measure the time it takes to go through all events
+  TStopwatch timer; 
+
+  //record all data to the final output tree
+  df_output_postcut.Snapshot(fp_tree_name.data(), path_outfile.data(),
+			     {"position_vtx",   "momentum_vtx",
+			      "position_sieve", "momentum_sieve",
+			      "position_Q1",    "momentum_Q1",
+			      "x_fp","y_fp","dxdz_fp","dydz_fp",
+			      "is_at_fp", "path_length"});
+
+  
+  //done with event loop. 
+  double time_elapsed = timer.RealTime(); 
+
+  int n_events_read = (int)*n_events_read_rslt;
+  int n_success     = (int)*n_success_rslt; 
+  
+  
+  printf("\r<%s>: Starting event loop...Done.\n"
+	 " --- Processed %i entries in %.3f seconds (%.3f ms/event)\n",
+	 here, 
+	 n_events_read,
+	 time_elapsed,
+	 1000.*time_elapsed/((double)n_events_read));
+  
+  printf(" --- Out of %i input events, %i were propagated (frac: %.4f)\n",
+	 n_events_read,
+	 n_success,
+	 ((double)n_success)/((double)n_events_read));
+  
+  cout << flush; 
+  
+  
+  
+  return 0; 
+  
+  /*double _p_spec(1104.0);
+  double _th_spec(0.);
+  double _dpp(0.);
+  double _x(0.);
+  double _y(0.);
+  double _z(172.050);
+  double _dxdz(0.);
+  double _dydz(0.);
+  double _x_fp(0.);
+  double _dx_fp(0.);
+  double _y_fp(0.);
+  double _dy_fp(0.);
+  double _m2(0.);
+  bool   _ms_flag(false);
+  bool   _wcs_flag(false);
+  bool   _decay_flag(false);
+  bool   _skipto_Q1_flag(true); 
+  double _fry(0.);
+  bool   _ok_spec(false);
+  double _pathlen(0.);
+
+  double stddev(5); */ 
+
+  /*for (int i=0; i<10; i++) { 
+
+    _ok_spec=false;
+
+    _x = fortran_functs::fcn_gauss(&stddev);
+    _y = fortran_functs::fcn_gauss(&stddev);
+    _z = 172.050;
+
+    _dxdz = _x/_z;
+    _dydz = _y/_z;
+    
+    mc_hrsl_(&_p_spec, &_dpp, &_x, &_y, &_z, &_dxdz, &_dydz,
+	     &_x_fp, &_dx_fp, &_y_fp, &_dy_fp, &_m2,
+	     &_ms_flag, &_wcs_flag, &_decay_flag, &_skipto_Q1_flag, &_fry,
+	     &_ok_spec, &_pathlen);
+    
+    cout << (_ok_spec?"pass":"fail") << endl; 
+  }*/
+  
+  
+  
+  //simc_handler.~SimcHandler(); 
+  
+  return 0; 
+}
+
+  

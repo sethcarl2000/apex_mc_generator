@@ -1,0 +1,79 @@
+#----------------------------------------------------------------------------
+# For this, I had much help from Gemini and:
+# https://github.com/eguiraud/root_dictionaries_tutorial/blob/main/with_cmake
+#
+
+#----------------------------------------------------------------------------
+# Setup the project
+#
+cmake_minimum_required(VERSION 3.16)
+project(simc_hrs
+  DESCRIPTION "Uses subroutines of SIMC simulation package to propagate tracks from Q1 to fp"
+  LANGUAGES CXX Fortran
+)
+
+#----------------------------------------------------------------------------
+# Find the ROOT package we need for .root file handling
+# 
+find_package(ROOT REQUIRED)
+
+#----------------------------------------------------------------------------
+# Set some Fortran compiler options
+#
+# This makes it so that there is not a fixed maximum line length
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffixed-line-length-none")
+
+#----------------------------------------------------------------------------
+# Locate sources and headers for this project
+# NB: headers are included so they will show up in IDEs
+#
+file(GLOB headers
+  ${PROJECT_SOURCE_DIR}/src/*.inc
+  ${PROJECT_SOURCE_DIR}/src/shared/*.inc
+  ${PROJECT_SOURCE_DIR}/src/fortran_functs/*.hh
+  ${PROJECT_SOURCE_DIR}/src/*.hh
+  ${PROJECT_SOURCE_DIR}/*.h
+)
+
+file(GLOB sources
+  ${PROJECT_SOURCE_DIR}/src/*.f
+  ${PROJECT_SOURCE_DIR}/src/shared/*.f
+  ${PROJECT_SOURCE_DIR}/src/fortran_functs/*.cc
+  ${PROJECT_SOURCE_DIR}/src/*.cc
+)
+
+
+#----------------------------------------------------------------------------
+# Add the executable, use our local headers, and link it to the Geant4 libraries
+#
+add_executable(simc_hrs simc_hrs.cc ${sources} ${headers})
+
+target_include_directories(simc_hrs PRIVATE
+                                    src
+				    ${ROOT_INCLUDE_DIRS})
+
+target_link_libraries(simc_hrs PRIVATE
+  ${ROOT_LIBRARIES}
+
+)
+
+#----------------------------------------------------------------------------
+# Enable debug preprocessor directive to be toggled via command-line inputs
+# 
+# i.e.:  > cmake -DENABLE_DEBUG=ON -B build -S .
+#        > cmake --build build 
+#
+if(ENABLE_DEBUG)
+  target_compile_definitions(simc_hrs PRIVATE DEBUG=true)
+else()
+  target_compile_definitions(simc_hrs PRIVATE DEBUG=false)
+endif()
+
+message(STATUS "Building dict for THRSTrack")
+
+ROOT_GENERATE_DICTIONARY(simc_hrs_dict ${PROJECT_SOURCE_DIR}/src/HRSTrack_t.hh
+  MODULE simc_hrs
+  LINKDEF simc_hrs_LinkDef.h
+)
+
+message(STATUS "Done")

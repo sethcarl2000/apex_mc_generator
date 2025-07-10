@@ -1,0 +1,56 @@
+/run/verbose 2
+/control/verbose 0
+/tracking/verbose 0
+/stepping/verbose 0
+/mydet/verbose 0
+/tracking/particleOnly e-
+
+/stepping/makeTXToutput false
+/stepping/killAtQ1 true
+
+# for the full simulation noSecondary 0, it only the primary track is needed to be simulated - then /tracking/noSecondary 1
+/tracking/noSecondary 1
+/tracking/thisTrackOnly 0
+#see the same variable in HRSUsage.ini
+
+
+# vertex bounds for uniform generation. These reflect the approximate 'box'
+# from which the raster/ APEX tungsten foil targets may generate vertices. 
+
+/mydet/gunXLow  -3.5 mm
+/mydet/gunXHigh  3.5 mm
+
+/mydet/gunYLow  -3.5 mm
+/mydet/gunYHigh  3.5 mm
+
+/mydet/gunZLow  -240.0 mm
+/mydet/gunZHigh  330.0 mm
+
+
+# track positions (projected onto the sieve plane)
+
+/mydet/sieveXLow   -85.0 mm
+/mydet/sieveXHigh   85.0 mm
+
+# RHRS settings
+# /mydet/sieveYLow   -100.0 mm 
+# /mydet/sieveYHigh    20.0 mm
+
+# LHRS settings
+#/mydet/sieveYLow    -20.0 mm 
+#/mydet/sieveYHigh   100.0 mm
+
+/mydet/sieveYLow   -100.0 mm 
+/mydet/sieveYHigh   100.0 mm
+
+
+/mydet/particle1/momentumLow  1058 MeV
+/mydet/particle1/momentumHigh 1149 MeV
+
+/mydet/particleNum 1
+/mydet/particle1/particleName e-
+# /mydet/particle2/particleName pi-
+
+/mydet/use_RHRS false
+
+/mydet/outfile test_scattChamber_Q1.root

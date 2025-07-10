@@ -1,0 +1,191 @@
+#!/bin/bash
+
+#SBATCH --nodes 1
+#SBATCH --partition production
+#SBATCH --account halla
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 1
+#SBATCH --output=/volatile/halla/apex/mc/temp/slurm/%x.%j.out
+#SBATCH --error=/volatile/halla/apex/mc/temp/slurm/%x.%j.err
+#SBATCH --mem-per-cpu=1024
+
+###########################################################################################
+#
+#   This script sets up the creation of 'Q1 tracks' via G4MC. 
+#   The output root files are created in ${VOL_DIR}/tracks_Q1/.
+#   The temp files are placed in their own directory in ${VOL_DIR}/temp/.
+#
+#   Required arguments:
+#   $1 (first)  : [R/L] Which HRS arm to simulate (RHRS/LHRS).
+#   $2 (second) : Number of events to simulate.
+#   $3 (third)  : (OPTIONAL) target to use. valid options:
+#                 - [no option given] - proudction target
+#                 - 'production'      - production target
+#                 - 'V1','V2','V3'    - vertical wires
+#
+#   Suggested usage (Bash terminal):
+#
+#    > sbatch --job-name=apex_mc_Q1_R --time=90 script_gen-Q1-tracks R 100000
+#
+#        submits 1 job, with a 90-minute deadline, for the RHRS, and 100k events.
+#
+#    > sbatch --job-name=apex_mc_Q1_R_V1 --time=120 script_gen-Q1-tracks L 200000 V1
+#
+#        1 job, 120 minutes, 200k events, LHRS, and V1 target. 
+#
+###########################################################################################
+
+    
+VOL_DIR="/volatile/halla/apex/mc"
+
+PATH_G4MC="/work/halla/apex/disk1/sethhall/apex_mc_generator/g4mc"
+
+#check if some of the necessary directories exist.
+
+if [ ! -d "${PATH_G4MC}/slurm_infiles" ]; then
+    echo "<script_gen-Q1-tracks>: ERROR: subdirectory 'slurm_infiles' does not exist in source directory '${PATH_G4MC}'. check variable 'PATH_G4MC'"
+    exit 1;
+fi
+
+if [ ! -d "${VOL_DIR}/tracks_Q1" ]; then
+    echo "<script_gen-Q1-tracks>: WARNING: directory '${VOL_DIR}/tracks_Q1' does not exist; are you sure your 'VOL_DIR' variable is correct?'"
+    exit 1;
+fi
+
+
+
+target="production"
+
+run_id=${SLURM_JOB_ID}
+
+#check if we're within a slurm job; if not, then "${SLURM_JOB_ID}"=""
+if [ ! "${SLURM_JOB_ID}" ]
+then
+    #We aren't in slurm mode. 
+    run_id=0000
+    echo "We are not in a slurm job..." 
+else
+    echo "Slurm job id: ${SLURM_JOB_ID}"
+fi
+
+
+echo "Run ID ${run_id}"
+
+
+#check if the 'arm' arugment is correct
+if [ ! "$1" ]; then echo "ERROR: no argument given."; exit 1; fi
+
+if [ "$1" != "R" ]&&[ "$1" != "L" ];
+then
+    echo "ERROR: First argument '$1' invalid; must be either 'R' or 'L'."
+    exit 1
+fi
+
+if [ "$1" = "R" ]
+then
+    hrs_arm="RHRS"
+else
+    hrs_arm="LHRS"
+fi
+
+echo "Using arm: ${hrs_arm}"
+
+#check if the second argument exists, and if its an integer.
+if [ ! "$2" ]; then echo "ERROR: Missing second argument."; exit 1; fi
+
+if [[ "$2" =~ ^-?[0-9]+$ ]]; then
+
+    echo "Simulating $2 events".
+    num_events=$2
+else
+    echo "ERROR: Second argument '$2' must be an integer." 
+    exit 1
+fi
+
+
+#check to make sure the target specified exists, if a name was given
+if [ "$3" ]; then
+    target="$3"
+    if [ -f "${PATH_G4MC}/slurm_infiles/settings_target_${target}.txt" ]; then
+	echo "<script_gen-Q1-tracks>: Using target: ${target}"
+    else
+	echo "<script_gen-Q1-tracks>: ERROR: target file 'settings_target_${target}.txt' does not exist."
+	exit 1
+    fi
+fi
+	
+
+
+outfile_path="${VOL_DIR}/tracks_Q1/out_${hrs_arm}_${target}_${run_id}.root"
+
+#check if the 'temp files' directory already exists. 
+if [ -d "${VOL_DIR}/temp/job_${run_id}" ]
+then 
+    rm -rf "${VOL_DIR}/temp/job_${run_id}"
+fi
+
+
+#create a directory for the temporary files associated with this job
+mkdir "${VOL_DIR}/temp/job_${run_id}"
+
+cp -a "${PATH_G4MC}/slurm_infiles/." "${VOL_DIR}/temp/job_${run_id}/." 
+
+cd "${VOL_DIR}/temp/job_${run_id}"
+
+ln -s "${PATH_G4MC}/build/G4MC" "G4MC"
+
+
+#prepare the 'run_settings.mac' file
+# This first file, 'settings_base.txt' sets up generic run settings which are
+# true for each run. 
+if [ -f "settings_base.txt" ]
+then
+    cat "settings_base.txt" > run_settings.mac
+    rm settings_base.txt
+else
+    echo "ERROR: 'settings_base.txt' does not exist"
+    exit 1
+fi
+    
+#tell G4MC which arm to use
+if [ -f "settings_arm_${hrs_arm}.txt" ]
+then
+    echo >> run_settings.mac
+    echo >> run_settings.mac
+    cat "settings_arm_${hrs_arm}.txt" >> run_settings.mac
+    rm settings_arm_*.txt
+else
+    echo "ERROR: 'settings_arm_${hrs_arm}' does not exist"
+    exit 1
+fi
+
+#tell G4MC which target parameters to use
+if [ -f "settings_target_${target}.txt" ]
+then
+    echo >> run_settings.mac
+    echo >> run_settings.mac
+    cat "settings_target_${target}.txt" >> run_settings.mac
+    rm settings_target_*.txt
+else 
+    echo "ERROR: 'settings_target_${target}.txt' does not exist"
+    exit 1
+fi
+
+#tell G4MC where to put the output file
+echo >> run_settings.mac
+echo >> run_settings.mac
+echo "/mydet/outfile ${outfile_path}" >> run_settings.mac
+
+#create the 'beam.mac' file, which just tells G4MC how many events to run.
+echo "/run/beamOn ${num_events}" > run.mac 
+
+echo "<script_gen-Q1-tracks>: Executing G4MC..." 
+
+./G4MC -m 1 run_settings.mac run.mac
+
+echo "<script_gen-Q1-tracks>: Done with execution of G4MC." 
+
+exit
+
+
+

@@ -1,0 +1,13 @@
+
+
+# Track positions (projected onto the sieve plane).
+# these are mirrored for either arm
+
+/mydet/sieveXLow   -85.0 mm
+/mydet/sieveXHigh   85.0 mm
+
+/mydet/sieveYLow   -80.0 mm
+/mydet/sieveYHigh   70.0 mm
+
+# Tell G4MC which HRS arm to use
+/mydet/use_RHRS true

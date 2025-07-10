@@ -1,0 +1,30 @@
+Fri Jun 27 14:05:33 2025
+The input command is:
+./run/job_0003/G4MC 
+****************************VALUE**START*****************************
+PrintOpt(): The content of the arguments in the vector are:
+****************************VALUE****END*****************************
+Mon Jun 30 19:25:27 2025
+The input command is:
+./run/G4MC 
+****************************VALUE**START*****************************
+PrintOpt(): The content of the arguments in the vector are:
+****************************VALUE****END*****************************
+Fri Jul  4 13:48:58 2025
+The input command is:
+./build/G4MC -m 1 
+****************************VALUE**START*****************************
+PrintOpt(): The content of the arguments in the vector are:
+****************************VALUE****END*****************************
+Fri Jul  4 13:49:06 2025
+The input command is:
+./build/G4MC files_in/beam.mac 
+****************************VALUE**START*****************************
+PrintOpt(): The content of the arguments in the vector are:
+****************************VALUE****END*****************************
+Sat Jul  5 13:56:53 2025
+The input command is:
+run/G4MC 
+****************************VALUE**START*****************************
+PrintOpt(): The content of the arguments in the vector are:
+****************************VALUE****END*****************************
