@@ -1,7 +1,0 @@
-module "simc_hrs" {
-  requires cplusplus
-  module "/work/halla/apex/disk1/sethhall/apex_mc_generator/simc_hrs/src/HRSTrack_t.hh" { header "/work/halla/apex/disk1/sethhall/apex_mc_generator/simc_hrs/src/HRSTrack_t.hh" export * }
-  link "libsimc_hrs.so"
-  export *
-}
-

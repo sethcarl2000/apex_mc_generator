@@ -1,5 +1,0 @@
-[ libsimc_hrs.so ]
-# List of selected classes
-class HRSTrack_t
-class HRSTrack_t::HRSCoord_t
-header HRSTrack_t.hh
