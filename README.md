@@ -1,23 +1,27 @@
 # APEX_monte_carlo
 Generates Monte-Carlo data for the purpose of APEX optics calibration.
 
-**NOTE: CODE WILL RUN IMPROPERLY IF NOT DONE**
-
-The following file was too large to upload to github, so I had to compress it: 
-
-> g4mc/septum/Septa-JB_map.table 
-
-if you clone this repo and want to execute it, you must first run the following command:
-
-    gunzip g4mc/septum/Septa-JB_map.table.gz
-
-You don't have to recompile anything, it should work fine. 
-
-
 This project is a fork of both the Apex G4MC simulation package obtained from: (https://github.com/kvardan/APEX_G4MC), 
 and also a fork of a modified version of the SIMC Hall-A simulation package: (https://github.com/JeffersonLab/simc_gfortran). 
 
-Usage / code: 
+### To Compile: 
+Clone this repository into an empty driectory of your choice: 
+
+    git clone https://github.com/sethcarl2000/apex_mc_generator
+
+Go into both compiled directories, and use the macro to compile them. for G4MC:
+  
+    cd g4mc
+    ./compile.sh -f
+  
+Here, the '-f' flag forces a rebuild of the build/ directory. Same for simc_hrs:
+  
+    cd simc_hrs
+    ./compile.sh -f
+  
+Then, you must also uncompress the septum map file:
+  
+    gunzip g4mc/septum/Septa-JB_map.table.gz
 
 
 ## script_gen-Q1-tracks 
