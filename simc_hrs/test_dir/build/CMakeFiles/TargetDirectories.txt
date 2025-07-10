@@ -1,3 +1,0 @@
-/work/halla/apex/disk1/sethhall/vardan_g4_copy/hrs_compile_test/test_dir/build/CMakeFiles/hrsl_exec.dir
-/work/halla/apex/disk1/sethhall/vardan_g4_copy/hrs_compile_test/test_dir/build/CMakeFiles/edit_cache.dir
-/work/halla/apex/disk1/sethhall/vardan_g4_copy/hrs_compile_test/test_dir/build/CMakeFiles/rebuild_cache.dir
