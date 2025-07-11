@@ -1,4 +1,4 @@
-# APEX_monte_carlo
+# APEX Monte-Carlo Generator
 Generates Monte-Carlo data for the purpose of APEX optics calibration.
 
 This project is a fork of both the Apex G4MC simulation package obtained from: (https://github.com/kvardan/APEX_G4MC), 
