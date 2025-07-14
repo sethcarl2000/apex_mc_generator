@@ -225,28 +225,29 @@ int main(int argc, char *argv[])
       double _fry(0.);
       bool   _ok_spec(false);
       double _pathlen(0.);
-
-      //use RHRS for LHRS data
-      if (!is_RHRS) {
-	_y     *= -1.;
-	_dydz  *= -1.; 
-      }
       
       if (is_RHRS) { 
 	mc_hrsr_(&_p_spec, &_dpp, &_x, &_y, &_z, &_dxdz, &_dydz,
 		 &_x_fp, &_dx_fp, &_y_fp, &_dy_fp, &_m2, &_fry,
 		 &_pathlen, &_skipto_Q1_flag, &_ok_spec);
       } else       {
+
+	_y     *= -1.;
+	_dydz  *= -1.; 
+
+	//This should be the subroutine 'mc_hrsl_', but I found that there are some
+	//acceptance issues with the simc_hrsl subroutine. It turns out that you get
+	//good-looking results if you just feed the Left-arm data into 'mc_hrsr',
+	//and use the fact that the spectrometers are mirrored (flip y & dy/dz). 
 	mc_hrsr_(&_p_spec, &_dpp, &_x, &_y, &_z, &_dxdz, &_dydz,
 		 &_x_fp, &_dx_fp, &_y_fp, &_dy_fp, &_m2, &_fry,
 		 &_pathlen, &_skipto_Q1_flag, &_ok_spec);
-      }
-
-      //use RHRS for LHRS data
-      if (!is_RHRS) {
+	
 	_y_fp  *= -1.;
 	_dy_fp *= -1.; 
+	
       }
+
       
 #if DEBUG	
       cout << "print debug? " << (_print_debug?"True":"False") << endl; 
