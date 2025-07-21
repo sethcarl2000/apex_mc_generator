@@ -135,13 +135,15 @@ There are two paths hard-coded in; feel free to change these to suit your needs.
     VOL_DIR="/volatile/halla/apex/mc" 
     PATH_G4MC="/work/halla/apex/disk1/sethhall/apex_mc_generator/g4mc"
 
-**Note**: PATH_G4MC must point to the g4mc source directory, this script will fail execution otherwise! 
+> [!NOTE]
+> PATH_G4MC must point to the g4mc source directory, this script will fail execution otherwise! 
 
 Upon successful execution of the script, a new directory will be created:  
 
     ${VOL_DIR}/temp/job_${run_id}
     
-**Note**: if this directory already exists, all of its contents will be overwritten.     
+> [!NOTE]
+> If this directory already exists, all of its contents will be overwritten.     
 
 The output root file will be placed under: 
 
@@ -198,7 +200,8 @@ All of these are executed in a bash shell on ifarm:
 
       ${VOL_DIR}/tracks_Q1/out_RHRS_V2_50501919.root
 
-**NOTE**: you must specify the '--time' option, as no time option is specified by default in the script. To estimate the amount of time needed to run, I use
+> [!NOTE] 
+> You must specify the '--time' option, as no time option is specified by default in the script. To estimate the amount of time needed to run, I use
 the fact that the script takes about 17 ms/event for its simulation; I usually round up to 25 ms/event to leave some buffer room. _If the job runs over the
 time budget you give it, it will fail!_ 
 
