@@ -329,7 +329,24 @@ int main(int argc, char *argv[])
   
   cout << flush; 
   
+  //really quick, let's write down which HRS arm we used
+  auto outfile = new TFile(path_outfile.data(), "UPDATE");
+
+  if (!outfile || outfile->IsZombie()) {
+    fprintf(stderr, "Error in <%s>: Could not re-open output file to record the"
+	    "TParameter<bool> *param_is_RHRS parameter. Check that something "
+	    "isn't wrong with this output file.\nOuput file path: %s",
+	    here, path_outfile.data());
+  }
   
+  //we can use the same TParameter<bool>* ptr we used above 
+  param_is_RHRS = new TParameter<bool>("is_RHRS", is_RHRS); 
+  param_is_RHRS->Write(); 
+
+  outfile->Close();
+
+  delete param_is_RHRS;
+  delete outfile; 
   
   return 0; 
   
