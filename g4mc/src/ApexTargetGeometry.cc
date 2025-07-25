@@ -65,7 +65,8 @@ vector<ApexTargetGeometry::SieveHole> ApexTargetGeometry::Construct_sieve_holes(
                 .x      = x,
                 .y      = y,
                 .radius_front   = (bigHole ? holeR_big : holeR_small), 
-                .radius_back    = (bigHole ? holeR_big : holeR_small)
+                .radius_back    = (bigHole ? holeR_big : holeR_small),
+                .is_big = bigHole
             }; 
 
             //check to see if this is one of the holes where the exit-hole is wider than the entrance-hole. 
@@ -77,9 +78,7 @@ vector<ApexTargetGeometry::SieveHole> ApexTargetGeometry::Construct_sieve_holes(
             }
 
             sieve_holes.push_back(new_hole); 
-            
-            if (bigHole) { big_holes.push_back(new_hole); }
-
+ 
         }//for (int col=0; col<nCols; col++) 
     }//for (int row=0; row<nRows; row++) 
     

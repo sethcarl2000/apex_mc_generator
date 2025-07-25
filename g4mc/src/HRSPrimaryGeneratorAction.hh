@@ -18,6 +18,8 @@
 #include "HRSBeamTarget.hh"
 #include "G4String.hh"
 
+#include "ApexTargetGeometry.hh"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,7 +65,7 @@ public:
   virtual ~HRSPrimaryGeneratorAction();
 
   virtual void GeneratePrimaries(G4Event*);
-  
+
 
   void Set_outfile_path(const std::string &_str) { fOutfile_path=_str; }
   std::string Get_outfile_path() const { return fOutfile_path; }
@@ -79,7 +81,13 @@ private:
 
   std::string fOutfile_path;
   
+  std::vector<ApexTargetGeometry::SieveHole> fSieve_holes;
+  std::vector<ApexTargetGeometry::SieveHole> fSieve_holes_big;  
   
+  //returns a random SieveHole from the list. The probability of any hole being selected is
+  //proportional to the area of that hole's target-facing entrance. 
+  ApexTargetGeometry::SieveHole Get_rand_sievehole();  
+
   bool f_isRHRS; 
   
   
