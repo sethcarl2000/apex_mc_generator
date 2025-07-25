@@ -545,21 +545,21 @@ void HRSPrimaryGeneratorAction::GetMomentum(int i)
 
 ApexTargetGeometry::SieveHole HRSPrimaryGeneratorAction::Get_random_sievehole() 
 {
-	//returns a random SieveHole from the list. The probability of any hole being selected is
-  	//proportional to the area of that hole's target-facing entrance.
-	
-	//This is the ratio of the area of a 'big hole' to all the other holes. we want to weight 
-	//the probability that a track is 'shot' thru thus hole proportionally to each hole's area. 
-	double bighole_area_ratio = 3.71438;
-
-	double index = Get_rnd_range( -2.*bighole_area_ratio, (double)fSieve_holes.size()-1. );
-
-	//see if its one of the 'big holes'
-	if ( index < -bighole_area_ratio ) return fSieve_holes_big.at(0); 
-	if ( index < 0. )				   return fSieve_holes_big.at(1); 
-
-	//if not, just reuturn one of the regular holes (truncating our 'index' parameter)
-	return fSieve_holes.at( (int)index ); 
+  //returns a random SieveHole from the list. The probability of any hole being selected is
+  //proportional to the area of that hole's target-facing entrance.
+  
+  //This is the ratio of the area of a 'big hole' to all the other holes. we want to weight 
+  //the probability that a track is 'shot' thru thus hole proportionally to each hole's area. 
+  double bighole_area_ratio = 3.71438;
+  
+  double index = Get_rnd_range( -2.*bighole_area_ratio, (double)fSieve_holes.size()-1. );
+  
+  //see if its one of the 'big holes'
+  if ( index < -bighole_area_ratio ) return fSieve_holes_big.at(0); 
+  if ( index < 0. )				   return fSieve_holes_big.at(1); 
+  
+  //if not, just reuturn one of the regular holes (truncating our 'index' parameter)
+  return fSieve_holes.at( (int)index ); 
 }	
 
 //  Note that, even if the particle gun shoots more than one particles at one invokation of
@@ -580,43 +580,102 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   //centerline. However, since the rest of this simulation takes place in Hall coordinates
   // (relative to the Hall centerline), we will convert all coords before the particle is
   // generated. 
-  G4ThreeVector vertex_position( 
-	Get_rnd_range(GetGunXLow(), GetGunXHigh()),				
-	Get_rnd_range(GetGunYLow(), GetGunYHigh()),
-	Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
-  ); 
+  G4ThreeVector vertex( 
+     Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
+     Get_rnd_range(GetGunYLow(), GetGunYHigh()),
+     Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
+  );
+  /*G4ThreeVector vertex_position( 
+     Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
+     Get_rnd_range(GetGunYLow(), GetGunYHigh()),
+     Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
+     );*/ 
 
-  //now, generate a random direction (and momenutm) for the particle. 
-
-  //pick a random spot on the face of the sieve, according to the limits specified
-  // in run_settings.mac
-  G4ThreeVector pos_on_sieve = ApexTargetGeometry::Get_sieve_pos(Is_RHRS());
+  G4ThreeVector momentum;
+  
+  if (Simulate_sieve()) { //if this is true, then we will simulate the sieve-holes
     
-  pos_on_sieve(0) += Get_rnd_range(GetGunSieveXLow(), GetGunSieveXHigh()); 
-  pos_on_sieve(1) += Get_rnd_range(GetGunSieveYLow(), GetGunSieveYHigh()); 
-  
-  //now, convert this vertex to Hall coordinates (still relative to Apex target CL!) 
-  pos_on_sieve.rotateZ( -CLHEP::pi/2. );
-  pos_on_sieve.rotateY( ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) );
-  
-  
-  //we now use our generated vertex position, and sieve intercept position, to find the
-  // direction of our particle. 
-  G4ThreeVector vertex_momentum = (pos_on_sieve - vertex_position).unit();
+    //convert this vertex to SIEVE COORDINATES
+    G4ThreeVector vertex_SCS = vertex;
+    vertex_SCS.rotateY( -ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) );
+    vertex_SCS.rotateZ( CLHEP::pi/2. ); 
+    
+    vertex_SCS += -1.* ApexTargetGeometry::Get_sieve_pos(Is_RHRS());   
+    
+    //project this track onto the back of the sieve-plane. 
+    double dz = ApexTargetGeometry::Get_sieve_thickness();
 
-  //Get random total momentum in given range. 
-  double momentum_mag = Get_rnd_range(momentumLow[0], momentumHigh[0]); 
+    G4ThreeVector position; 
+    
+    while (1) { //keep looping until we find a valid place to shoot the track
+      
+      auto hole = Get_random_sievehole();
+      double hrad_front = hole.radius_front;
+      
+      while (1) { //choose a spot on the sieve face to 'aim' at
+	
+	position = G4ThreeVector(
+				 Get_rnd_range( -hrad_front, hrad_front ), 
+				 Get_rnd_range( -hrad_front, hrad_front ),
+				 0.
+				 ); 
+	
+	//check if this spot is 'in' the front hole entrance
+	if ( position.mag() < hrad_front ) break;
+      }
+      
+      double x_exit = position.x();
+      double y_exit = position.y();
+      
+      //now, get the hole position in SIEVE COORDINATES (SCS)
+      position += G4ThreeVector( hole.x, hole.y, 0. );
+      
+      momentum = (position - vertex_SCS).unit();
+      
+      //now, we project this track onto the back of the sieve, to see if it would
+      //make it through the exit of this same hole.
+      double hrad_back = hole.radius_back; 
+      
+      x_exit += (momentum.x()/momentum.z()) * dz;
+      y_exit += (momentum.y()/momentum.z()) * dz; 
+      
+      if ( sqrt(x_exit*x_exit + y_exit*y_exit) < hrad_back ) break;  
+    }
 
-  vertex_momentum *= momentum_mag;
+    //we've found a valid track trajectory. let's convert our position & momentum back
+    // to the hall coordinate system. 
+    momentum.rotateZ( -CLHEP::pi/2. );
+    momentum.rotateY( ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) ); 
+    
+  } else {//if (Simulate_Sieve()) 
+    
+    //if we're here, just shoot the particle at a random spot on the surface of the sieve.
+    G4ThreeVector pos_on_sieve
+      = G4ThreeVector( Get_rnd_range(GetGunSieveXLow(), GetGunSieveXHigh()),
+		       Get_rnd_range(GetGunSieveYLow(), GetGunSieveYHigh()),
+		       0. );
+    
+    //now, convert this to the Hall Coordinate system 
+    pos_on_sieve += ApexTargetGeometry::Get_sieve_pos(Is_RHRS()); 
 
-  particleGun->SetParticleMomentum(vertex_momentum); 
+    pos_on_sieve.rotateZ( -CLHEP::pi/2. );
+    pos_on_sieve.rotateY( ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) ); 
+
+    //use this to compute the direction of the momentum
+    momentum = (pos_on_sieve - vertex).unit();
+  }
+
+  //now, scale the momentum to be in the uniform momentum generation range
+  momentum *= Get_rnd_range( momentumLow[0], momentumHigh[0] ); 
+  
+  particleGun->SetParticleMomentum( momentum ); 
   
 
   //now, convert the vertex so that it's relative to the Hall centerline, rather than the
   // apex target centerline. 
-  vertex_position += ApexTargetGeometry::Get_APEX_Target_center(); 
+  vertex += ApexTargetGeometry::Get_APEX_Target_center(); 
   
-  particleGun->SetParticlePosition(vertex_position); 
+  particleGun->SetParticlePosition(vertex); 
   
   //set the particle definition
   if (Is_RHRS()) { 

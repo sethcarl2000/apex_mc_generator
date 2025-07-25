@@ -91,6 +91,8 @@ private:
 
   bool f_isRHRS; 
   
+  bool fSimulate_sieve; 
+  
   
   HRSBeamTarget *fBeamTarg;
   void   GetMomentum(int index);	//the result will be stored at momentum3V, ekin and momentum_direction;
@@ -234,6 +236,9 @@ private:
   G4int evtNo;
   
 public:
+
+  inline void Set_simulateSieve(bool _val) { fSimulate_sieve=_val; }
+  inline bool Simulate_sieve() const { return fSimulate_sieve; }
   
   HRSPrimaryRootHisto* GetRootHisto()
 	{

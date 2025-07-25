@@ -38,6 +38,8 @@ namespace ApexTargetGeometry {
 			   _is_RHRS ? 794.609 : 795.766 ); 
   } 
 
+  inline double Get_sieve_thickness() { return 12.7; }
+  
   struct SieveHole {
 
     int row,col; 

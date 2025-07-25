@@ -73,6 +73,9 @@ private: //commands
   //random
   G4UIcmdWithADoubleAndUnit*  gunZLowCmd;
   G4UIcmdWithADoubleAndUnit*  gunZHighCmd;
+
+  //should we simulate sieve holes?
+  std::unique_ptr<G4UIcmdWithABool> simulateSieveCmd; 
   
   std::unique_ptr<G4UIcmdWithADoubleAndUnit>  sieveXHighCmd;
   std::unique_ptr<G4UIcmdWithADoubleAndUnit>  sieveXLowCmd;
