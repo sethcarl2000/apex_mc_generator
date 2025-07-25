@@ -76,14 +76,16 @@ private:
   std::mt19937 fRd_gen;
   std::uniform_real_distribution<double> fRDist;
 
-  inline double Get_rnd() { return fRDist(fRd_gen); }
+  inline double Get_rnd_range(double min, double max) { 
+	return min + (max-min) * fRDist(fRd_gen); 
+  }
   
 
   std::string fOutfile_path;
   
   std::vector<ApexTargetGeometry::SieveHole> fSieve_holes;
   std::vector<ApexTargetGeometry::SieveHole> fSieve_holes_big;  
-  
+
   //returns a random SieveHole from the list. The probability of any hole being selected is
   //proportional to the area of that hole's target-facing entrance. 
   ApexTargetGeometry::SieveHole Get_rand_sievehole();  

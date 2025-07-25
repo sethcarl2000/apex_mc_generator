@@ -185,7 +185,7 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
 
   //fill the sieve-hole vector
   fSieve_holes = ApexTargetGeometry::Construct_sieve_holes();
-   
+
   //look for all the big holes (there should be 2)
   for (const auto& hole : fSieve_holes) {
 	if (hole.is_big) fSieve_holes_big.push_back(hole); 
@@ -562,18 +562,20 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   //centerline. However, since the rest of this simulation takes place in Hall coordinates
   // (relative to the Hall centerline), we will convert all coords before the particle is
   // generated. 
-  G4ThreeVector vertex_position( GetGunXLow() + (GetGunXHigh()-GetGunXLow())*Get_rnd(),
-				 GetGunYLow() + (GetGunYHigh()-GetGunYLow())*Get_rnd(),
-				 GetGunZLow() + (GetGunZHigh()-GetGunZLow())*Get_rnd() ); 
-  
+  G4ThreeVector vertex_position( 
+	Get_rnd_range(GetGunXLow(), GetGunXHigh()),				
+	Get_rnd_range(GetGunYLow(), GetGunYHigh()),
+	Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
+  ); 
+
   //now, generate a random direction (and momenutm) for the particle. 
 
   //pick a random spot on the face of the sieve, according to the limits specified
   // in run_settings.mac
   G4ThreeVector pos_on_sieve = ApexTargetGeometry::Get_sieve_pos(Is_RHRS());
     
-  pos_on_sieve(0) += GetGunSieveXLow() + (GetGunSieveXHigh()-GetGunSieveXLow())*Get_rnd(); 
-  pos_on_sieve(1) += GetGunSieveYLow() + (GetGunSieveYHigh()-GetGunSieveYLow())*Get_rnd(); 
+  pos_on_sieve(0) += Get_rnd_range(GetGunSieveXLow(), GetGunSieveXHigh()); 
+  pos_on_sieve(1) += Get_rnd_range(GetGunSieveYLow(), GetGunSieveYHigh()); 
   
   //now, convert this vertex to Hall coordinates (still relative to Apex target CL!) 
   pos_on_sieve.rotateZ( -CLHEP::pi/2. );
@@ -585,7 +587,7 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4ThreeVector vertex_momentum = (pos_on_sieve - vertex_position).unit();
 
   //Get random total momentum in given range. 
-  double momentum_mag = momentumLow[0] + (momentumHigh[0]-momentumLow[0])*Get_rnd(); 
+  double momentum_mag = Get_rnd_range(momentumLow[0], momentumHigh[0]); 
   
   vertex_momentum *= momentum_mag;
 
