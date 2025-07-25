@@ -78,9 +78,8 @@ private:
 
   inline double Get_rnd_range(double min, double max) { 
 	return min + (max-min) * fRDist(fRd_gen); 
-  }
+  };
   
-
   std::string fOutfile_path;
   
   std::vector<ApexTargetGeometry::SieveHole> fSieve_holes;

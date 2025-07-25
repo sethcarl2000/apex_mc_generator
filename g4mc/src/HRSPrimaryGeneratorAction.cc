@@ -186,11 +186,18 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
   //fill the sieve-hole vector
   fSieve_holes = ApexTargetGeometry::Construct_sieve_holes();
 
-  //look for all the big holes (there should be 2)
-  for (const auto& hole : fSieve_holes) {
-	if (hole.is_big) fSieve_holes_big.push_back(hole); 
+  //look for all the big holes (there should be 2), and put them in their own vector. 
+  for (int i=0; i<fSieve_holes.size();) {
+	
+	auto hole = fSieve_holes.at(i); 
+	
+	if (hole.is_big) {
+		fSieve_holes_big.push_back(hole); 
+		fSieve_holes.erase( fSieve_holes.begin()+i ); 
+	} else { i++; }
   }
   
+
   gunRLow=0.0*mm;
   gunRHigh=kRasterR;
 
@@ -539,9 +546,20 @@ void HRSPrimaryGeneratorAction::GetMomentum(int i)
 ApexTargetGeometry::SieveHole Get_random_sievehole() 
 {
 	//returns a random SieveHole from the list. The probability of any hole being selected is
-  	//proportional to the area of that hole's target-facing entrance. 
+  	//proportional to the area of that hole's target-facing entrance.
 	
-	return ApexTargetGeometry::SieveHole{}; //noop
+	//This is the ratio of the area of a 'big hole' to all the other holes. we want to weight 
+	//the probability that a track is 'shot' thru thus hole proportionally to each hole's area. 
+	double bighole_area_ratio = 3.71438;
+
+	double index = Get_rnd_range( -2.*bighole_area_ratio, (double)fSieve_holes.size()-1. );
+
+	//see if its one of the 'big holes'
+	if ( index < -bighole_area_ratio ) return fSieve_holes_big.at(0); 
+	if ( index < 0. )				   return fSieve_holes_big.at(1); 
+
+	//if not, just reuturn one of the regular holes (truncating our 'index' parameter)
+	return fSieve_holes.at( (int)index ); 
 }	
 
 //  Note that, even if the particle gun shoots more than one particles at one invokation of
@@ -588,7 +606,7 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   //Get random total momentum in given range. 
   double momentum_mag = Get_rnd_range(momentumLow[0], momentumHigh[0]); 
-  
+
   vertex_momentum *= momentum_mag;
 
   particleGun->SetParticleMomentum(vertex_momentum); 
