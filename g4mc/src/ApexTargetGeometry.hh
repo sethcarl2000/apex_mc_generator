@@ -12,7 +12,7 @@
 
 #include "G4ThreeVector.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-
+#include <vector>
 
 namespace ApexTargetGeometry {
   
@@ -37,7 +37,23 @@ namespace ApexTargetGeometry {
 			   _is_RHRS ?  -3.885 :   6.672,
 			   _is_RHRS ? 794.609 : 795.766 ); 
   } 
+
+  inline double Get_sieve_thickness() { return 12.7; }
   
+  struct SieveHole {
+
+    int row,col; 
+    double x,y,radius_front,radius_back; 
+    bool is_big; 
+    
+    //defining (overloading) this operator lets us use the std::find() function on a vector<SieveHole> 
+    bool operator==(const SieveHole& rhs) { return ((row==rhs.row) && (col==rhs.col)); }
+  }; 
+
+  //constructs a container of SieveHole structs with accurate positions, row/column indices, and sizes. 
+  // all units in mm for sieve hole positions and sizes. 
+  std::vector<SieveHole> Construct_sieve_holes(bool _is_RHRS); 
+
 }; 
 
 #endif 

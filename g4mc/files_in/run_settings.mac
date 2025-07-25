@@ -29,6 +29,8 @@
 
 # track positions (projected onto the sieve plane)
 
+/mydet/simulateSieve false
+
 /mydet/sieveXLow   -85.0 mm
 /mydet/sieveXHigh   85.0 mm
 
@@ -53,4 +55,4 @@
 
 /mydet/use_RHRS true
 
-/mydet/outfile test_scattChamber_Q1.root
+/mydet/outfile no_sieve_out_R.root
