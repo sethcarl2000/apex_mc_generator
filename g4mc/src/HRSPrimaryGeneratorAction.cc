@@ -184,7 +184,7 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
   //gunZ=kZLowTrig-10.0*cm;
 
   //fill the sieve-hole vector
-  fSieve_holes = ApexTargetGeometry::Construct_sieve_holes();
+  fSieve_holes = ApexTargetGeometry::Construct_sieve_holes(Is_RHRS());
 
   //look for all the big holes (there should be 2), and put them in their own vector. 
   for (int i=0; i<fSieve_holes.size();) {
@@ -543,7 +543,7 @@ void HRSPrimaryGeneratorAction::GetMomentum(int i)
   //G4cout << "Ending generator action" << G4endl;
 }
 
-ApexTargetGeometry::SieveHole Get_random_sievehole() 
+ApexTargetGeometry::SieveHole HRSPrimaryGeneratorAction::Get_random_sievehole() 
 {
 	//returns a random SieveHole from the list. The probability of any hole being selected is
   	//proportional to the area of that hole's target-facing entrance.

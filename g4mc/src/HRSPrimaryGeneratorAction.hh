@@ -87,7 +87,7 @@ private:
 
   //returns a random SieveHole from the list. The probability of any hole being selected is
   //proportional to the area of that hole's target-facing entrance. 
-  ApexTargetGeometry::SieveHole Get_rand_sievehole();  
+  ApexTargetGeometry::SieveHole Get_random_sievehole();  
 
   bool f_isRHRS; 
   
