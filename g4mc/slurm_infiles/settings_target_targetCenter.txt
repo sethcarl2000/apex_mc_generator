@@ -1,0 +1,15 @@
+
+
+# This is for generating events origininating from the exact center of the APEX scattering chamber. 
+#   
+
+/mydet/simulateSieve false
+
+/mydet/gunXLow   0.0 mm
+/mydet/gunXHigh  0.0 mm
+
+/mydet/gunYLow   0.0 mm
+/mydet/gunYHigh  0.0 mm
+
+/mydet/gunZLow   0.0 mm
+/mydet/gunZHigh  0.0 mm
