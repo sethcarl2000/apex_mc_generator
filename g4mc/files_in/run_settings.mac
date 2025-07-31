@@ -1,8 +1,8 @@
 /run/verbose 2
 /control/verbose 0
 /tracking/verbose 0
-/stepping/verbose 0
-/mydet/verbose 0
+/stepping/verbose 2
+/mydet/verbose 2
 /tracking/particleOnly e-
 
 /stepping/makeTXToutput false
@@ -17,33 +17,25 @@
 # vertex bounds for uniform generation. These reflect the approximate 'box'
 # from which the raster/ APEX tungsten foil targets may generate vertices. 
 
-/mydet/gunXLow  -3.5 mm
-/mydet/gunXHigh  3.5 mm
+/mydet/gunXLow   0.0 mm
+/mydet/gunXHigh  0.0 mm
 
-/mydet/gunYLow  -3.5 mm
-/mydet/gunYHigh  3.5 mm
+/mydet/gunYLow   0.0 mm
+/mydet/gunYHigh  0.0 mm
 
-/mydet/gunZLow  -240.0 mm
-/mydet/gunZHigh  330.0 mm
+/mydet/gunZLow   0.0 mm
+/mydet/gunZHigh  0.0 mm
 
 
 # track positions (projected onto the sieve plane)
 
 /mydet/simulateSieve false
 
-/mydet/sieveXLow   -85.0 mm
-/mydet/sieveXHigh   85.0 mm
+/mydet/sieveXLow   0.0 mm
+/mydet/sieveXHigh  0.0 mm
 
-# RHRS settings
-# /mydet/sieveYLow   -100.0 mm 
-# /mydet/sieveYHigh    20.0 mm
-
-# LHRS settings
-#/mydet/sieveYLow    -20.0 mm 
-#/mydet/sieveYHigh   100.0 mm
-
-/mydet/sieveYLow   -100.0 mm 
-/mydet/sieveYHigh   100.0 mm
+/mydet/sieveYLow   0.0 mm 
+/mydet/sieveYHigh  0.0 mm
 
 
 /mydet/particle1/momentumLow  1058 MeV
@@ -53,6 +45,6 @@
 /mydet/particle1/particleName e-
 # /mydet/particle2/particleName pi-
 
-/mydet/use_RHRS true
+/mydet/use_RHRS false
 
-/mydet/outfile no_sieve_out_R.root
+/mydet/outfile draw_track_path_L.root

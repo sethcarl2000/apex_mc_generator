@@ -208,6 +208,8 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   {
     out.SetXYZ( in.x(), in.y(), in.z() ); 
   };
+
+
   
     
   //the track we will be measuring / operating on 
@@ -242,7 +244,7 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     if (GetVerbose()>=3) cout << "secondary track killed" << endl;
     return;
   }
-
+  
   
   //reset the track data, if its a new event/track. 
   if (event_id != track_data->event_id ||
@@ -255,7 +257,23 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     track_data->event_id = event_id;
     track_data->track_id = track_id;
   }//*/
-    
+  
+  //Record the tracks position at each step
+  G4ThreeVector position_now = track->GetPosition();
+  
+  //Here, the units are MeV/c
+  G4ThreeVector momentum_now = track->GetMomentum();
+  
+  //These are saved in Hall coordinates (no need to rotate them). 
+  Get_TVector3_from_G4ThreeVector( track_data->position_vtx, position_now/1000. );
+  Get_TVector3_from_G4ThreeVector( track_data->momentum_vtx, momentum_now );
+  
+  track_data->event_id = event_id;
+  track_data->track_id = track_id; 
+  
+  //write this track to our TTree
+  fOutFile->WriteTrack(); 
+  
   
   //different helper function, extracts data from the track that we need.
   //this takes a ptr to a HRSCoordinate object, and fills it with the current track data.
@@ -663,7 +681,7 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     
     //write this track to our TTree
     fOutFile->WriteTrack(); 
-
+    
     
     //output stream (txt) 
     if (Do_TXToutput()) {
