@@ -30,8 +30,15 @@
 #include "TROOT.h"
 #include "TVector3.h"
 
+#include "TH2D.h"
+#include "TFile.h" 
+#include <cstdlib>
+
 #include "G4Electron.hh"
 #include "G4Positron.hh"
+
+#include "HRSEMFieldSetup.hh"
+#include "HRSEMField.hh"
 
 #include "ApexTargetGeometry.hh"
 
@@ -209,8 +216,6 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     out.SetXYZ( in.x(), in.y(), in.z() ); 
   };
 
-
-  
     
   //the track we will be measuring / operating on 
   G4Track *track = theStep->GetTrack(); 
@@ -260,6 +265,87 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   
   //Record the tracks position at each step
   G4ThreeVector position_now = track->GetPosition();
+
+  HRSEMField* hrs_field = HRSEMFieldSetup::GetHRSEMField(); 
+    
+  if (!hrs_field) { cout << "em-field not found.\n"; }
+  else {
+    
+    //auto b_septum = new BField_Septum_New(1104., 1104., SEPTUM_FILE_PATH); 
+    
+    const int h_bins_x = 350;
+    const int h_bins_z = 350;
+    double h_size_x[] = { -1.50, 1.50 };
+    double h_size_z[] = { -1.25, 1.75 }; 
+  
+    auto file = new TFile("field.root", "RECREATE");
+  
+    auto hist = new TH2D("h_bfield", "B-field (y dir);x_{HCS};z_{HCS}",
+			 h_bins_x, h_size_x[0], h_size_x[1],
+			 h_bins_z, h_size_z[0], h_size_z[1]);
+
+    double dx = (h_size_x[1]-h_size_x[0])/((double)h_bins_x-1);
+    double dz = (h_size_z[1]-h_size_z[0])/((double)h_bins_z-1);
+  
+    double x(h_size_x[0] + dx/2.);
+    double z(h_size_z[0] + dz/2.);
+
+    	
+    for (int i=0; i<h_bins_z; i++) {
+      for (int j=0; j<h_bins_x; j++) {
+	
+	double field_val[3] = {0,0,0}; 
+
+	double pos_array[] = {x*1e3, 0., z*1e3, 0};
+	
+	double field_y = 0.; 
+	
+	/*
+	if ((z > -1) && (z < 2.5)) {
+	  
+	  G4double pos_sept[3]={x*1e3, 0., z*1e3};
+	  G4double B_sept[3]={0,0,0};
+	  double Bfield[]={0,0,0}; 
+	  b_septum->GetBField(pos_sept, B_sept);
+	  B_sept[0] *= 2.2/2.140045;
+	  B_sept[1] *= 2.2/2.140045;
+	  B_sept[2] *= 2.2/2.140045;
+	  Bfield[0] += B_sept[0]*(1.104)/2.2;
+	  Bfield[1] += B_sept[1]*(1.104)/2.2;
+	  Bfield[2] += B_sept[2]*(1.104)/2.2;
+	  
+	  field_y = Bfield[1]; 
+	}
+	*/
+	hrs_field->GetFieldValue(pos_array, field_val);
+
+	field_y = field_val[1]; 
+	
+	//printf(" -- field: x,z,mag = (% .2f, % .2f, % .4e)\n", x, z, field_y); 
+	
+	hist->Fill( x, z, 1e3*max<double>(0., field_y) );
+	
+	//delete [] field_val; 
+	
+	x += dx; 
+      }
+      x = h_size_x[0] + dx/2.;
+      z += dz; 
+    }
+
+    cout << "done." << endl; 
+    
+    hist->Write();
+    file->Close();
+    delete file;  
+    
+    track->SetTrackStatus(fStopAndKill);  
+
+    std::abort(); 
+    //delete b_septum; 
+  
+  }
+  
   
   //Here, the units are MeV/c
   G4ThreeVector momentum_now = track->GetMomentum();

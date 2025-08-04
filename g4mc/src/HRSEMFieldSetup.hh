@@ -32,51 +32,56 @@ class G4UniformMagField;
 class HRSEMFieldSetup 
 {
 public:
-	//Static method which returns the singleton pointer of this class.
-	static HRSEMFieldSetup* GetHRSEMFieldSetup();
+  //Static method which returns the singleton pointer of this class.
+  static HRSEMFieldSetup* GetHRSEMFieldSetup();
 
+  static HRSEMField* GetHRSEMField(); 
+  
 private:
-	static HRSEMFieldSetup* fHRSEMFieldSetup;
+  static HRSEMFieldSetup* fHRSEMFieldSetup;
 
+  static HRSEMField* fHRSEMField_static; 
+  
 public: 
-	HRSEMFieldSetup() ;         
-	~HRSEMFieldSetup() ;  
-
-	void SetStepper();
-	void UpdateField();
-
-	inline  void SetStepperType( G4int val) { fStepperType = val ; }
-	inline  G4int GetStepperType() {return fStepperType; }
-
-	inline void SetMinStep(G4double val) { fMinStep = val ; }
-	inline G4double GetMinStep() { return fMinStep ; }
-
-	G4FieldManager* GetFieldManager(){return fFieldManager;}
-
-	//Local field  FZB1
-	void UpdateFieldFZBL1();
-	void SetBField3VFZBL1(G4double fieldGradient);
-	G4FieldManager* GetFieldManagerFZBL1(){return fLocalFieldManagerFZBL1;}
-	void UpdateFieldFZBR1();
-	void SetBField3VFZBR1(G4double fieldGradient);
-	G4FieldManager* GetFieldManagerFZBR1(){return fLocalFieldManagerFZBR1;}
-
-	//Local field  FZB2
-	void UpdateFieldFZBL2();
-	void SetBField3VFZBL2(G4double fieldGradient);
-	G4FieldManager* GetFieldManagerFZBL2(){return fLocalFieldManagerFZBL2;}
-	void UpdateFieldFZBR2();
-	void SetBField3VFZBR2(G4double fieldGradient);
-	G4FieldManager* GetFieldManagerFZBR2(){return fLocalFieldManagerFZBR2;}
-
-	//Local field  FZB3	
-        void UpdateFieldFZBL3();
-	void SetBField3VFZBL3(G4double fbend);
-	G4FieldManager* GetFieldManagerFZBL3(){return fLocalFieldManagerFZBL3;}
-        void UpdateFieldFZBR3();
-	void SetBField3VFZBR3(G4double fbend);
+  HRSEMFieldSetup() ;         
+  ~HRSEMFieldSetup() ;  
+  
+  void SetStepper();
+  void UpdateField();
+  
+  inline  void SetStepperType( G4int val) { fStepperType = val ; }
+  inline  G4int GetMStepperType() {return fStepperType; }
+  
+  inline void SetMinStep(G4double val) { fMinStep = val ; }
+  inline G4double GetMinStep() { return fMinStep ; }
+  
+  G4FieldManager* GetFieldManager(){return fFieldManager;}
+  
+  //Local field  FZB1
+  void UpdateFieldFZBL1();
+  void SetBField3VFZBL1(G4double fieldGradient);
+  G4FieldManager* GetFieldManagerFZBL1(){return fLocalFieldManagerFZBL1;}
+  void UpdateFieldFZBR1();
+  void SetBField3VFZBR1(G4double fieldGradient);
+  G4FieldManager* GetFieldManagerFZBR1(){return fLocalFieldManagerFZBR1;}
+  
+  //Local field  FZB2
+  void UpdateFieldFZBL2();
+  void SetBField3VFZBL2(G4double fieldGradient);
+  G4FieldManager* GetFieldManagerFZBL2(){return fLocalFieldManagerFZBL2;}
+  void UpdateFieldFZBR2();
+  void SetBField3VFZBR2(G4double fieldGradient);
+  G4FieldManager* GetFieldManagerFZBR2(){return fLocalFieldManagerFZBR2;}
+  
+  //Local field  FZB3	
+  void UpdateFieldFZBL3();
+  void SetBField3VFZBL3(G4double fbend);
+  G4FieldManager* GetFieldManagerFZBL3(){return fLocalFieldManagerFZBL3;}
+  void UpdateFieldFZBR3();
+  void SetBField3VFZBR3(G4double fbend);
 	G4FieldManager* GetFieldManagerFZBR3(){return fLocalFieldManagerFZBR3;}
-
+  
+    
 	//Local field  FZB4
 	void UpdateFieldFZBL4();
 	void SetBField3VFZBL4(G4double fieldGradient);
@@ -99,6 +104,7 @@ public:
 
 
 private:
+
   HRSEMFieldSetupMessenger*   messenger;
   HRSEMField*                 fEMfield; 
   G4FieldManager*             fFieldManager;

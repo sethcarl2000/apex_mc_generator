@@ -41,7 +41,7 @@ using namespace std;
 extern UsageManager* gConfig;
 
 //////////////////////////////////////////////////////////////////////////
-HRSEMFieldSetup* HRSEMFieldSetup::fHRSEMFieldSetup=0;
+HRSEMFieldSetup* HRSEMFieldSetup::fHRSEMFieldSetup=nullptr;
 HRSEMFieldSetup* HRSEMFieldSetup::GetHRSEMFieldSetup()
 { 
 	if(!fHRSEMFieldSetup)  
@@ -51,7 +51,10 @@ HRSEMFieldSetup* HRSEMFieldSetup::GetHRSEMFieldSetup()
 	}
 	return fHRSEMFieldSetup; 
 }
-
+HRSEMField* HRSEMFieldSetup::fHRSEMField_static=nullptr; 
+HRSEMField* HRSEMFieldSetup::GetHRSEMField() {
+  return fHRSEMField_static; 
+}
 //////////////////////////////////////////////////////////////////////////
 //
 HRSEMFieldSetup::HRSEMFieldSetup()
@@ -101,9 +104,11 @@ HRSEMFieldSetup::HRSEMFieldSetup()
   //QuadFringe* fringe = new QuadFringe();
   //G4cout << "Quad fringe!" << G4endl;
   fHRSEMFieldSetup=this;
-
+  
   //global EM field
   fEMfield = new HRSEMField();
+  fHRSEMField_static = fEMfield; 
+  
   messenger = new HRSEMFieldSetupMessenger(this) ;
   fEquation = new G4EqMagElectricField(fEMfield);
   fMinStep  = 0.001*mm ; // minimal step of 1 miron, default is 0.01 mm, Nickie finely
