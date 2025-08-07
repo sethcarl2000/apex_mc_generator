@@ -289,6 +289,18 @@ int main(int argc, char *argv[])
     
     //Deifine final output variables. This way, no one needs our class dictionary
     // to intepret the HRSTrack_t or HRSCoord_t structs
+    .Define("x_sv",    [](const TVector3 &v){return v.x();},    {"position_sieve"})
+    .Define("y_sv",    [](const TVector3 &v){return v.y();},    {"position_sieve"})
+    .Define("dxdz_sv", [](const TVector3 &v){return v.x()/v.z();}, {"momentum_sieve"})
+    .Define("dydz_sv", [](const TVector3 &v){return v.y()/v.z();}, {"momentum_sieve"})
+    .Define("dpp_sv",  [hrs_momentum](const TVector3 &v) {return ( v.Mag() - hrs_momentum ) / hrs_momentum;}, {"momentum_sieve"})
+
+    .Define("x_q1",    [](const TVector3 &v){return v.x();},    {"position_Q1"})
+    .Define("y_q1",    [](const TVector3 &v){return v.y();},    {"position_Q1"})
+    .Define("dxdz_q1", [](const TVector3 &v){return v.x()/v.z();}, {"momentum_Q1"})
+    .Define("dydz_q1", [](const TVector3 &v){return v.y()/v.z();}, {"momentum_Q1"})
+    .Define("dpp_q1",  [hrs_momentum](const TVector3 &v) {return ( v.Mag() - hrs_momentum ) / hrs_momentum;}, {"momentum_Q1"})
+    
     .Define("x_fp",    [](const HRSTrack_t &track){return track.fp.x;}, {"track"})
     .Define("y_fp",    [](const HRSTrack_t &track){return track.fp.y;}, {"track"})
     .Define("dxdz_fp", [](const HRSTrack_t &track){return track.fp.dxdz;}, {"track"})
@@ -309,10 +321,26 @@ int main(int argc, char *argv[])
 
   //record all data to the final output tree
   df_output_postcut.Snapshot(fp_tree_name.data(), path_outfile.data(),
-			     {"position_vtx",   "momentum_vtx",
-			      "position_sieve", "momentum_sieve",
-			      "position_Q1",    "momentum_Q1",
-			      "x_fp","y_fp","dxdz_fp","dydz_fp",
+			     {"position_vtx",
+			      "momentum_vtx",
+
+			      "x_sv",
+			      "y_sv",
+			      "dxdz_sv",
+			      "dydz_sv",
+			      "dpp_sv",
+
+			      "x_q1",
+			      "y_q1",
+			      "dxdz_q1",
+			      "dydz_q1",
+			      "dpp_q1",
+
+			      "x_fp",
+			      "y_fp",
+			      "dxdz_fp",
+			      "dydz_fp",
+
 			      "is_at_fp", "path_length"});
 
   
