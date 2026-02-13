@@ -54,6 +54,16 @@ namespace ApexTargetGeometry {
   // all units in mm for sieve hole positions and sizes. 
   std::vector<SieveHole> Construct_sieve_holes(bool _is_RHRS); 
 
+  /// @param v vector in HCS representing displacement from HCS origin 
+  /// @param is_RHRS right(true) or left(false) arm
+  /// @return vector in SCS representing displacement from SCS origin
+  G4ThreeVector HCS_to_SCS(const G4ThreeVector& v, bool is_RHRS); 
+
+  /// @param v vector in HCS representing displacement from SCS origin 
+  /// @param is_RHRS right(true) or left(false) arm
+  /// @return vector in SCS representing displacement from HCS origin
+  G4ThreeVector SCS_to_HCS(const G4ThreeVector& v, bool is_RHRS); 
+
 }; 
 
 #endif 

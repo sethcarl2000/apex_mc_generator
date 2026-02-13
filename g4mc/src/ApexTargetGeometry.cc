@@ -3,7 +3,7 @@
 
 using namespace std; 
 
-//________________________________________________________________________________________________
+//_________________________________________________________________________________________
 vector<ApexTargetGeometry::SieveHole> ApexTargetGeometry::Construct_sieve_holes(bool _is_RHRS) 
 {
     vector<SieveHole> sieve_holes; 
@@ -84,3 +84,26 @@ vector<ApexTargetGeometry::SieveHole> ApexTargetGeometry::Construct_sieve_holes(
     
     return sieve_holes; 
 }
+//_________________________________________________________________________________________
+G4ThreeVector ApexTargetGeometry::HCS_to_SCS(const G4ThreeVector& v, bool is_RHRS)
+{
+  G4ThreeVector v_SCS{v};
+  v_SCS.rotateY( -ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
+  v_SCS.rotateZ( CLHEP::pi/2. );
+  return v_SCS;
+}
+//_________________________________________________________________________________________
+G4ThreeVector ApexTargetGeometry::SCS_to_HCS(const G4ThreeVector& v, bool is_RHRS)
+{
+  G4ThreeVector v_HCS{v};
+  v_HCS.rotateZ( -CLHEP::pi/2. );
+  v_HCS.rotateY( ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
+  return v_HCS;
+}
+//_________________________________________________________________________________________
+//_________________________________________________________________________________________
+//_________________________________________________________________________________________
+//_________________________________________________________________________________________
+//_________________________________________________________________________________________
+//_________________________________________________________________________________________
+//_________________________________________________________________________________________
