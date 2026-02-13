@@ -32,21 +32,25 @@ class HRSParticleGun:public G4ParticleGun
      // quantities.
 
      virtual ~HRSParticleGun();
-
-  public: // with description
-     virtual void GeneratePrimaryVertex(G4Event* evt);
-     // Creates a primary vertex at the given point and put primary particles to it.
-     // Followings are set methods for the particle properties.
-     //   SetParticleDefinition should be called first.  
-     //   By using SetParticleMomentum(), both particle_momentum_direction and
-     //   particle_energy(Kinetic Energy) are set.
-     //   
   
-     void SetParticleEnergy(G4double aKineticEnergy);
-     void SetParticleMomentum(G4double aMomentum);
-     void SetParticleMomentum(G4ParticleMomentum aMomentum);
+public: // with description
+  virtual void GeneratePrimaryVertex(G4Event* evt);
+  // Creates a primary vertex at the given point and put primary particles to it.
+  // Followings are set methods for the particle properties.
+  //   SetParticleDefinition should be called first.  
+  //   By using SetParticleMomentum(), both particle_momentum_direction and
+  //   particle_energy(Kinetic Energy) are set.
+  //   
+  
+  void SetParticleEnergy(G4double aKineticEnergy);
+  void SetParticleMomentum(G4double aMomentum);
+  void SetParticleMomentum(G4ParticleMomentum aMomentum);
 
+  void SetParticleInvariantMass(G4double m) { fInvariant_mass=m; } 
 
+private:
+  G4double fInvariant_mass; 
+  
 };
 
 #endif

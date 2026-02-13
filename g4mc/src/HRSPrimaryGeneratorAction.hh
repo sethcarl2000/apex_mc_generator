@@ -19,6 +19,7 @@
 #include "G4String.hh"
 
 #include "ApexTargetGeometry.hh"
+#include "AprimeGenerator.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,6 +80,8 @@ private:
 
   std::normal_distribution<double> fNormalDist{0., 1.};
 
+  AprimeGenerator Aprime_gen; 
+  
   inline double GetNormal() { return fNormalDist(fRd_gen); }
   
   inline double Get_rnd_range(double min, double max) { 

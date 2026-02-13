@@ -26,6 +26,9 @@ public:
   
   int event_id {-1};
   int track_id {-1};
+
+  //target name.
+  char target_name[2]; 
   
   //position & momentum at sieve plane
   //HRSCoordinate coord_sieve_HCS {}; 
@@ -42,6 +45,10 @@ public:
   TVector3 position_vtx;
   TVector3 momentum_vtx;
 
+  //invariant mass of event that generated this lepton
+  double invariant_mass;
+  
+  
   //These are in TARGET COORDINATES, projected to the sieve plane. 
   TVector3 position_sieve;
   TVector3 momentum_sieve; 

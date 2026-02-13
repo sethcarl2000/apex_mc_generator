@@ -8,24 +8,25 @@
 
 class AprimeGenerator {
 private: 
-    
-    double fBeam_energy = 2200;                 /// beam energy, MeV
-    double fMass_Aprime;                        /// Rest mass of A', MeV/c^2
-    double fE_electron;                         /// electron/positrion energy in A' rest frame, MeV
-    
-    /// ---- geometrical / momentum acceptance of both detectors
-    double fRange_L_x_sv[2] = {-85.e-3, +85.e-3}; 
-    double fRange_L_y_sv[2] = {-70.e-3, +80.e-3}; 
 
-    double fRange_R_x_sv[2] = {-85.e-3, +85.e-3}; 
-    double fRange_R_y_sv[2] = {-80.e-3, +70.e-3}; 
-
-    double fRange_dp  = +0.06; 
-
-    static constexpr double pi = 3.14159265359; 
+  int fVerbose_level=0; 
+  
+  double fBeam_energy = 2200;                 /// beam energy, MeV
+  double fMass_Aprime;                        /// Rest mass of A', MeV/c^2
+  double fE_electron;                         /// electron/positrion energy in A' rest frame, MeV
+  
+  /// ---- geometrical / momentum acceptance of both detectors
+  double fRange_L_x_sv[2] = {-85., +85.}; 
+  double fRange_L_y_sv[2] = {-70., +80.}; 
+  
+  double fRange_R_x_sv[2] = {-85., +85.}; 
+  double fRange_R_y_sv[2] = {-80., +70.}; 
+  
+  double fRange_dp  = +0.06; 
+  
   double fSpectrometer_p0 = 1108;         /// Central momentum of spectrometer, MeV/c 
   
-  
+  long long int fN_updates=0; 
     
     //uniform random number generator
     std::uniform_real_distribution<double> fRandGen_uniform; 
@@ -62,7 +63,7 @@ private:
 
     /// @param  i_foil the index of production foil to use
     /// @return z-position of production foil
-    double Get_foil_z(int i_foil) { return -238.8e-3  + ((double)i_foil)*55e-3; }
+    double Get_foil_z(int i_foil) { return -238. + ((double)i_foil)*55.; }
 
     /// perform random rotation of given G4ThreeVector, with given RMS rotation magnitude. preserve magnitude of vector.  
     G4ThreeVector Random_rotation(const G4ThreeVector& v, double RMS_rotation_mag); 
@@ -77,33 +78,47 @@ private:
   /// @param x_sv projection of track onto sieve (mm)
   /// @param y_sv projection of track onto sieve (mm)
   void Project_onto_sieve(bool is_RHRS, const G4ThreeVector& R, const G4ThreeVector& dR, double& x_sv, double& y_sv);  
+
+  /// reset state to a sensible point
+  void ResetState(); 
   
 public: 
+  
+  AprimeGenerator(double _m_A=140., double _beam_E=2200., double _spec_p0=1108.); 
 
-    AprimeGenerator(double _m_A, double _beam_E=2200., double _spec_p0=1108.); 
+  ~AprimeGenerator() {};
 
-    ~AprimeGenerator() {};
-
-    void SetRange_x_sv(bool is_RHRS, double min, double max);
-    void SetRange_y_sv(bool is_RHRS, double min, double max);
+  void SetRange_x_sv(bool is_RHRS, double min, double max);
+  void SetRange_y_sv(bool is_RHRS, double min, double max);
     
-    void SetRange_p0(double _p0) { fRange_dp=_p0; }
+  void SetRange_p0(double _dp) { fRange_dp=_dp; }
 
-    /// perform metropolis update 
-    void Update(); 
+  void Set_p0(double _p0) { fSpectrometer_p0=_p0; }  
+  void Set_beamEnergy(double _E) { fBeam_energy=_E; }
 
-    /// @return true if current state is inside acceptance
-    inline bool Inside_Acceptance() const { return fState.in_acceptance; }
+  /// perform metropolis update 
+  void Update(); 
 
-    /// @return event vertex, in HCS (m)
-    inline G4ThreeVector GetVertex() const { return fState.vertex; }; 
+  void Set_AprimeMass(double mA) { fMass_Aprime=mA; ResetState(); }
+  
+  /// @return true if current state is inside acceptance
+  inline bool InsideAcceptance() const { return fState.in_acceptance; }
 
-    /// @return 3-momentum of electron, in HCS (MeV/c)
-    inline G4ThreeVector GetPe() const { return fState.Pe_boosted; }; 
+  /// @return event vertex, in HCS (m)
+  inline G4ThreeVector GetVertex() const { return fState.vertex; }; 
 
-    /// @return 3-momentum of positron, in HCS (MeV/c)
-    inline G4ThreeVector GetPp() const { return fState.Pp_boosted; }; 
+  /// @return 3-momentum of electron, in HCS (MeV/c)
+  inline G4ThreeVector GetPe() const { return fState.Pe_boosted; }; 
+
+  /// @return 3-momentum of positron, in HCS (MeV/c)
+  inline G4ThreeVector GetPp() const { return fState.Pp_boosted; }; 
+
+  inline long long int Get_NUpdates() const { return fN_updates; }
+  
+  void SetVerbosity(int _v) { fVerbose_level=_v; }
+  
 };
+
 
 
 #endif

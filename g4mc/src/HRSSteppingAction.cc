@@ -216,8 +216,6 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     
   //this struct keeps information about the track that we will need
   TrackData_t *track_data = fOutFile->Get_TData(); 
-
-  
   
   
   //this helper function makes sure that all values are reset

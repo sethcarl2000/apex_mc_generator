@@ -39,7 +39,8 @@ TFileHandler::TFileHandler(const char *const _path, bool is_RHRS, const char *co
   
   fTree->Branch("position_sieve", &fTrackData.position_sieve);
   fTree->Branch("momentum_sieve", &fTrackData.momentum_sieve);
-  
+
+  fTree->Branch("invariant_mass", &fTrackData.invariant_mass); 
   
   fParam_isRHRS = new TParameter<bool>("is_RHRS", is_RHRS);
   fParam_isRHRS->Write(); 

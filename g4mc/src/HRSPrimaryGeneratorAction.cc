@@ -203,7 +203,8 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
 		fSieve_holes.erase( fSieve_holes.begin()+i ); 
 	} else { i++; }
   }
-  
+
+  Aprime_gen = AprimeGenerator(Get_mA(), 2200., 1108.); 
 
   gunRLow=0.0*mm;
   gunRHigh=kRasterR;
@@ -616,220 +617,107 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // (relative to the Hall centerline), we will convert all coords before the particle is
   // generated.
   
-  auto HCS_to_SCS = [this](const G4ThreeVector& v, bool is_RHRS){
-    G4ThreeVector v_SCS{v}; 
-    v_SCS.rotateY( -ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
-    v_SCS.rotateZ( CLHEP::pi/2. );
-    return v_SCS; 
-  }; 
-  auto SCS_to_HCS = [this](const G4ThreeVector& v, bool is_RHRS){
-    G4ThreeVector v_HCS{v}; 
-    v_HCS.rotateZ( -CLHEP::pi/2. );
-    v_HCS.rotateY( ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
-    return v_HCS; 
-  }; 
-  
-  
+  // auto HCS_to_SCS = [this](const G4ThreeVector& v, bool is_RHRS){
+  //   G4ThreeVector v_SCS{v}; 
+  //   v_SCS.rotateY( -ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
+  //   v_SCS.rotateZ( CLHEP::pi/2. );
+  //   return v_SCS;
+    
+  // }; 
+  // auto SCS_to_HCS = [this](const G4ThreeVector& v, bool is_RHRS){
+  //   G4ThreeVector v_HCS{v}; 
+  //   v_HCS.rotateZ( -CLHEP::pi/2. );
+  //   v_HCS.rotateY( ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
+  //   return v_HCS; 
+  // };
+  using ApexTargetGeometry::HCS_to_SCS; 
   
   G4ThreeVector vertex;
   
-  G4ThreeVector momentum;
+  G4ThreeVector momentum_electron, momentum_positron;
 
   //maximum number of attempts to generate A'  
   
-  if (IsBitSet(kGenerate_Aprime)) {
+  //this is awkward, but I need to make sure that the PrimaryGenerator's
+  // state is set (outside its constructor) before we feed the Aprime generator the data
+  // it needs. 
+  if (Aprime_gen.Get_NUpdates() < 1) {
     
-    const double beam_E2 = Get_BeamEnergy()*Get_BeamEnergy();
-    const double m_A2    = Get_mA()*Get_mA();
-    const double m_e2    = (0.501e-3)*(0.501e-3); 
-    //given the ratio x := Ea / E0 (A' energy to intial beam energy, in Lab),
-    // and 'theta_A' (angle between beam and A' in Lab), 
-    // this returns the rel. differential cross section. 
-    auto A_production_amplitude = [this, beam_E2, m_A2, m_e2](double x, double thA) 
-    {
-      if (x < 0. || x > 1.) return 0.;
-      
-      double th_A2 = thA*thA; 
-      
-      double U = beam_E2 * x * th_A2   +   m_A2*(1. - x)/x   +   m_e2*x; 
-      
-      return beam_E2*x*(  1. - x + (x*x/2.) - x*x*(1-x)*m_A2*beam_E2*th_A2/(U*U)  )/(U*U); 
-    }; 
+    Aprime_gen.Set_AprimeMass(Get_mA()); 
+    Aprime_gen.SetRange_x_sv(true,  R_sieveXLow, R_sieveXHigh);
+    Aprime_gen.SetRange_x_sv(false, L_sieveXLow, L_sieveXHigh);
+    Aprime_gen.SetRange_y_sv(true,  R_sieveYLow, R_sieveYHigh);
+    Aprime_gen.SetRange_y_sv(false, L_sieveYLow, L_sieveYHigh);
+    Aprime_gen.Set_beamEnergy(BeamEnergy); 
     
-    constexpr double x_sweep_range = 2.0e-5;
-    constexpr double theta_sweep_range = 0.300e-3; 
+    //compute fractional momentum acceptance
+    double E_min = Get_ElectronEnergyMin();
+    double E_max = Get_ElectronEnergyMax();
+    double momentum_acceptance = (E_max-E_min)/(E_max+E_min);
+      
+    Aprime_gen.SetRange_p0(momentum_acceptance); 
+
+#ifdef DEBUG
+    cout << "in " << __func__ << ": reset A' generator state.\n";
+    cout << "sieve acceptance R : " << R_sieveXLow << " " << R_sieveXHigh << endl;
+    cout << "sieve acceptance L : " << L_sieveXLow << " " << L_sieveXHigh << endl;
+#endif 
+    
+  }
+  
+  const long int max_first_try = 1e6; 
+  long int i_try=0;  
+
+  //perform metropolis updates until we find a place inside the acceptance
+  while (!Aprime_gen.InsideAcceptance() && ++i_try < max_first_try) {
+    Aprime_gen.Update();
+  }
 
   
-    //let's find a new, nearby A' kinematic coordinate, and see if it's randomly
-    // rejected / accepted according to the metropolis-hastings algorithm
-    constexpr long int max_Aprime_tries = 1e6; 
+  Aprime_gen.Update();
 
     
-    long int i_try=0; 
-    while (i_try++ < max_Aprime_tries) {
-      
-      //should we use the 10 production foils? 
-      if (IsBitSet(kProduction_foils)) {
-	
-	vertex = G4ThreeVector(
-			       Get_rnd_range(GetGunXLow(), GetGunXHigh()),
-			       Get_rnd_range(GetGunYLow(), GetGunYHigh()), 
-			       Get_random_production_foil_z()
-			       ); 
+  momentum_electron = Aprime_gen.GetPe();
+  momentum_positron = Aprime_gen.GetPp();
+  
+  vertex = Aprime_gen.GetVertex(); 
 
-      } else { //if not, pick the z-vertex position randomly over the given range
-	
-	vertex = G4ThreeVector( 
-			       Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
-			       Get_rnd_range(GetGunYLow(), GetGunYHigh()),
-			       Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
-				);
-      }
-      
-      
-      double x_new     = Ap_x     + Get_rnd_range(-x_sweep_range,     +x_sweep_range);
-      double theta_new = Ap_theta + Get_rnd_range(-theta_sweep_range, +theta_sweep_range); 
-
-      double amplitude_new = A_production_amplitude(x_new, theta_new);
-
-      //if these conditions pass, then accept the new 'update' 
-      if (amplitude_new > Ap_amplitude || Get_rnd_range(0., 1.) < amplitude_new/Ap_amplitude) {
-	Ap_amplitude = amplitude_new;
-	Ap_x         = x_new;
-	Ap_theta     = theta_new; 
-      }
-
-      //now, try to generate this A'.
-
-      //azimuthal angle
-      double phi = Get_rnd_range( 0., 2.*CLHEP::pi );
-
-      //energy of A' in lab
-      double E_A = Ap_x * Get_BeamEnergy();
-
-      //gamma & beta factor of A' in lab
-      double gamma_A = E_A / Get_mA();
-      double beta_A  = std::sqrt( 1. - 1./(gamma_A*gamma_A) );
-
-      //energy of electron / positron in A' rest frame 
-      double E_electron = Get_mA()/2.;
-      double p_electron_mag = sqrt( (E_electron*E_electron) - m_e2 ); 
-
-      //electron and positron momentum
-      G4ThreeVector Pe, Pp; 
-      
-      //generate a new vector with a random direction
-      Pe = G4ThreeVector( GetNormal(), GetNormal(), GetNormal() ); 
+  if (fVerbose >= 3) {
     
-      
-      //give the momentum the proper magnitude 
-      Pe = Pe.unit() * p_electron_mag; 
-
-      //now, let's create the positron momentum (equal & opposite) 
-      Pp = -1.*Pe; 
-      
-      //now, let's boost this back to the lab frame (along the z [2] direction)
-      Pe[2] = gamma_A * ( Pe[2] + (beta_A*E_electron) );
-      Pp[2] = gamma_A * ( Pp[2] + (beta_A*E_electron) ); 
-      
-      //now, let's set the z-direction in the direction of the A'
-      
-      Pe.rotateX( -Ap_theta );
-      Pe.rotateZ( phi ); 
-
-      Pp.rotateX( -Ap_theta );
-      Pp.rotateZ( phi ); 
-      
-      //if the vectors are in the wrong direction, flip them. 
-      //this is cause we want the positrons to be headed to the RHRS (negative x)
-      // and the electrons to the LHRS (positive x)
-      if (Pp.x() > Pe.x()) {
-	auto placeholder = Pp;
-	Pp = Pe;
-	Pe = placeholder;
-      }
-      
-      auto lepton_in_acceptance = [this,&HCS_to_SCS](G4ThreeVector P, G4ThreeVector R, bool is_RHRS)
-      {
-	double x_sv_low  = is_RHRS ? R_sieveXLow  : L_sieveXLow;
-	double x_sv_high = is_RHRS ? R_sieveXHigh : L_sieveXHigh;
-	double y_sv_low  = is_RHRS ? R_sieveYLow  : L_sieveYLow;
-	double y_sv_high = is_RHRS ? R_sieveYHigh : L_sieveYHigh;
-	
-	double P_mag = P.mag();
-
-	if (P_mag > Get_ElectronEnergyMax() || P_mag < Get_ElectronEnergyMin())
-	  return false; 
-
-	//now, let's project this event onto the sieve-face
-	G4ThreeVector P_SCS = HCS_to_SCS(P, is_RHRS);      
-	G4ThreeVector r_SCS = HCS_to_SCS(P, is_RHRS); 
-	
-	r_SCS += -1.*ApexTargetGeometry::Get_sieve_pos(is_RHRS);
-	
-	double x_sv = r_SCS.x() + (P_SCS.x()/P_SCS.z())*(0. - r_SCS.z()); 
-	if ( x_sv < x_sv_low || x_sv > x_sv_high ) return false; 
-	
-	double y_sv = r_SCS.y() + (P_SCS.y()/P_SCS.z())*(0. - r_SCS.z()); 
-	if ( y_sv < y_sv_low || y_sv > y_sv_high ) return false;
-
-	return true; 
-      }; 
-      
-      /*let's do some basic cuts
-      //if (Pe_mag > Get_ElectronEnergyMax() || Pe_mag < Get_ElectronEnergyMin()) continue; 
-      //if (Pp_mag > Get_ElectronEnergyMax() || Pp_mag < Get_ElectronEnergyMin()) continue; 
-      //break;
-      
-      //now, let's project this event onto the sieve-face
-      G4ThreeVector Pe_SCS = HCS_to_SCS(Pe);      
-      G4ThreeVector Re_SCS = HCS_to_SCS(Pp); 
-      
-
-      r_SCS += -1.*ApexTargetGeometry::Get_sieve_pos(Is_RHRS());
-
-      double x_sv = r_SCS.x() + (Pe_SCS.x()/Pe_SCS.z())*(0. - r_SCS.z()); 
-      if ( x_sv < GetGunSieveXLow() || x_sv > GetGunSieveXHigh() ) continue; 
-
-      double y_sv = r_SCS.y() + (Pe_SCS.y()/Pe_SCS.z())*(0. - r_SCS.z()); 
-      if ( y_sv < GetGunSieveYLow() || y_sv > GetGunSieveYHigh() ) continue; */
-
-      //check if both leptons are in acceptance
-      if (! lepton_in_acceptance(Pe, vertex, false)) continue;
-      if (! lepton_in_acceptance(Pp, vertex, true))  continue; 
-      
-      //if we got here, we can keep this event.
-      momentum = Is_RHRS() ? Pp : Pe; 
-
-      fOutFile->Get_TData()->invariant_mass = Get_mA(); 
-      break;
-    }//while (i_try++ < max_Aprime_tries)
+    printf(
+	   " ~~~~~~~~~~~~~~~~~~~~~ event: ~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
+	   "  vertex : (%+3.1f, %+3.1f, %+3.1f) mm\n"
+	   "  P[e-] : (%+3.1f, %+3.1f, %+3.1f) MeV/c\n"
+	   "  p[e+] : (%+3.1f, %+3.1f, %+3.1f) MeV/c\n",
+	   vertex.x(), vertex.y(), vertex.z(),
+	   momentum_electron.x(), momentum_electron.y(), momentum_electron.z(),
+	   momentum_positron.x(), momentum_positron.y(), momentum_positron.z()
+	   ); 
+  }
     
+  /*
+} else {// if (IsBitSet(kGenerate_Aprime)) 
     
-    // if (Get_verbose() >= 3) {
-    //cout << "succeeded with A' gen after " << i_try << " tries" << endl;   
-    //}//cout << "done. taken " << i_try << "tries." << endl; 
-    
-  } else {// if (IsBitSet(kGenerate_Aprime)) 
-
     //should we use the 10 production foils? 
-      if (IsBitSet(kProduction_foils)) {
-	
-	vertex = G4ThreeVector(
-			       Get_rnd_range(GetGunXLow(), GetGunXHigh()),
-			       Get_rnd_range(GetGunYLow(), GetGunYHigh()), 
-			       Get_random_production_foil_z()
-			       ); 
-
-      } else { //if not, pick the z-vertex position randomly over the given range
-	
-	vertex = G4ThreeVector( 
-			       Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
-			       Get_rnd_range(GetGunYLow(), GetGunYHigh()),
-			       Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
-				);
-      }
+    if (IsBitSet(kProduction_foils)) {
       
+      vertex = G4ThreeVector(
+			     Get_rnd_range(GetGunXLow(), GetGunXHigh()),
+			     Get_rnd_range(GetGunYLow(), GetGunYHigh()), 
+			     Get_random_production_foil_z()
+			     ); 
+      
+    } else { //if not, pick the z-vertex position randomly over the given range
+      
+      vertex = G4ThreeVector( 
+			     Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
+			     Get_rnd_range(GetGunYLow(), GetGunYHigh()),
+			     Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
+			      );
+    }
+    
+    
+    
     
     if (Simulate_sieve()) { //if this is true, then we will simulate the sieve-holes
     
@@ -905,11 +793,8 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     momentum *= Get_rnd_range( momentumLow[0], momentumHigh[0] ); 
   
   }//if (IsBitSet(kGenerate_Aprime))
-
-  //now, scale the momentum to be in the uniform momentum generation range
+  */ 
   
-  particleGun->SetParticleMomentum( momentum ); 
-
   //now, convert the vertex so that it's relative to the Hall centerline, rather than the
   // apex target centerline. 
   vertex += ApexTargetGeometry::Get_APEX_Target_center(); 
@@ -918,8 +803,12 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   
   //set the particle definition
   if (Is_RHRS()) { 
+    particleGun->SetParticleMomentum( momentum_positron ); 
+  
     particleGun->SetParticleDefinition(G4Positron::Positron());
   } else         {
+    particleGun->SetParticleMomentum( momentum_electron ); 
+  
     particleGun->SetParticleDefinition(G4Electron::Electron());
   }
   

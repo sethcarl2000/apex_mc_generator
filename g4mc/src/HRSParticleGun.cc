@@ -99,7 +99,8 @@ void HRSParticleGun::GeneratePrimaryVertex(G4Event* evt)
 		particle->SetMass( mass );
 		particle->SetCharge( particle_charge );
 		particle->SetPolarization(particle_polarization.x(),
-			particle_polarization.y(),particle_polarization.z());
+					  particle_polarization.y(),
+					  particle_polarization.z());
 		vertex->SetPrimary( particle );
 	}
 

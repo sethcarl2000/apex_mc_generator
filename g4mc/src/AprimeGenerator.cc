@@ -17,7 +17,7 @@ namespace {
   constexpr double kPhi_sweep_range   = CLHEP::pi/18.;    //maximum change in A' phi
   constexpr double kFoil_jump_prob    = 0.20;      //probablility to 'jump' from the current foil\
  to another foil
-  constexpr double kRotation_RMS      = 0.020/1.73205;  /// 0.020 is the average magnitude of the random rotation we perform on the electron's A'-rest-frame orientation, in radians (in A' rest frame).
+  constexpr double kRotation_RMS      = 0.040/1.73205;  /// 0.020 is the average magnitude of the random rotation we perform on the electron's A'-rest-frame orientation, in radians (in A' rest frame).
 
 }
 
@@ -33,16 +33,30 @@ AprimeGenerator::AprimeGenerator(double _mass_A, double _beam_E, double _spec_p0
 
     fTwister = std::mt19937(rd()); 
 
-    fState = State_t{
-        .vertex     = G4ThreeVector(0., 0., Get_foil_z(4)), 
-        .x          = 1.,
-        .theta      = 0.,
-        .phi        = 0., 
-        .P_electron = G4ThreeVector(+sqrt(fE_electron*fE_electron - kMass_e*kMass_e), 0., 0.),
-        .foil_num   = 4, 
-        .amplitude  = A_production_amplitude(1., 0.), /// a negative amplitude indicates that this state is invalid  
-        .in_acceptance=false
-    };
+#ifdef DEBUG
+    printf("Aprime constructor ~~~~~~~ \n"
+	   " m_A      %.f MeV/c^2\n"
+	   " E_e+/-   %.f MeV\n",
+	   fMass_Aprime, fE_electron);
+#endif
+    
+    ResetState(); 
+}
+//__________________________________________________________________________________________
+void AprimeGenerator::ResetState()
+{
+  fE_electron = fMass_Aprime/2.;
+  
+  fState = State_t{
+    .vertex     = G4ThreeVector(0., 0., Get_foil_z(4)), 
+    .x          = 1.,
+    .theta      = 0.,
+    .phi        = 0., 
+    .P_electron = G4ThreeVector(sqrt(fE_electron*fE_electron - kMass_e*kMass_e), 0., 0.),
+    .foil_num   = 4, 
+    .amplitude  = A_production_amplitude(1., 0.), /// a negative amplitude indicates that this state is invalid  
+    .in_acceptance=false
+  };
 }
 //__________________________________________________________________________________________
 G4ThreeVector AprimeGenerator::Random_rotation(const G4ThreeVector& v, double RMS_rotation_mag) 
@@ -96,6 +110,8 @@ void AprimeGenerator::SetRange_y_sv(bool is_RHRS, double min, double max)
 //__________________________________________________________________________________________
 void AprimeGenerator::Update()
 {
+  fN_updates++; 
+  
     auto new_point = fState; 
 
     new_point.x     += (1. - 2.*Rand())*kX_sweep_range; 
@@ -152,8 +168,8 @@ void AprimeGenerator::Update()
     
     //randomly generate the vertex, in line with the production target geometry        
     new_point.vertex = G4ThreeVector( 
-        2.e-3*( 1. - 2.*Rand() ), 
-        2.e-3*( 1. - 2.*Rand() ), 
+        2.*( 1. - 2.*Rand() ), 
+        2.*( 1. - 2.*Rand() ), 
         Get_foil_z(new_point.foil_num)
     );
     
@@ -167,6 +183,61 @@ void AprimeGenerator::Update()
     if (fabs(new_point.Pe_boosted.mag() - fSpectrometer_p0)/fSpectrometer_p0 > fRange_dp) { new_point.in_acceptance=false; } 
     if (fabs(new_point.Pp_boosted.mag() - fSpectrometer_p0)/fSpectrometer_p0 > fRange_dp) { new_point.in_acceptance=false; } 
 
+#ifdef DEBUG
+    
+    double L_x_sv, L_y_sv, R_x_sv, R_y_sv; 
+
+    Project_onto_sieve(true,  new_point.vertex, new_point.Pp_boosted, R_x_sv,R_y_sv);  
+    Project_onto_sieve(false, new_point.vertex, new_point.Pe_boosted, L_x_sv,L_y_sv);  
+        
+    printf(
+        " ~~~~~~~~~~~~~~~~ phase-space: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+	"   E_beam      %-.1f MeV\n"
+	"   spec. p0    %-.1f MeV/c\n"
+        "   x_hcs       %-3.4f mm\n"
+        "   y_hcs       %-3.4f mm\n"
+        "   foil #      %i\n"
+        "   P[electron] - A' rest frame:  (%-.1f, %-.1f, %-.1f) MeV/c\n"
+	"   A':\n"
+	"       EA      = %-.1f\n"
+	"       gamma   = %-.1f\n"
+        "       EA/E0   = 1.0 - %.2e\n"
+	"       theta_A = %-.3f mrad\n"
+        "       phi_A   = %-3.1f deg\n"
+        "   Electron:\n"
+        "       x_sv = %-.3f mm    range [%-.3f, %-.3f]\n"
+        "       y_sv = %-.3f mm    range [%-.3f, %-.3f]\n"
+        "       P - lab: (%-.1f, %-.1f, %-.1f) MeV/c; E = %-.1f MeV.  range: %-.1f +/- 5\%\n"
+        "   Positron:\n"
+        "       x_sv = %-.3f mm    range [%-.3f, %-.3f]\n"
+        "       y_sv = %-.3f mm    range [%-.3f, %-.3f]\n"
+        "       P - lab: (%-.1f, %-.1f, %-.1f) MeV/c; E = %-.1f MeV.  range: %-.1f +/- 5\%\n"
+        " inside acceptance? %s\n",
+	fBeam_energy,
+	fSpectrometer_p0,
+        new_point.vertex.x(),
+        new_point.vertex.y(), 
+        new_point.foil_num,
+        new_point.P_electron.x(), new_point.P_electron.y(), new_point.P_electron.z(),
+	gamma_A, 
+	E_a, 
+	1. - new_point.x, 
+        new_point.theta * 1.e3, 
+        new_point.phi * (180./CLHEP::pi), 
+        L_x_sv, fRange_L_x_sv[0], fRange_L_x_sv[1], 
+        L_y_sv, fRange_L_y_sv[0], fRange_L_y_sv[1],
+	new_point.Pe_boosted[0],new_point.Pe_boosted[1],new_point.Pe_boosted[2],
+	new_point.Pe_boosted.mag(), fSpectrometer_p0, 
+	R_x_sv, fRange_R_x_sv[0], fRange_R_x_sv[1],
+        R_y_sv, fRange_R_y_sv[0], fRange_R_y_sv[1],
+        new_point.Pp_boosted[0],new_point.Pp_boosted[1],new_point.Pp_boosted[2],
+	new_point.Pp_boosted.mag(), fSpectrometer_p0,
+	new_point.in_acceptance ? "yes" : "no"
+    );
+#endif 
+
+    //if we're out of the acceptance w/r/t momentum, there's no reason to keep going.
+    if (new_point.in_acceptance==false) return; 
     //_____________________________________________________________________________________
     auto check_acceptance = [&](const G4ThreeVector& p, bool is_RHRS)
     {   
@@ -190,68 +261,12 @@ void AprimeGenerator::Update()
         return true; 
     };
     //_____________________________________________________________________________________
+    
 
+    
     if (check_acceptance(new_point.Pp_boosted, true)  == false) { new_point.in_acceptance=false; } 
     if (check_acceptance(new_point.Pe_boosted, false) == false) { new_point.in_acceptance=false; } 
-    
-#if VERBOSE
-    /*Trajectory_t tj_e_HCS{
-        new_point.vertex.x() + (new_point.Pe_boosted.x()/new_point.Pe_boosted.z())*(0. - new_point.vertex.z()), 
-        new_point.vertex.y() + (new_point.Pe_boosted.y()/new_point.Pe_boosted.z())*(0. - new_point.vertex.z()), 
-        new_point.Pe_boosted.x()/new_point.Pe_boosted.z(), 
-        new_point.Pe_boosted.y()/new_point.Pe_boosted.z(), 
-        new_point.Pe_boosted.mag()
-    }; 
 
-    auto tj_e_SCS = ApexOptics::HCS_to_SCS(false, tj_e_HCS);
-
-    Trajectory_t tj_p_HCS{
-        new_point.vertex.x() + (new_point.Pp_boosted.x()/new_point.Pp_boosted.z())*(0. - new_point.vertex.z()), 
-        new_point.vertex.y() + (new_point.Pp_boosted.y()/new_point.Pp_boosted.z())*(0. - new_point.vertex.z()), 
-        new_point.Pp_boosted.x()/new_point.Pp_boosted.z(), 
-        new_point.Pp_boosted.y()/new_point.Pp_boosted.z(), 
-        new_point.Pp_boosted.mag()
-    }; 
-
-    auto tj_p_SCS = ApexOptics::HCS_to_SCS(true, tj_p_HCS);
-    */
-    double R_x_sv, L_x_sv, R_y_sv, R_x_sv; 
-
-    Project_onto_sieve(true,  new_point.vertex, new_point.Pp_boosted, R_x_sv,R_y_sv);  
-    Project_onto_sieve(false, new_point.vertex, new_point.Pe_boosted, L_x_sv,L_y_sv);  
-    
-    
-    printf(
-        " ~~~~~~~~~~~~~~~~ phase-space: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-        "   x_hcs       %-3.4f mm\n"
-        "   y_hcs       %-3.4f mm\n"
-        "   foil #      %i\n"
-        "   P[electron] - A' rest frame:  (%-.1f, %-.1f, %-.1f) MeV/c\n"
-        "   A':\n"
-        "       EA/E0   = 1.0 - %.2e\n"
-        "       theta_A = %-.3f mrad\n"
-        "       phi_A   = %-3.1f deg\n"
-        "   Electron:\n"
-        "       x_sv = %-.3f mm\n"
-        "       y_sv = %-.3f mm\n"
-        "   Positron:\n"
-        "       x_sv = %-.3f mm\n"
-        "       y_sv = %-.3f mm\n"
-        " inside acceptance? %s\n", 
-        new_point.vertex.x()*1e3,
-        new_point.vertex.y()*1e3, 
-        new_point.foil_num,
-        new_point.P_electron.x(), new_point.P_electron.y(), new_point.P_electron.z(), 
-        1. - new_point.x, 
-        new_point.theta * 1.e3, 
-        new_point.phi * (180./CLHEP::pi), 
-        L_x_sv*1e3, 
-        L_y_sv*1e3, 
-        R_x_sv*1e3, 
-        R_y_sv*1e3, 
-        new_point.in_acceptance ? "yes" : "no"
-    );
-#endif 
 
     //reject update
     if ((!new_point.in_acceptance) && (fState.in_acceptance)) { return; }
