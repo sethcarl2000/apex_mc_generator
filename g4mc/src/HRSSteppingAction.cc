@@ -195,6 +195,7 @@ void HRSSteppingAction::InitOutTxt()
   */
 }
 
+
 void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
 {
   //HRSCoordinate::Arm arm = HRSCoordinate::kLeft;
@@ -208,52 +209,83 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   {
     out.SetXYZ( in.x(), in.y(), in.z() ); 
   };
-  
-    
+      
   //the track we will be measuring / operating on 
   G4Track *track = theStep->GetTrack(); 
-  
     
   //this struct keeps information about the track that we will need
-  TrackData_t *track_data = fOutFile->Get_TData(); 
+  TrackData_t *track_data_p = fOutFile->Get_TData_p(); 
+  TrackData_t *track_data_e = fOutFile->Get_TData_e();
   
+  auto positron = G4Positron::Positron();
+  auto electron = G4Electron::Electron(); 
   
-  //this helper function makes sure that all values are reset
-  auto kill_track = [&track, this](bool write_track=false)
-  {
-    track->SetTrackStatus(fStopAndKill);
-    //this->fOutFile->ClearTrack(write_track); 
-  };
-
   
   //get the event number. check if this is a new track or not. 
   int event_id = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
-  
-  //track_data->event_id = event_id;
-  //track_data
+
+  //type of particle for this track 
+  auto track_definition = track->GetDefinition(); 
   
   int track_id = track->GetTrackID(); 
 
-  //check for secondary tracks
-  if (iNoSecondary && (track_id != 1)) {
-    kill_track();
-    if (GetVerbose()>=3) cout << "secondary track killed" << endl;
-    return;
-  }
-
+  //this helper function makes sure that all values are reset
+  auto kill_track = [&track, this, track_id](bool write_track=false)
+  {
+    track->SetTrackStatus(fStopAndKill);
+    //this->fOutFile->ClearTrack(write_track);
+    if (GetVerbose()>=3)
+      cout << "-(track killed. id=" << track_id
+	   << ", type=" << track->GetDefinition()->GetParticleName() <<")\n"; 
+  };
   
   //reset the track data, if its a new event/track. 
-  if (event_id != track_data->event_id ||
-      track_id != track_data->track_id) {
-    
+  if (event_id != track_data_e->event_id) {
+
     if (GetVerbose()>=3)
-      cout << "new evt/track. id_step="
-	   << event_id << " id_trk=" << track_data->event_id << endl;
+      printf("\nin <%s>: new event. id=%i\n", __func__, event_id);  
+
+    track_data_p->event_id = event_id;
+    track_data_e->event_id = event_id;
     
-    track_data->event_id = event_id;
-    track_data->track_id = track_id;
-  }//*/
+    track_data_p->track_id = -1; //track_id;
+    track_data_e->track_id = -1; //track_id; 
+  }
+  
+  //if the new positron / electron have not had their id recorded, then
+  // record their track id's 
+  if (track_definition == positron && track_data_p->track_id < 0) {
+    if (GetVerbose()>=3)
+      cout << "-(Primary positron id=" << track_id << ")"; 
+    track_data_p->track_id = track_id; 
+  }
+  
+  if (track_definition == electron && track_data_e->track_id < 0) {
+    if (GetVerbose()>=3)
+      cout << "-(Primary electron id=" << track_id << ")"; 
+    track_data_e->track_id = track_id;
+  }
+
+  int id_p = track_data_p->track_id;
+  int id_e = track_data_e->track_id;
+  
+  //check for secondary tracks
+  if (iNoSecondary && (track_id != id_p) && (track_id != id_e)) {
+    if (GetVerbose()>=3) cout << "-(non-primary track killed.)";
+    kill_track();
+    return;
+  }
+  
+  //kill tracks that aren't positrons or electrons
     
+  //check that this is either an electron or a positron
+  if ((track_definition != electron) &&
+      (track_definition != positron)) {
+    if (GetVerbose()>=2) cout << "-(Particle type neither electron nor positron.)";
+    kill_track();
+    return;
+  }
+  
   
   //different helper function, extracts data from the track that we need.
   //this takes a ptr to a HRSCoordinate object, and fills it with the current track data.
@@ -269,12 +301,6 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   
   //check if this is a secondary track. If so,
   
-  if (iNoSecondary && track->GetTrackID()!=1) {
-    
-    kill_track();
-    if (GetVerbose()>=3) cout << "-(secondary track killed)" << endl;
-    return;
-  }
     //            cout<<"the track:"<<theStep->GetTrack()->GetTrackID()<<" is killed - secondary particle"<<endl;
     //theStep->GetTrack()->SetTrackStatus(fStopAndKill);  
   
@@ -328,55 +354,11 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   //    cout<<"thet_tcs="<<thet_tcs/deg<<endl;
   double x_TCS=sqrt(x*x+z*z)*sin(thet_tcs);
   double z_TCS=sqrt(x*x+z*z)*cos(thet_tcs);
-  //        cout<<"Target CS:"<<"  angle="<<thet_tcs<<"     x="<<x_TCS<<"   y="<<y_TCS<<"   z="<<z_TCS<<endl;
-  /*
-  G4double x_vert=theStep->GetTrack()->GetVertexPosition().x()/cm;
-  G4double y_vert=theStep->GetTrack()->GetVertexPosition().y()/cm;
-  G4double z_vert=theStep->GetTrack()->GetVertexPosition().z()/cm;
-
-  float r=sqrt(x*x + y*y);
-  float ang_phi=acos(x/r) * y/fabs(y);
-  float ang_theta = atan(r/z);
-  float eta_tmp = -1*log(fabs(tan(ang_theta/2)))*z/fabs(z);
-  double xcoord=theStep->GetPreStepPoint()->GetPosition().x();
-  double ycoord=theStep->GetPreStepPoint()->GetPosition().y();
-  double zcoord=theStep->GetPreStepPoint()->GetPosition().z();
-  double px_step=theStep->GetPreStepPoint()->GetMomentum().x()/GeV;
-  double py_step=theStep->GetPreStepPoint()->GetMomentum().y()/GeV;
-  double pz_step=theStep->GetPreStepPoint()->GetMomentum().z()/GeV;
-  double pt=sqrt(theStep->GetTrack()->GetMomentum().x()*theStep->GetTrack()->GetMomentum().x() + theStep->GetTrack()->GetMomentum().y()*theStep->GetTrack()->GetMomentum().y());
-
-  double p_HCS=sqrt(px_step*px_step + py_step*py_step + pz_step*pz_step);
-
-  double p_thet=asin(px_step/sqrt(px_step*px_step + pz_step*pz_step))-mLHRSAngle;
-  double p_x_TCS=sqrt(px_step*px_step + pz_step*pz_step)*sin(p_thet);
-  double p_y_TCS=py_step;
-  double p_z_TCS=sqrt(px_step*px_step + pz_step*pz_step)*cos(p_thet);
-  double p_phi =asin(py_step/sqrt(p_HCS*p_HCS-p_x_TCS*p_x_TCS));
-        
-  double px_dir_vert=theStep->GetTrack()->GetVertexMomentumDirection().x();
-  double py_dir_vert=theStep->GetTrack()->GetVertexMomentumDirection().y();
-  double pz_dir_vert=theStep->GetTrack()->GetVertexMomentumDirection().z();
-  double thet_vert = asin(px_dir_vert/sqrt(px_dir_vert*px_dir_vert + pz_dir_vert*pz_dir_vert))-mLHRSAngle;
-  double p_z_vert_tcs=sqrt(px_dir_vert*px_dir_vert + pz_dir_vert*pz_dir_vert)*cos(thet_vert);
-  double phi_vert = asin(py_dir_vert/p_z_vert_tcs);
-
-
-
-  double t_targ=sqrt(x*x+z*z)*sin(acos(z/sqrt(x*x+z*z))-mLHRSAngle);
-  //	output1 <<"x["<<i_st<<"]="<<sqrt(x*x+z*z)<<";  y["<<i_st<<"]="<<t_targ<<";"<<endl;
-  //	output <<"x["<<i_st<<"]="<<sqrt(x*x+z*z)<<";  y["<<i_st<<"]="<<y<<";"<<endl;
-  i_st++;
-  
-  double z00=9.961*m;
-  double y00=8.4*m;
-  double R_new= sqrt( (y00-yyy)*(y00-yyy) + (zzz - z00) * (zzz - z00) );
-  */ 
   
   if ( (z_TCS>620.) && (z_TCS<630.) && (sqrt(x_TCS*x_TCS + y_TCS*y_TCS)>31.) ) {
     
     kill_track(); 
-    if (GetVerbose()>=2) cout<<"-(the track is killed Q2 ex)"<<flush;
+    if (GetVerbose()>=2) cout<<"-(the track is killed Q2 ex)";
     return;
     //theStep->GetTrack()->SetTrackStatus(fStopAndKill);
   }
@@ -388,7 +370,7 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
       (z_TCS<160.) &&
       ((fabs(x_TCS)>20.) || (fabs(y_TCS)>20.))) {
     
-    if (GetVerbose()>=2) cout<<"-(the track is killed before Q1)"<<flush;
+    if (GetVerbose()>=2) cout<<"-(the track is killed before Q1)";
     kill_track();//theStep->GetTrack()->SetTrackStatus(fStopAndKill);
     return;
   }
@@ -405,7 +387,7 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   
   if (fabs(y)>820.) {
     
-    if (GetVerbose()>=2) cout<<"-(the track:"<<track->GetTrackID()<<" is killed y > 820)"<<flush;
+    if (GetVerbose()>=2) cout<<"-(the track:"<<track->GetTrackID()<<" is killed y > 820)";
     kill_track();//theStep->GetTrack()->SetTrackStatus(fStopAndKill);
     return;
   }
@@ -450,34 +432,6 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     double z_sept_ex_min2 = z_sept_en_min2 + length_min_2 * cos(ang_en_min_2);
     double z_sept_ex_max2 = z_sept_en_max2 + length_max_2 * cos(ang_en_max_2);
 
-    //            cout<<"kuku  "<<z<<"     "<<x<<"        "<<xsep_tmp<<endl;
-    
-
-    /*
-      if ((z>z_sept_en_min1) && (z<z_sept_ex_min1))
-      {
-      double xsep_tmp = xmin_sep_en1 + (xmin_sep_ex1-xmin_sep_en1)*(z-z_sept_en_min1)/(z_sept_ex_min1-z_sept_en_min1);
-      if (xsep_tmp > x) theStep->GetTrack()->SetTrackStatus(fStopAndKill);
-      }
-
-      if ((z>z_sept_en_min2) && (z<z_sept_ex_min2))
-      {
-      double xsep_tmp = xmin_sep_en2 + (xmin_sep_ex2-xmin_sep_en2)*(z-z_sept_en_min2)/(z_sept_ex_min2-z_sept_en_min2);
-      //              cout<<"kuku  "<<z<<"     "<<x<<"        "<<xsep_tmp<<endl;
-      if (xsep_tmp > x) theStep->GetTrack()->SetTrackStatus(fStopAndKill);
-      }
-
-      if ((z>z_sept_en_max1) && (z<z_sept_ex_max1))
-      {
-      double xsep_tmp = xmax_sep_en1 + (xmax_sep_ex1-xmax_sep_en1)*(z-z_sept_en_max1)/(z_sept_ex_max1-z_sept_en_max1);
-      if (xsep_tmp < x) theStep->GetTrack()->SetTrackStatus(fStopAndKill);
-      }
-      if ((z>z_sept_en_max2) && (z<z_sept_ex_max2))
-      {
-      double xsep_tmp = xmax_sep_en2 + (xmax_sep_ex2-xmax_sep_en2)*(z-z_sept_en_max2)/(z_sept_ex_max2-z_sept_en_max2);
-      if (xsep_tmp < x) theStep->GetTrack()->SetTrackStatus(fStopAndKill);
-      }
-    */
     
     if ( (z > z_sept_en_max1) && (z < z_sept_ex_min2) ) {
       double y_en = 2.44*inch;
@@ -495,43 +449,22 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   }//if (mSeptumOn)
   
   
-  
-  /*G4ThreeVector position = track->GetPosition();
-  printf("-(p[% 5.f,% 5.f,% 5.f])\n",
-  position(0),position(1),position(2)); */ 
-  
   //        if (theStep->GetTrack()->GetTrackID()==1)
   if ((*physVol_current == *physVol_Q1_left) || 
       (*physVol_current == *physVol_Q1_right)) {
 
-    auto track_definition = track->GetDefinition(); 
+    //we're assuming that a positron could never reach the Q1 face on the left...
+    bool is_RHRS(track_definition == positron);
     
-    //check that this is either an electron or a positron
-    if ( ! (track_definition == G4Electron::Electron() ||
-	    track_definition == G4Positron::Positron()) ) {
-      if (GetVerbose()>=2) cout << "-(Particle type neither electron nor positron.)";
-      kill_track();
-      return;
-    }
-    
-    
-    bool is_RHRS(track_definition == G4Positron::Positron()); 
-    
+    auto track_data = is_RHRS ? track_data_p : track_data_e; 
+
+    track_data->particle_type = is_RHRS ? TrackData_t::kPositron : TrackData_t::kElectron;
     
     if (GetVerbose()>=2) cout << "-(at Q1_" << (is_RHRS?"R)":"L)") << flush; 
-    /*if (GetVerbose()>=2) printf("-(pQ1[% 1.3f,% 1.3f,% 1.3f])",
-      track->GetPosition().x()*100, 
-      track->GetPosition().y()*100, 
-      track->GetPosition().z()*100);*/
     
     double hrs_angle = ApexTargetGeometry::Get_HRS_angle(is_RHRS); 
-    /*double hrs_angle = is_RHRS ? -12.50 : 12.50; 
-      hrs_angle *= CLHEP::pi / 180.;*/
 
     double sieve_angle = ApexTargetGeometry::Get_sieve_angle(is_RHRS); 
-    /*double sieve_angle = is_RHRS ? -5.372 : 5.366;
-      sieve_angle *= CLHEP::pi / 180.;*/
-    
     
     //fill out data about the track~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // vertex position / momentum
@@ -638,7 +571,7 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
       
     
     //project these tracks back onto the Q1 front plane
-    const double Q1_front_z = 1710.95; //in meters, in rotated-HCS
+    const double Q1_front_z = 1710.95; //in mm, in rotated-HCS
     
     dz   = position_Q1.z() - Q1_front_z;
     dxdz = momentum_Q1.x()/momentum_Q1.z(); 
@@ -652,66 +585,32 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     //now we're ready to fill them into th TrackData_t struct
     Get_TVector3_from_G4ThreeVector( track_data->position_Q1, position_Q1/1000. );
     Get_TVector3_from_G4ThreeVector( track_data->momentum_Q1, momentum_Q1 );
-
     
     //now, we record this track (tell the TFileHelper object to write it to the output file)
     track_data->event_id = event_id;
     track_data->track_id = track_id; 
 
-    
-    //write this track to our TTree
-    fOutFile->WriteTrack(); 
-
-    
-    //output stream (txt) 
-    if (Do_TXToutput()) {
-      
-      /*double e_kin = theStep->GetTrack()->GetVertexKineticEnergy()+0.511;
-      double px_vtx_tmp=e_kin*theStep->GetTrack()->GetVertexMomentumDirection().x();
-      double py_vtx_tmp=e_kin*theStep->GetTrack()->GetVertexMomentumDirection().y();
-      double pz_vtx_tmp=e_kin*theStep->GetTrack()->GetVertexMomentumDirection().z();*/ 
-      
-      if (GetVerbose()>=2) cout << " Making txt output.." << flush; 
-      
-      /*std::ofstream output_q1;
-      output_q1.open( "Q1_front.dat", ios::out | ios::app );
-    
-      output_q1 //<< precision(0)
-	<<evtNb <<setw(18)
-	<<theStep->GetTrack()->GetTrackID() <<setw(18)
-	<<z_TCS <<setw(18)
-	<<p_HCS <<setw(18)
-	<<p_x_TCS/p_z_TCS <<setw(18)
-	<<p_y_TCS/p_z_TCS <<setw(18)
-	<<x_TCS <<setw(18)
-	<<y_TCS <<setw(18)
-	<<px_vtx_tmp <<setw(18)
-	<<py_vtx_tmp <<setw(18)
-	<<pz_vtx_tmp <<setw(18)
-	<<theStep->GetTrack()->GetDefinition()->GetParticleName() <<setw(18)
-	<<track_id_rad_tail_foil <<setw(18)
-	<<px_rad_tail_foil <<setw(18)
-	<<py_rad_tail_foil <<setw(18)
-	<<pz_rad_tail_foil <<setw(18)
-	<<track_id_sieve_back <<setw(18)
-	<<x_sieve_back <<setw(18)
-	<<y_sieve_back <<setw(18)
-	<<z_sieve_back <<setw(18)
-	<<px_sieve_back <<setw(18)
-	<<py_sieve_back <<setw(18)
-	<<pz_sieve_back <<endl;
-	output_q1.close();      */
-      
-    }//if (Do_TXToutput()) {
-    
-
     //kill this track; if septum is on (in apex mode, we don't simulate the HRS). 
     if (mSeptumOn && Do_killAtQ1()) {
+
       if (GetVerbose() >= 2) cout << "-(killed at Q1)" << flush; 
       //fOutFile->WriteTrack();
+
+      //set status of this track
+      fOutFile->SetStatus(is_RHRS, TFileHandler::kQ1); 
+
       kill_track(); //theStep->GetTrack()->SetTrackStatus(fStopAndKill);
+
+      //Get the status of both arms. check their track status.
+      if ( (fOutFile->GetStatus(true) ==TFileHandler::kQ1) &&
+	   (fOutFile->GetStatus(false)==TFileHandler::kQ1) ) {
+
+	fOutFile->WriteTrack();
+	if (GetVerbose() >= 2) cout << "-(saved)" << flush; 
+      }
       return;
-    }			
+    }
+    
   }
   
 }

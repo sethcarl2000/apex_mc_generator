@@ -17,7 +17,7 @@ namespace {
   constexpr double kPhi_sweep_range   = CLHEP::pi/18.;    //maximum change in A' phi
   constexpr double kFoil_jump_prob    = 0.20;      //probablility to 'jump' from the current foil\
  to another foil
-  constexpr double kRotation_RMS      = 0.040/1.73205;  /// 0.020 is the average magnitude of the random rotation we perform on the electron's A'-rest-frame orientation, in radians (in A' rest frame).
+  constexpr double kRotation_RMS      = 0.020/1.73205;  /// 0.020 is the average magnitude of the random rotation we perform on the electron's A'-rest-frame orientation, in radians (in A' rest frame).
 
 }
 

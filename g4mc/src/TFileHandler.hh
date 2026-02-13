@@ -32,20 +32,31 @@ public:
 
   void ClearTrack(bool write_track=false); 
   
-  TrackData_t* Get_TData() { return &fTrackData; }
-
+  TrackData_t* Get_TData_p() { return &fTrackData_p; }  
+  TrackData_t* Get_TData_e() { return &fTrackData_e; }
+  
   void WriteTrack(); 
+  
+  enum ETrackStatus { kNone=0, kDead, kAlive, kQ1 };
+
+  ETrackStatus GetStatus(bool is_RHRS) const { return is_RHRS ? fStatus_p : fStatus_e; }
+
+  void SetStatus(bool is_RHRS, ETrackStatus stat) {
+    if (is_RHRS) { fStatus_p=stat; } else { fStatus_e=stat; }
+  }
   
 private:
   
-  TrackData_t fTrackData; 
+  TrackData_t fTrackData_p; 
+  TrackData_t fTrackData_e; 
   
   std::unique_ptr<TFile> fFile; 
   
   TTree *fTree; 
 
   TParameter<bool> *fParam_isRHRS; 
-  
+
+  ETrackStatus fStatus_p, fStatus_e; 
   
   ClassDef(TFileHandler,1); 
 };

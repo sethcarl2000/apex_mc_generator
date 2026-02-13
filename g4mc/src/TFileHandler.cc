@@ -19,7 +19,7 @@ using namespace std;
 
 //____________________________________________________________________________________
 TFileHandler::TFileHandler(const char *const _path, bool is_RHRS, const char *const _treeName)
-  : fTrackData(TrackData_t{})
+  : fTrackData_p(TrackData_t{}), fTrackData_e(TrackData_t{})
 {
   fFile = unique_ptr<TFile>(new TFile(_path,"RECREATE"));
   //fTree = unique_ptr<TTree>(new TTree(_treeName,"Output tree - Q1/vtx data"));
@@ -27,20 +27,36 @@ TFileHandler::TFileHandler(const char *const _path, bool is_RHRS, const char *co
   fTree->SetMakeClass(1);
   
   //fill out the branches:
-  fTree->Branch("event_id",       &fTrackData.event_id); 
+  fTree->Branch("event_id",         &fTrackData_p.event_id); 
 
-  fTree->Branch("track_id",       &fTrackData.track_id);
   
-  fTree->Branch("position_vtx",   &fTrackData.position_vtx);
-  fTree->Branch("momentum_vtx",   &fTrackData.momentum_vtx);
+  //positron (RHRS)
+  fTree->Branch("R_track_id",       &fTrackData_p.track_id);
   
-  fTree->Branch("position_Q1",    &fTrackData.position_Q1);
-  fTree->Branch("momentum_Q1",    &fTrackData.momentum_Q1);
+  fTree->Branch("R_position_vtx",   &fTrackData_p.position_vtx);
+  fTree->Branch("R_momentum_vtx",   &fTrackData_p.momentum_vtx);
   
-  fTree->Branch("position_sieve", &fTrackData.position_sieve);
-  fTree->Branch("momentum_sieve", &fTrackData.momentum_sieve);
+  fTree->Branch("R_position_Q1",    &fTrackData_p.position_Q1);
+  fTree->Branch("R_momentum_Q1",    &fTrackData_p.momentum_Q1);
+  
+  fTree->Branch("R_position_sieve", &fTrackData_p.position_sieve);
+  fTree->Branch("R_momentum_sieve", &fTrackData_p.momentum_sieve);
 
-  fTree->Branch("invariant_mass", &fTrackData.invariant_mass); 
+  
+  //electron (LHRS)  
+  fTree->Branch("L_track_id",       &fTrackData_e.track_id);
+  
+  fTree->Branch("L_position_vtx",   &fTrackData_e.position_vtx);
+  fTree->Branch("L_momentum_vtx",   &fTrackData_e.momentum_vtx);
+  
+  fTree->Branch("L_position_Q1",    &fTrackData_e.position_Q1);
+  fTree->Branch("L_momentum_Q1",    &fTrackData_e.momentum_Q1);
+  
+  fTree->Branch("L_position_sieve", &fTrackData_e.position_sieve);
+  fTree->Branch("L_momentum_sieve", &fTrackData_e.momentum_sieve);
+
+  
+  fTree->Branch("invariant_mass", &fTrackData_p.invariant_mass); 
   
   fParam_isRHRS = new TParameter<bool>("is_RHRS", is_RHRS);
   fParam_isRHRS->Write(); 
@@ -73,6 +89,8 @@ void TFileHandler::CloseFile()
 void TFileHandler::ClearTrack(bool write_track)
 {
   //fTrackData = TrackData_t{}; 
+  
+
 }
 //____________________________________________________________________________________
 //____________________________________________________________________________________

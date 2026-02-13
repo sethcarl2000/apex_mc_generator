@@ -48,7 +48,6 @@ public:
   //invariant mass of event that generated this lepton
   double invariant_mass;
   
-  
   //These are in TARGET COORDINATES, projected to the sieve plane. 
   TVector3 position_sieve;
   TVector3 momentum_sieve; 

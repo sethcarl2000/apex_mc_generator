@@ -800,19 +800,24 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   vertex += ApexTargetGeometry::Get_APEX_Target_center(); 
   
   particleGun->SetParticlePosition(vertex); 
-  
+
+  //record the invariant mass used
+  fOutFile->Get_TData_p()->invariant_mass = Get_mA();   
+  fOutFile->Get_TData_e()->invariant_mass = Get_mA(); 
+
   //set the particle definition
-  if (Is_RHRS()) { 
-    particleGun->SetParticleMomentum( momentum_positron ); 
-  
-    particleGun->SetParticleDefinition(G4Positron::Positron());
-  } else         {
-    particleGun->SetParticleMomentum( momentum_electron ); 
-  
-    particleGun->SetParticleDefinition(G4Electron::Electron());
-  }
-  
+  //positron
+  particleGun->SetParticleMomentum(momentum_positron);
+  particleGun->SetParticleDefinition(G4Positron::Positron());
   particleGun->GeneratePrimaryVertex(anEvent);
+  fOutFile->SetStatus(true,  TFileHandler::kAlive); //tell the file handler that a new positron is alive 
+  
+  //electron
+  particleGun->SetParticleMomentum(momentum_electron);
+  particleGun->SetParticleDefinition(G4Electron::Electron());
+  particleGun->GeneratePrimaryVertex(anEvent);
+  fOutFile->SetStatus(false, TFileHandler::kAlive); //tell the file hanlder that a new electron is alive
+  
   return; 
   //____________________________________________________________________________________
   
