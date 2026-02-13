@@ -16,11 +16,139 @@
 #include "G4UIcmdWithoutParameter.hh"
 #include "G4UIdirectory.hh"
 #include "G4ios.hh"
+#include "G4String.hh"
+#include <string> 
 
 using g4uic_double_unit = G4UIcmdWithADoubleAndUnit; 
 using g4uic_int         = G4UIcmdWithAnInteger;
 
+//here are some helper functions, which are meant to make the following syntax more concise
+//and less repetitive.
+//_________________________________________________________________________________
+void HRSPrimaryGeneratorMessenger::AddCmd_bool(
+    std::string name,
+    std::string param_name,
+    void (HRSPrimaryGeneratorAction::*signal_slot)(bool),
+    bool default_val)
+{
+  UICommand_t ui_command;
 
+  auto cmd = new G4UIcmdWithABool(name.c_str(), this);
+
+  cmd->SetParameterName(param_name.c_str(), false); 
+  cmd->SetDefaultValue(default_val);
+
+  auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
+  {
+    auto cmd_ptr = dynamic_cast<G4UIcmdWithABool*>(parent_ptr);
+    (target->*signal_slot)(cmd_ptr->GetNewBoolValue(new_val));
+    return; 
+  }; 
+    
+  ui_command.cmd = cmd;
+  ui_command.fcn = signal_fcn;
+
+  UI_commands.push_back(ui_command); 
+}
+//_________________________________________________________________________________
+void HRSPrimaryGeneratorMessenger::AddCmd_int(
+    std::string name,
+    std::string param_name,
+    void (HRSPrimaryGeneratorAction::*signal_slot)(int),
+    int default_val)
+{
+  UICommand_t ui_command;
+
+  auto cmd = new G4UIcmdWithAnInteger(name.c_str(), this);
+
+  cmd->SetParameterName(param_name.c_str(), false); 
+  cmd->SetDefaultValue(default_val);
+
+  auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
+  {
+    auto cmd_ptr = dynamic_cast<G4UIcmdWithAnInteger*>(parent_ptr);
+    (target->*signal_slot)(cmd_ptr->GetNewIntValue(new_val));
+    return; 
+  }; 
+    
+  ui_command.cmd = cmd;
+  ui_command.fcn = signal_fcn;
+
+  UI_commands.push_back(ui_command); 
+}
+//_________________________________________________________________________________
+void HRSPrimaryGeneratorMessenger::AddCmd_string(
+    std::string name,
+    std::string param_name,
+    void (HRSPrimaryGeneratorAction::*signal_slot)(G4String),
+    std::string default_val)
+{
+  UICommand_t ui_command;
+
+  auto cmd = new G4UIcmdWithAString(name.c_str(), this);
+
+  cmd->SetParameterName(param_name.c_str(), false); 
+  cmd->SetDefaultValue(default_val.c_str());
+
+  auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
+  {
+    auto cmd_ptr = dynamic_cast<G4UIcmdWithAString*>(parent_ptr);
+    (target->*signal_slot)(new_val);
+    return; 
+  }; 
+    
+  ui_command.cmd = cmd;
+  ui_command.fcn = signal_fcn;
+
+  UI_commands.push_back(ui_command); 
+}
+//_________________________________________________________________________________
+//_________________________________________________________________________________
+
+void HRSPrimaryGeneratorMessenger::AddCmd_double_with_unit(
+    std::string name,
+    std::string param_name,
+    void (HRSPrimaryGeneratorAction::*signal_slot)(double), 
+    std::string default_unit,
+    double default_val
+)
+{
+  UICommand_t ui_command;
+
+  g4uic_double_unit *cmd = new g4uic_double_unit(name.c_str(), this);
+
+  cmd->SetParameterName(param_name.c_str(), false); 
+  cmd->SetDefaultValue(default_val);
+  cmd->SetDefaultUnit(default_unit.c_str()); 
+
+  //this propagates the signal to the 'HRSPrimaryGeneratorAction' object 
+  auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
+  {
+    g4uic_double_unit *cmd_ptr = dynamic_cast<g4uic_double_unit*>(parent_ptr);
+    (target->*signal_slot)(cmd_ptr->GetNewDoubleValue(new_val)); 
+    return; 
+  }; 
+  
+  //add this command to the list of all commands
+  ui_command.cmd = cmd; 
+  ui_command.fcn = signal_fcn;
+  UI_commands.push_back(ui_command); 
+}
+//___________________________________________________________________________________________________
+std::function<void(G4UIcommand*,G4String)>
+HRSPrimaryGeneratorMessenger::DoubleAndUnitSignal(void (HRSPrimaryGeneratorAction::*signal_slot)(double))
+{
+  auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
+  {
+    g4uic_double_unit* cmd_ptr = dynamic_cast<g4uic_double_unit*>(parent_ptr); 
+    (target->*signal_slot)(cmd_ptr->GetNewDoubleValue(new_val));
+    return; 
+  }; 
+
+  return signal_fcn; 
+}
+//___________________________________________________________________________________________________
+//___________________________________________________________________________________________________
 HRSPrimaryGeneratorMessenger::HRSPrimaryGeneratorMessenger(HRSPrimaryGeneratorAction * mpga)
 :target(mpga)
 {
@@ -328,7 +456,7 @@ HRSPrimaryGeneratorMessenger::HRSPrimaryGeneratorMessenger(HRSPrimaryGeneratorAc
   sieveXHighCmd->SetParameterName("sieve_x_high",false);
   sieveXHighCmd->SetDefaultValue(0.);
   sieveXHighCmd->SetDefaultUnit("mm");
-
+  
   //random Y (mm) - low
   sieveYLowCmd = unique_ptr<g4uic_double_unit>(new g4uic_double_unit("/mydet/sieveYLow",this));
   sieveYLowCmd->SetParameterName("sieve_y_low",false);
@@ -367,10 +495,122 @@ HRSPrimaryGeneratorMessenger::HRSPrimaryGeneratorMessenger(HRSPrimaryGeneratorAc
   gunYHighCmd->SetParameterName("y_high",false);
   gunYHighCmd->SetDefaultValue(0.);
   gunYHighCmd->SetDefaultUnit("mm");
-  
- 
-  //gunZLowCmd->SetRange(strGuid);
 
+  //A-prime mass - minimum (GeV)
+  gunAPrimeMassMin = unique_ptr<g4uic_double_unit>(new g4uic_double_unit("/mydet/APrimeMass_min",this));
+  gunAPrimeMassMin->SetParameterName("A_mass_min",false);
+  gunAPrimeMassMin->SetDefaultValue(0.120);
+  gunAPrimeMassMin->SetDefaultUnit("GeV");
+
+  //A-prime mass - maximum (GeV)
+  /*gunAPrimeMassMax = unique_ptr<g4uic_double_unit>(new g4uic_double_unit("/mydet/APrimeMass_max",this));
+  gunAPrimeMassMax->SetParameterName("A_mass_max",false);
+  gunAPrimeMassMax->SetDefaultValue(0.240);
+  gunAPrimeMassMax->SetDefaultUnit("GeV");*/
+
+  //verbosity 
+  AddCmd_int(
+     "/mydet/verbose",
+     "verbose",
+     &HRSPrimaryGeneratorAction::Set_verbose,
+     0
+  ); 
+
+  
+  //to generate or not to generate (A-prime)
+  AddCmd_bool(
+     "/mydet/generate_A-prime",
+     "generate_A-prime",
+     &HRSPrimaryGeneratorAction::Set_GenerateAprime,
+     false
+  ); 
+  
+  //A-prime mass 
+  AddCmd_double_with_unit(
+    "/mydet/A-prime_mass",
+    "Aprime_mass",
+    &HRSPrimaryGeneratorAction::Set_AprimeMass,
+    "MeV", 180.
+  ); 
+  
+  //electron energy min
+  AddCmd_double_with_unit(
+    "/mydet/electron_energy_min",
+    "electron_energy_min",
+    &HRSPrimaryGeneratorAction::Set_ElectronEnergyMin,
+    "MeV", 1108*0.90
+  ); 
+
+  //electron energy max
+  AddCmd_double_with_unit(
+    "/mydet/electron_energy_max",
+    "electron_energy_max",
+    &HRSPrimaryGeneratorAction::Set_ElectronEnergyMax,
+    "MeV", 1108*1.10
+  ); 
+
+  //Beam energy
+  AddCmd_double_with_unit(
+     "/mydet/beam_energy",
+     "beam_energy",
+     &HRSPrimaryGeneratorAction::Set_BeamEnergy,
+     "MeV", 2200
+  ); 
+
+  //Right arm Sieve coordinates
+  AddCmd_double_with_unit("/mydet/R_sieveXLow",
+			  "R_sieveXLow",
+			  &HRSPrimaryGeneratorAction::Set_R_sieveXLow,
+			  "mm", -85.0); 
+
+  AddCmd_double_with_unit("/mydet/R_sieveXHigh",
+			  "R_sieveXHigh",
+			  &HRSPrimaryGeneratorAction::Set_R_sieveXHigh,
+			  "mm", +85.0); 
+  
+  AddCmd_double_with_unit("/mydet/R_sieveYLow",
+			  "R_sieveYLow",
+			  &HRSPrimaryGeneratorAction::Set_R_sieveYLow,
+			  "mm", -100.0); 
+
+  AddCmd_double_with_unit("/mydet/R_sieveYHigh",
+			  "R_sieveYHigh",
+			  &HRSPrimaryGeneratorAction::Set_R_sieveYHigh,
+			  "mm",   20.0); 
+  
+  //Right arm Sieve coordinates
+  AddCmd_double_with_unit("/mydet/L_sieveXLow",
+			  "L_sieveXLow",
+			  &HRSPrimaryGeneratorAction::Set_L_sieveXLow,
+			  "mm", -85.0); 
+
+  AddCmd_double_with_unit("/mydet/L_sieveXHigh",
+			  "L_sieveXHigh",
+			  &HRSPrimaryGeneratorAction::Set_L_sieveXHigh,
+			  "mm", +85.0); 
+  
+  AddCmd_double_with_unit("/mydet/L_sieveYLow",
+			  "L_sieveYLow",
+			  &HRSPrimaryGeneratorAction::Set_L_sieveYLow,
+			  "mm",  -20.0); 
+
+  AddCmd_double_with_unit("/mydet/L_sieveYHigh",
+			  "L_sieveYHigh",
+			  &HRSPrimaryGeneratorAction::Set_L_sieveYHigh,
+			  "mm",  100.0); 
+
+  
+  
+  //target type
+  AddCmd_string(
+    "/mydet/target_type",
+    "target_type",
+    &HRSPrimaryGeneratorAction::Set_TargetType,
+    "none"
+  ); 
+
+  
+  
   gunZHighCmd = new g4uic_double_unit("/mydet/gunZHigh",this);
   gunZHighCmd->SetGuidance("Higher limit of Z position in the vertex random generator");
   gunZHighCmd->SetGuidance(strRandomTrig);
@@ -588,6 +828,8 @@ HRSPrimaryGeneratorMessenger::HRSPrimaryGeneratorMessenger(HRSPrimaryGeneratorAc
 
 HRSPrimaryGeneratorMessenger::~HRSPrimaryGeneratorMessenger()
 {
+  for (auto& ui_cmd : UI_commands) if (ui_cmd.cmd) delete ui_cmd.cmd; 
+  
   delete mydetDir;
   for(int i=0;i<MaxPrimaryNum;i++)
     {
@@ -666,6 +908,11 @@ HRSPrimaryGeneratorMessenger::~HRSPrimaryGeneratorMessenger()
 
 void HRSPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
 {
+
+  for (auto& ui_cmd : UI_commands) {
+    //execute the attached function. 
+    if ( command == ui_cmd.cmd ) { ui_cmd.fcn(command, newValue); }
+  }
   
   if ( command == isRHRS_Cmd.get() ) 
     target->Set_isRHRS(isRHRS_Cmd->GetNewBoolValue(newValue)); 
@@ -763,7 +1010,7 @@ void HRSPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String ne
       target->SetPhi  (i,pi);
       //cout << "Generating: " << scientific << setprecision(15) << phi_ctrCmd[i]->GetNewDoubleValue(newValue) + 12.5 * pi / 180. << " " << scientific << setprecision(15) << pi << endl;
     }
-
+    
     if( command==momentum3VCmd[i] )
       { target->SetMomentum3V(i,momentum3VCmd[i]->GetNew3VectorValue(newValue)); }
 
@@ -816,6 +1063,7 @@ void HRSPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String ne
     { target->SetGunSieveYLow(sieveYLowCmd->GetNewDoubleValue(newValue)); }
   if( command==sieveYHighCmd.get() )
     { target->SetGunSieveYHigh(sieveYHighCmd->GetNewDoubleValue(newValue)); }
+
   
 
   //simulate sieve?
@@ -835,14 +1083,15 @@ void HRSPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String ne
     { target->SetGunYHigh(gunYHighCmd->GetNewDoubleValue(newValue)); }
   //Z-range
   if( command==gunZLowCmd )
-    { target->SetGunZLow(gunZLowCmd->GetNewDoubleValue(newValue));
+    {
+      target->SetGunZLow(gunZLowCmd->GetNewDoubleValue(newValue));
     }
   if( command==gunZHighCmd ) {
     target->SetGunZHigh(gunZHighCmd->GetNewDoubleValue(newValue));
   }
 
-	
-	
+  
+       
 	
   if( command==gunXCmd )
     { target->SetGunX(gunXCmd->GetNewDoubleValue(newValue)); }

@@ -19,16 +19,22 @@
 #include "TString.h"
 #include "HRSBeamTarget.hh"
 #include "HRSVertex.hh"
+#include <cmath> 
 
 #include "G4Electron.hh"
 #include "G4Positron.hh"
 
 #include "TVector3.h"
 #include "ApexTargetGeometry.hh"
+#include "TFileHandler.hh"
 
 #include <random>
+#include <stdexcept>
+#include <sstream> 
 
 extern UsageManager* gConfig;
+
+extern TFileHandler* fOutFile; 
 
 using namespace std; 
 
@@ -103,7 +109,8 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
   fRd_gen = mt19937(rd()); 
   fRDist = uniform_real_distribution<double>(0.00,1.00); 
   
-
+  fRand_production_foil = uniform_int_distribution<int>(0, 9);
+  
   gConfig->GetParameter("TargetXOffset",kTargetXOffset);
   kTargetXOffset*=mm;
   gConfig->GetParameter("TargetYOffset",kTargetYOffset);
@@ -289,20 +296,48 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
 
 HRSPrimaryGeneratorAction::~HRSPrimaryGeneratorAction()
 {
-	delete particleGun;
-	delete gunMessenger;
-	//G4cout<<"delete HRSPrimaryGeneratorAction ... done!"<<G4endl;
+  delete particleGun;
+  delete gunMessenger;
+  //G4cout<<"delete HRSPrimaryGeneratorAction ... done!"<<G4endl;
 }
 
+
+
+void HRSPrimaryGeneratorAction::Set_TargetType(G4String target)
+{
+  //here is a list of possible types.
+  if (target == "none") {
+    UnsetBit(kProduction_foils); 
+    return; 
+  }
+
+  if (target == "production-foils") {
+    SetBit(kProduction_foils);
+    return;
+  }
+
+  //if we reach here, the target name given is invalid
+  ostringstream oss;
+  oss << "in <HRSPrimaryGeneratorAction::" << __func__ << ">: "
+    "Invalid target name given: '" << target << "'. see fcn body for valid options.";
+
+  throw std::invalid_argument(oss.str()); 
+  return; 
+}
+
+//choose one of the 10 production foils randomly, and choose its z-position
+double HRSPrimaryGeneratorAction::Get_random_production_foil_z()
+{
+  int foil_num = fRand_production_foil(fRd_gen); 
+  return -238.719e-3 + ((double)foil_num)*55.e-3; 
+}
 	
 //input: y = E_gamma / E_el
 double HRSPrimaryGeneratorAction::GetBremPhotonPol(double y)
 {
-	double Pol_e = 0.9;
-	return Pol_e * (4*y-y*y)/(4-4*y+3*y*y);
+  double Pol_e = 0.9;
+  return Pol_e * (4*y-y*y)/(4-4*y+3*y*y);
 }
-
-
 
 
 void HRSPrimaryGeneratorAction::GetPosition()
@@ -560,7 +595,7 @@ ApexTargetGeometry::SieveHole HRSPrimaryGeneratorAction::Get_random_sievehole()
   
   //if not, just reuturn one of the regular holes (truncating our 'index' parameter)
   return fSieve_holes.at( (int)index ); 
-}	
+}
 
 //  Note that, even if the particle gun shoots more than one particles at one invokation of
 // GeneratePrimaryVertex() method, all particles have the same physical quantities. If the
@@ -579,97 +614,301 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   //To start with, these will be generated RELATIVE to the apex scattering chamber
   //centerline. However, since the rest of this simulation takes place in Hall coordinates
   // (relative to the Hall centerline), we will convert all coords before the particle is
-  // generated. 
-  G4ThreeVector vertex( 
-     Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
-     Get_rnd_range(GetGunYLow(), GetGunYHigh()),
-     Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
-  );
-  /*G4ThreeVector vertex_position( 
-     Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
-     Get_rnd_range(GetGunYLow(), GetGunYHigh()),
-     Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
-     );*/ 
-
-  G4ThreeVector momentum;
+  // generated.
   
-  if (Simulate_sieve()) { //if this is true, then we will simulate the sieve-holes
-    
-    //convert this vertex to SIEVE COORDINATES
-    G4ThreeVector vertex_SCS = vertex;
-    vertex_SCS.rotateY( -ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) );
-    vertex_SCS.rotateZ( CLHEP::pi/2. ); 
-    
-    vertex_SCS += -1.* ApexTargetGeometry::Get_sieve_pos(Is_RHRS());   
-    
-    //project this track onto the back of the sieve-plane. 
-    double dz = ApexTargetGeometry::Get_sieve_thickness();
+  auto HCS_to_SCS = [this](const G4ThreeVector& v, bool is_RHRS){
+    G4ThreeVector v_SCS{v}; 
+    v_SCS.rotateY( -ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
+    v_SCS.rotateZ( CLHEP::pi/2. );
+    return v_SCS; 
+  }; 
+  auto SCS_to_HCS = [this](const G4ThreeVector& v, bool is_RHRS){
+    G4ThreeVector v_HCS{v}; 
+    v_HCS.rotateZ( -CLHEP::pi/2. );
+    v_HCS.rotateY( ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
+    return v_HCS; 
+  }; 
+  
+  
+  
+  G4ThreeVector vertex;
+  
+  G4ThreeVector momentum;
 
-    G4ThreeVector position; 
+  //maximum number of attempts to generate A'  
+  
+  if (IsBitSet(kGenerate_Aprime)) {
     
-    while (1) { //keep looping until we find a valid place to shoot the track
+    const double beam_E2 = Get_BeamEnergy()*Get_BeamEnergy();
+    const double m_A2    = Get_mA()*Get_mA();
+    const double m_e2    = (0.501e-3)*(0.501e-3); 
+    //given the ratio x := Ea / E0 (A' energy to intial beam energy, in Lab),
+    // and 'theta_A' (angle between beam and A' in Lab), 
+    // this returns the rel. differential cross section. 
+    auto A_production_amplitude = [this, beam_E2, m_A2, m_e2](double x, double thA) 
+    {
+      if (x < 0. || x > 1.) return 0.;
       
-      auto hole = Get_random_sievehole();
-      double hrad_front = hole.radius_front;
+      double th_A2 = thA*thA; 
       
-      while (1) { //choose a spot on the sieve face to 'aim' at
+      double U = beam_E2 * x * th_A2   +   m_A2*(1. - x)/x   +   m_e2*x; 
+      
+      return beam_E2*x*(  1. - x + (x*x/2.) - x*x*(1-x)*m_A2*beam_E2*th_A2/(U*U)  )/(U*U); 
+    }; 
+    
+    constexpr double x_sweep_range = 2.0e-5;
+    constexpr double theta_sweep_range = 0.300e-3; 
+
+  
+    //let's find a new, nearby A' kinematic coordinate, and see if it's randomly
+    // rejected / accepted according to the metropolis-hastings algorithm
+    constexpr long int max_Aprime_tries = 1e6; 
+
+    
+    long int i_try=0; 
+    while (i_try++ < max_Aprime_tries) {
+      
+      //should we use the 10 production foils? 
+      if (IsBitSet(kProduction_foils)) {
 	
-	position = G4ThreeVector(
-				 Get_rnd_range( -hrad_front, hrad_front ), 
-				 Get_rnd_range( -hrad_front, hrad_front ),
-				 0.
-				 ); 
+	vertex = G4ThreeVector(
+			       Get_rnd_range(GetGunXLow(), GetGunXHigh()),
+			       Get_rnd_range(GetGunYLow(), GetGunYHigh()), 
+			       Get_random_production_foil_z()
+			       ); 
+
+      } else { //if not, pick the z-vertex position randomly over the given range
 	
-	//check if this spot is 'in' the front hole entrance
-	if ( position.mag() < hrad_front ) break;
+	vertex = G4ThreeVector( 
+			       Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
+			       Get_rnd_range(GetGunYLow(), GetGunYHigh()),
+			       Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
+				);
       }
       
-      double x_exit = position.x();
-      double y_exit = position.y();
       
-      //now, get the hole position in SIEVE COORDINATES (SCS)
-      position += G4ThreeVector( hole.x, hole.y, 0. );
+      double x_new     = Ap_x     + Get_rnd_range(-x_sweep_range,     +x_sweep_range);
+      double theta_new = Ap_theta + Get_rnd_range(-theta_sweep_range, +theta_sweep_range); 
+
+      double amplitude_new = A_production_amplitude(x_new, theta_new);
+
+      //if these conditions pass, then accept the new 'update' 
+      if (amplitude_new > Ap_amplitude || Get_rnd_range(0., 1.) < amplitude_new/Ap_amplitude) {
+	Ap_amplitude = amplitude_new;
+	Ap_x         = x_new;
+	Ap_theta     = theta_new; 
+      }
+
+      //now, try to generate this A'.
+
+      //azimuthal angle
+      double phi = Get_rnd_range( 0., 2.*CLHEP::pi );
+
+      //energy of A' in lab
+      double E_A = Ap_x * Get_BeamEnergy();
+
+      //gamma & beta factor of A' in lab
+      double gamma_A = E_A / Get_mA();
+      double beta_A  = std::sqrt( 1. - 1./(gamma_A*gamma_A) );
+
+      //energy of electron / positron in A' rest frame 
+      double E_electron = Get_mA()/2.;
+      double p_electron_mag = sqrt( (E_electron*E_electron) - m_e2 ); 
+
+      //electron and positron momentum
+      G4ThreeVector Pe, Pp; 
       
-      momentum = (position - vertex_SCS).unit();
+      //generate a new vector with a random direction
+      Pe = G4ThreeVector( GetNormal(), GetNormal(), GetNormal() ); 
+    
       
-      //now, we project this track onto the back of the sieve, to see if it would
-      //make it through the exit of this same hole.
-      double hrad_back = hole.radius_back; 
+      //give the momentum the proper magnitude 
+      Pe = Pe.unit() * p_electron_mag; 
+
+      //now, let's create the positron momentum (equal & opposite) 
+      Pp = -1.*Pe; 
       
-      x_exit += (momentum.x()/momentum.z()) * dz;
-      y_exit += (momentum.y()/momentum.z()) * dz; 
+      //now, let's boost this back to the lab frame (along the z [2] direction)
+      Pe[2] = gamma_A * ( Pe[2] + (beta_A*E_electron) );
+      Pp[2] = gamma_A * ( Pp[2] + (beta_A*E_electron) ); 
       
-      if ( sqrt(x_exit*x_exit + y_exit*y_exit) < hrad_back ) break;  
+      //now, let's set the z-direction in the direction of the A'
+      
+      Pe.rotateX( -Ap_theta );
+      Pe.rotateZ( phi ); 
+
+      Pp.rotateX( -Ap_theta );
+      Pp.rotateZ( phi ); 
+      
+      //if the vectors are in the wrong direction, flip them. 
+      //this is cause we want the positrons to be headed to the RHRS (negative x)
+      // and the electrons to the LHRS (positive x)
+      if (Pp.x() > Pe.x()) {
+	auto placeholder = Pp;
+	Pp = Pe;
+	Pe = placeholder;
+      }
+      
+      auto lepton_in_acceptance = [this,&HCS_to_SCS](G4ThreeVector P, G4ThreeVector R, bool is_RHRS)
+      {
+	double x_sv_low  = is_RHRS ? R_sieveXLow  : L_sieveXLow;
+	double x_sv_high = is_RHRS ? R_sieveXHigh : L_sieveXHigh;
+	double y_sv_low  = is_RHRS ? R_sieveYLow  : L_sieveYLow;
+	double y_sv_high = is_RHRS ? R_sieveYHigh : L_sieveYHigh;
+	
+	double P_mag = P.mag();
+
+	if (P_mag > Get_ElectronEnergyMax() || P_mag < Get_ElectronEnergyMin())
+	  return false; 
+
+	//now, let's project this event onto the sieve-face
+	G4ThreeVector P_SCS = HCS_to_SCS(P, is_RHRS);      
+	G4ThreeVector r_SCS = HCS_to_SCS(P, is_RHRS); 
+	
+	r_SCS += -1.*ApexTargetGeometry::Get_sieve_pos(is_RHRS);
+	
+	double x_sv = r_SCS.x() + (P_SCS.x()/P_SCS.z())*(0. - r_SCS.z()); 
+	if ( x_sv < x_sv_low || x_sv > x_sv_high ) return false; 
+	
+	double y_sv = r_SCS.y() + (P_SCS.y()/P_SCS.z())*(0. - r_SCS.z()); 
+	if ( y_sv < y_sv_low || y_sv > y_sv_high ) return false;
+
+	return true; 
+      }; 
+      
+      /*let's do some basic cuts
+      //if (Pe_mag > Get_ElectronEnergyMax() || Pe_mag < Get_ElectronEnergyMin()) continue; 
+      //if (Pp_mag > Get_ElectronEnergyMax() || Pp_mag < Get_ElectronEnergyMin()) continue; 
+      //break;
+      
+      //now, let's project this event onto the sieve-face
+      G4ThreeVector Pe_SCS = HCS_to_SCS(Pe);      
+      G4ThreeVector Re_SCS = HCS_to_SCS(Pp); 
+      
+
+      r_SCS += -1.*ApexTargetGeometry::Get_sieve_pos(Is_RHRS());
+
+      double x_sv = r_SCS.x() + (Pe_SCS.x()/Pe_SCS.z())*(0. - r_SCS.z()); 
+      if ( x_sv < GetGunSieveXLow() || x_sv > GetGunSieveXHigh() ) continue; 
+
+      double y_sv = r_SCS.y() + (Pe_SCS.y()/Pe_SCS.z())*(0. - r_SCS.z()); 
+      if ( y_sv < GetGunSieveYLow() || y_sv > GetGunSieveYHigh() ) continue; */
+
+      //check if both leptons are in acceptance
+      if (! lepton_in_acceptance(Pe, vertex, false)) continue;
+      if (! lepton_in_acceptance(Pp, vertex, true))  continue; 
+      
+      //if we got here, we can keep this event.
+      momentum = Is_RHRS() ? Pp : Pe; 
+
+      fOutFile->Get_TData()->invariant_mass = Get_mA(); 
+      break;
+    }//while (i_try++ < max_Aprime_tries)
+    
+    
+    // if (Get_verbose() >= 3) {
+    //cout << "succeeded with A' gen after " << i_try << " tries" << endl;   
+    //}//cout << "done. taken " << i_try << "tries." << endl; 
+    
+  } else {// if (IsBitSet(kGenerate_Aprime)) 
+
+    //should we use the 10 production foils? 
+      if (IsBitSet(kProduction_foils)) {
+	
+	vertex = G4ThreeVector(
+			       Get_rnd_range(GetGunXLow(), GetGunXHigh()),
+			       Get_rnd_range(GetGunYLow(), GetGunYHigh()), 
+			       Get_random_production_foil_z()
+			       ); 
+
+      } else { //if not, pick the z-vertex position randomly over the given range
+	
+	vertex = G4ThreeVector( 
+			       Get_rnd_range(GetGunXLow(), GetGunXHigh()),		    
+			       Get_rnd_range(GetGunYLow(), GetGunYHigh()),
+			       Get_rnd_range(GetGunZLow(), GetGunZHigh()) 
+				);
+      }
+      
+    
+    if (Simulate_sieve()) { //if this is true, then we will simulate the sieve-holes
+    
+      //convert this vertex to SIEVE COORDINATES
+      G4ThreeVector vertex_SCS = vertex;
+      vertex_SCS.rotateY( -ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) );
+      vertex_SCS.rotateZ( CLHEP::pi/2. ); 
+    
+      vertex_SCS += -1.* ApexTargetGeometry::Get_sieve_pos(Is_RHRS());   
+    
+      //project this track onto the back of the sieve-plane. 
+      double dz = ApexTargetGeometry::Get_sieve_thickness();
+
+      G4ThreeVector position; 
+    
+      while (1) { //keep looping until we find a valid place to shoot the track
+      
+	auto hole = Get_random_sievehole();
+	double hrad_front = hole.radius_front;
+      
+	while (1) { //choose a spot on the sieve face to 'aim' at
+	
+	  position = G4ThreeVector(
+				   Get_rnd_range( -hrad_front, hrad_front ), 
+				   Get_rnd_range( -hrad_front, hrad_front ),
+				   0.
+				   ); 
+	
+	  //check if this spot is 'in' the front hole entrance
+	  if ( position.mag() < hrad_front ) break;
+	}
+      
+	double x_exit = position.x();
+	double y_exit = position.y();
+      
+	//now, get the hole position in SIEVE COORDINATES (SCS)
+	position += G4ThreeVector( hole.x, hole.y, 0. );
+      
+	momentum = (position - vertex_SCS).unit();
+      
+	//now, we project this track onto the back of the sieve, to see if it would
+	//make it through the exit of this same hole.
+	double hrad_back = hole.radius_back; 
+      
+	x_exit += (momentum.x()/momentum.z()) * dz;
+	y_exit += (momentum.y()/momentum.z()) * dz; 
+      
+	if ( sqrt(x_exit*x_exit + y_exit*y_exit) < hrad_back ) break;  
+      }
+
+      //we've found a valid track trajectory. let's convert our position & momentum back
+      // to the hall coordinate system. 
+      momentum.rotateZ( -CLHEP::pi/2. );
+      momentum.rotateY( ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) ); 
+    
+    } else {//if (Simulate_Sieve()) 
+    
+      //if we're here, just shoot the particle at a random spot on the surface of the sieve.
+      G4ThreeVector pos_on_sieve
+	= G4ThreeVector( Get_rnd_range(GetGunSieveXLow(), GetGunSieveXHigh()),
+			 Get_rnd_range(GetGunSieveYLow(), GetGunSieveYHigh()),
+			 0. );
+    
+      //now, convert this to the Hall Coordinate system 
+      pos_on_sieve += ApexTargetGeometry::Get_sieve_pos(Is_RHRS()); 
+
+      pos_on_sieve.rotateZ( -CLHEP::pi/2. );
+      pos_on_sieve.rotateY( ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) ); 
+
+      //use this to compute the direction of the momentum
+      momentum = (pos_on_sieve - vertex).unit();
     }
-
-    //we've found a valid track trajectory. let's convert our position & momentum back
-    // to the hall coordinate system. 
-    momentum.rotateZ( -CLHEP::pi/2. );
-    momentum.rotateY( ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) ); 
-    
-  } else {//if (Simulate_Sieve()) 
-    
-    //if we're here, just shoot the particle at a random spot on the surface of the sieve.
-    G4ThreeVector pos_on_sieve
-      = G4ThreeVector( Get_rnd_range(GetGunSieveXLow(), GetGunSieveXHigh()),
-		       Get_rnd_range(GetGunSieveYLow(), GetGunSieveYHigh()),
-		       0. );
-    
-    //now, convert this to the Hall Coordinate system 
-    pos_on_sieve += ApexTargetGeometry::Get_sieve_pos(Is_RHRS()); 
-
-    pos_on_sieve.rotateZ( -CLHEP::pi/2. );
-    pos_on_sieve.rotateY( ApexTargetGeometry::Get_sieve_angle(Is_RHRS()) ); 
-
-    //use this to compute the direction of the momentum
-    momentum = (pos_on_sieve - vertex).unit();
-  }
+    momentum *= Get_rnd_range( momentumLow[0], momentumHigh[0] ); 
+  
+  }//if (IsBitSet(kGenerate_Aprime))
 
   //now, scale the momentum to be in the uniform momentum generation range
-  momentum *= Get_rnd_range( momentumLow[0], momentumHigh[0] ); 
   
   particleGun->SetParticleMomentum( momentum ); 
-  
 
   //now, convert the vertex so that it's relative to the Hall centerline, rather than the
   // apex target centerline. 
@@ -687,7 +926,6 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   particleGun->GeneratePrimaryVertex(anEvent);
   return; 
   //____________________________________________________________________________________
-  
   
   
   //I have to reset the incidentEnergy for each event. incidentEnergy is mainly for 

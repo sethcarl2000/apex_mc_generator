@@ -75,11 +75,20 @@ private:
   //used for random number generation
   std::mt19937 fRd_gen;
   std::uniform_real_distribution<double> fRDist;
+  std::uniform_int_distribution<int> fRand_production_foil; 
 
+  std::normal_distribution<double> fNormalDist{0., 1.};
+
+  inline double GetNormal() { return fNormalDist(fRd_gen); }
+  
   inline double Get_rnd_range(double min, double max) { 
 	return min + (max-min) * fRDist(fRd_gen); 
   };
+
+  //pick one of the 10 production foils randomly, and return its z-position
+  double Get_random_production_foil_z(); 
   
+    
   std::string fOutfile_path;
   
   std::vector<ApexTargetGeometry::SieveHole> fSieve_holes;
@@ -133,7 +142,7 @@ private:
 
   //input: y = E_gamma / E_el
   double  GetBremPhotonPol(double y);
-
+  
 private:
   HRSRand mRand;
   HRSPrimaryGeneratorMessenger* gunMessenger;
@@ -234,11 +243,93 @@ private:
   //this array will be filled into root tree
   double effectiveTheta[MaxPrimaryNum];
   G4int evtNo;
+
+  double AprimeMassMin;
+  double AprimeMassMax;
+
+  double ElectronEnergyMin;
+  double ElectronEnergyMax;
+
+  //sieve generation limits
+  double R_sieveXLow;
+  double R_sieveXHigh; 
+  double R_sieveYLow;
+  double R_sieveYHigh; 
+
+  double L_sieveXLow;
+  double L_sieveXHigh; 
+  double L_sieveYLow;
+  double L_sieveYHigh; 
+  
+  //list of valid target specifications
+  int32_t fGeneratorBit;
+
+  //bits that can be set for electron / positron generation
+  enum EBits : int32_t {
+    kUseSieve            = 1 << 0,
+    kProduction_foils    = 1 << 1, 
+    kGenerate_Aprime     = 1 << 2 
+  };
+
+  inline void SetBit  (int32_t bit) { fGeneratorBit = fGeneratorBit | bit; }
+  inline void UnsetBit(int32_t bit) { fGeneratorBit = fGeneratorBit & (~bit); }
+  
+  //this is for A-prime generation (and the metropolis algorithm). 
+  double Ap_amplitude=0.;
+  double Ap_x=1.;
+  double Ap_theta=0.;
+
+  double BeamEnergy=2.2; //GeV
+  
+  double m_Ap; 
+  
+
+  //inline double Get_mA() const { return Aprime::mA; }
   
 public:
+  
+  inline void Set_verbose(int v) { fVerbose=v; }
+  inline int Get_verbose() const { return fVerbose; }
 
-  inline void Set_simulateSieve(bool _val) { fSimulate_sieve=_val; }
-  inline bool Simulate_sieve() const { return fSimulate_sieve; }
+  bool IsBitSet(int32_t bit) const { return (fGeneratorBit & bit); }
+  
+  inline void Set_AprimeMass(double _x)   { m_Ap=_x; }
+  inline double Get_mA() const { return m_Ap; }
+
+  inline void Set_GenerateAprime(bool generate_Aprime) {
+    if (generate_Aprime) { SetBit(kGenerate_Aprime); }
+    else                 { UnsetBit(kGenerate_Aprime); }
+  }
+  
+  inline void Set_BeamEnergy(double E) { BeamEnergy=E; }
+  inline double Get_BeamEnergy() const { return BeamEnergy; }
+  
+  inline void Set_ElectronEnergyMin(double _x) { ElectronEnergyMin=_x; }
+  inline void Set_ElectronEnergyMax(double _x) { ElectronEnergyMax=_x; }  
+
+  inline double Get_ElectronEnergyMin() const { return ElectronEnergyMin; }
+  inline double Get_ElectronEnergyMax() const { return ElectronEnergyMax; }
+
+  inline void Set_R_sieveXLow (double _x) { R_sieveXLow =_x; }
+  inline void Set_R_sieveXHigh(double _x) { R_sieveXHigh=_x; }
+  inline void Set_R_sieveYLow (double _x) { R_sieveYLow =_x; }
+  inline void Set_R_sieveYHigh(double _x) { R_sieveYHigh=_x; }
+
+  inline void Set_L_sieveXLow (double _x) { L_sieveXLow =_x; }
+  inline void Set_L_sieveXHigh(double _x) { L_sieveXHigh=_x; }
+  inline void Set_L_sieveYLow (double _x) { L_sieveYLow =_x; }
+  inline void Set_L_sieveYHigh(double _x) { L_sieveYHigh=_x; }
+  
+  
+  void Set_TargetType(G4String target); 
+  
+  inline void Set_simulateSieve(bool use_sieve) {
+    if (use_sieve) { SetBit(kUseSieve); }
+    else           { UnsetBit(kUseSieve); }
+    //fSimulate_sieve=_val;
+  }
+
+  inline bool Simulate_sieve() const { return IsBitSet(kUseSieve); }
   
   HRSPrimaryRootHisto* GetRootHisto()
 	{

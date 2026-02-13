@@ -24,6 +24,9 @@ class G4UIdirectory;
 #include "globals.hh"
 
 #include <memory>
+#include <functional> 
+#include <vector> 
+#include <string> 
 
 class HRSPrimaryGeneratorMessenger: public G4UImessenger
 {
@@ -88,7 +91,58 @@ private: //commands
 
   std::unique_ptr<G4UIcmdWithADoubleAndUnit>  gunYHighCmd;
   std::unique_ptr<G4UIcmdWithADoubleAndUnit>  gunYLowCmd;
+  
+  std::unique_ptr<G4UIcmdWithADoubleAndUnit>  gunAPrimeMassMin;
+  std::unique_ptr<G4UIcmdWithADoubleAndUnit>  gunAPrimeMassMax; 
 
+  std::unique_ptr<G4UIcmdWithADoubleAndUnit>  gunElectronEnergyMin;
+  std::unique_ptr<G4UIcmdWithADoubleAndUnit>  gunElectronEnergyMax;
+  
+  //std::unique_ptr<G4UIcmdWithAString> addTargetCmd;
+  //let's try something a little fancier
+  struct UICommand_t {
+    G4UIcommand *cmd=nullptr;
+    std::function<void(G4UIcommand*,G4String)> fcn; 
+  };
+  
+  std::vector<UICommand_t> UI_commands{}; 
+
+  //add a UI command (double with unit)
+  void AddCmd_double_with_unit(
+      std::string name, 
+      std::string param_name,
+      void (HRSPrimaryGeneratorAction::*signal_slot)(double),
+      std::string default_unit,
+      double default_val=0.
+  );
+
+  void AddCmd_string(
+    std::string name,
+    std::string param_name,
+    void (HRSPrimaryGeneratorAction::*signal_slot)(G4String),
+    std::string default_val=""
+  );
+
+  //add command with an int
+  void AddCmd_bool(
+		   std::string name,
+		   std::string param_name,
+		   void (HRSPrimaryGeneratorAction::*signal_slot)(bool),
+		   bool default_val
+		   ); 
+
+  //add command with a bool 
+  void AddCmd_int(
+		  std::string name,
+		  std::string param_name,
+		  void (HRSPrimaryGeneratorAction::*signal_slot)(int),
+		  int default_val
+		  ); 
+  
+  
+  //creates a function which propagate a command signal to the 'HRSPrimaryGeneratorAction' class
+  std::function<void(G4UIcommand*,G4String)> DoubleAndUnitSignal (void (HRSPrimaryGeneratorAction::*)(double)); 
+  
   std::unique_ptr<G4UIcmdWithABool> isRHRS_Cmd; 
 
   std::unique_ptr<G4UIcmdWithAString> outfileCmd; 
