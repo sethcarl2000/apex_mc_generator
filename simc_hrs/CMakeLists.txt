@@ -54,7 +54,21 @@ target_include_directories(simc_hrs PRIVATE
 
 target_link_libraries(simc_hrs PRIVATE
   ${ROOT_LIBRARIES}
+)
 
+
+#----------------------------------------------------------------------------
+# Add the executable, use our local headers, and link it to the Geant4 libraries
+#
+add_executable(simc_hrs_coinc simc_hrs_coinc.cc ${sources} ${headers})
+
+target_include_directories(simc_hrs_coinc PRIVATE
+  src
+  ${ROOT_INCLUDE_DIRS}
+)
+
+target_link_libraries(simc_hrs_coinc PRIVATE
+  ${ROOT_LIBRARIES}
 )
 
 #----------------------------------------------------------------------------
