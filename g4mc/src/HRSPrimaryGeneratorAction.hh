@@ -20,6 +20,7 @@
 
 #include "ApexTargetGeometry.hh"
 #include "AprimeGenerator.hh"
+#include "BetheHeitlerGenerator.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,6 +82,8 @@ private:
   std::normal_distribution<double> fNormalDist{0., 1.};
 
   AprimeGenerator Aprime_gen; 
+
+  BetheHeitlerGenerator BH_gen; 
   
   inline double GetNormal() { return fNormalDist(fRd_gen); }
   
@@ -287,6 +290,9 @@ private:
   double m_Ap; 
   
 
+  bool fGenBetheHeitler=true;
+  double fRange_pairMass[2] = {120., 270.}; 
+  
   //inline double Get_mA() const { return Aprime::mA; }
   
 public:
@@ -298,11 +304,15 @@ public:
   
   inline void Set_AprimeMass(double _x)   { m_Ap=_x; }
   inline double Get_mA() const { return m_Ap; }
-
+  
   inline void Set_GenerateAprime(bool generate_Aprime) {
     if (generate_Aprime) { SetBit(kGenerate_Aprime); }
     else                 { UnsetBit(kGenerate_Aprime); }
   }
+
+  inline void Set_PairMassMin(double _v) { fRange_pairMass[0]=_v; }
+  inline void Set_PairMassMax(double _v) { fRange_pairMass[1]=_v; }
+
   
   inline void Set_BeamEnergy(double E) { BeamEnergy=E; }
   inline double Get_BeamEnergy() const { return BeamEnergy; }

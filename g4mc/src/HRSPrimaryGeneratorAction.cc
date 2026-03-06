@@ -204,8 +204,11 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
 	} else { i++; }
   }
 
-  Aprime_gen = AprimeGenerator(Get_mA(), 2200., 1108.); 
+  Aprime_gen = AprimeGenerator(Get_mA(), 2200., 1104.); 
 
+  BH_gen     = BetheHeitlerGenerator(2200., 1104.);
+  
+  
   gunRLow=0.0*mm;
   gunRHigh=kRasterR;
 
@@ -636,52 +639,85 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   
   G4ThreeVector momentum_electron, momentum_positron;
 
-  //maximum number of attempts to generate A'  
-  
-  //this is awkward, but I need to make sure that the PrimaryGenerator's
-  // state is set (outside its constructor) before we feed the Aprime generator the data
-  // it needs. 
-  if (Aprime_gen.Get_NUpdates() < 1) {
-    
-    Aprime_gen.Set_AprimeMass(Get_mA()); 
-    Aprime_gen.SetRange_x_sv(true,  R_sieveXLow, R_sieveXHigh);
-    Aprime_gen.SetRange_x_sv(false, L_sieveXLow, L_sieveXHigh);
-    Aprime_gen.SetRange_y_sv(true,  R_sieveYLow, R_sieveYHigh);
-    Aprime_gen.SetRange_y_sv(false, L_sieveYLow, L_sieveYHigh);
-    Aprime_gen.Set_beamEnergy(BeamEnergy); 
-    
-    //compute fractional momentum acceptance
-    double E_min = Get_ElectronEnergyMin();
-    double E_max = Get_ElectronEnergyMax();
-    double momentum_acceptance = (E_max-E_min)/(E_max+E_min);
-      
-    Aprime_gen.SetRange_p0(momentum_acceptance); 
-
-#ifdef DEBUG
-    cout << "in " << __func__ << ": reset A' generator state.\n";
-    cout << "sieve acceptance R : " << R_sieveXLow << " " << R_sieveXHigh << endl;
-    cout << "sieve acceptance L : " << L_sieveXLow << " " << L_sieveXHigh << endl;
-#endif 
-    
-  }
   
   const long int max_first_try = 1e6; 
   long int i_try=0;  
 
-  //perform metropolis updates until we find a place inside the acceptance
-  while (!Aprime_gen.InsideAcceptance() && ++i_try < max_first_try) {
-    Aprime_gen.Update();
-  }
-
+  if (IsBitSet(kGenerate_Aprime)) {
   
-  Aprime_gen.Update();
+    //maximum number of attempts to generate A'  
+    
+    //this is awkward, but I need to make sure that the PrimaryGenerator's
+    // state is set (outside its constructor) before we feed the Aprime generator the data
+    // it needs. 
+    if (Aprime_gen.Get_NUpdates() < 1) {
+      
+      
+      Aprime_gen.Set_AprimeMass(Get_mA()); 
+      Aprime_gen.SetRange_x_sv(true,  R_sieveXLow, R_sieveXHigh);
+      Aprime_gen.SetRange_x_sv(false, L_sieveXLow, L_sieveXHigh);
+      Aprime_gen.SetRange_y_sv(true,  R_sieveYLow, R_sieveYHigh);
+      Aprime_gen.SetRange_y_sv(false, L_sieveYLow, L_sieveYHigh);
+      Aprime_gen.Set_beamEnergy(BeamEnergy); 
+    
+      //compute fractional momentum acceptance
+      double E_min = Get_ElectronEnergyMin();
+      double E_max = Get_ElectronEnergyMax();
+      double momentum_acceptance = (E_max-E_min)/(E_max+E_min);
+      
+      Aprime_gen.SetRange_p0(momentum_acceptance); 
+    
+#ifdef DEBUG
+      cout << "in <" << __func__ << ">: reset A' generator state.\n";
+      cout << "sieve acceptance R : " << R_sieveXLow << " " << R_sieveXHigh << endl;
+      cout << "sieve acceptance L : " << L_sieveXLow << " " << L_sieveXHigh << endl;
+#endif 
+    }
+    //perform metropolis updates until we find a place inside the acceptance
+    while (!Aprime_gen.InsideAcceptance() && ++i_try < max_first_try) {
+      Aprime_gen.Update();
+    }
+    Aprime_gen.Update();
+    
+    momentum_electron = Aprime_gen.GetPe();
+    momentum_positron = Aprime_gen.GetPp();
+    
+    vertex = Aprime_gen.GetVertex(); 
 
     
-  momentum_electron = Aprime_gen.GetPe();
-  momentum_positron = Aprime_gen.GetPp();
-  
-  vertex = Aprime_gen.GetVertex(); 
+  } else {
 
+    if (BH_gen.Get_NUpdates() < 1) {
+
+      BH_gen.SetRange_invariantMass(fRange_pairMass[0], fRange_pairMass[1]); 
+      BH_gen.SetRange_x_sv(true,  R_sieveXLow, R_sieveXHigh);
+      BH_gen.SetRange_x_sv(false, L_sieveXLow, L_sieveXHigh);
+      BH_gen.SetRange_y_sv(true,  R_sieveYLow, R_sieveYHigh);
+      BH_gen.SetRange_y_sv(false, L_sieveYLow, L_sieveYHigh);
+      BH_gen.Set_beamEnergy(BeamEnergy); 
+
+      //compute fractional momentum acceptance
+      double E_min = Get_ElectronEnergyMin();
+      double E_max = Get_ElectronEnergyMax();
+      double momentum_acceptance = (E_max-E_min)/(E_max+E_min);
+      
+      BH_gen.SetRange_p0(momentum_acceptance); 
+    
+    }
+      
+    while (!BH_gen.InsideAcceptance() && ++i_try < max_first_try) {
+      BH_gen.Update();
+    } 
+    
+    BH_gen.Update();
+    
+    momentum_electron = BH_gen.GetPe();
+    momentum_positron = BH_gen.GetPp();
+    
+    vertex = BH_gen.GetVertex();     
+  }
+  
+  
   if (fVerbose >= 3) {
     
     printf(
@@ -802,9 +838,14 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   particleGun->SetParticlePosition(vertex); 
 
   //record the invariant mass used
-  fOutFile->Get_TData_p()->invariant_mass = Get_mA();   
-  fOutFile->Get_TData_e()->invariant_mass = Get_mA(); 
-
+  if (IsBitSet(kGenerate_Aprime)) {
+    fOutFile->Get_TData_p()->invariant_mass = Get_mA();   
+    fOutFile->Get_TData_e()->invariant_mass = Get_mA(); 
+  } else {
+    fOutFile->Get_TData_p()->invariant_mass = BH_gen.GetM();   
+    fOutFile->Get_TData_e()->invariant_mass = BH_gen.GetM(); 
+  }
+  
   //set the particle definition
   //positron
   particleGun->SetParticleMomentum(momentum_positron);

@@ -1,0 +1,328 @@
+
+#include "BetheHeitlerGenerator.hh"
+#include "ApexTargetGeometry.hh"
+#include <stdio.h>
+#include <cmath>
+
+
+using namespace std;
+
+namespace {
+
+  constexpr double kMass_e = 0.501; ///Electron mass, MeV/c^2
+  
+  constexpr int kN_foils = 10;      /// number of production foils  
+  
+  /// ---- parameters for search of phase-space neighborhood
+  constexpr double kFoil_jump_prob    = 0.10;      //probablility to 'jump' from the current foil \
+ to another foil
+  constexpr double kRotation_RMS      = 0.020/1.73205;  /// 0.020 is the average magnitude of the random rotation we perform on the electron's A'-rest-frame orientation, in radians (in A' rest frame).
+  constexpr double kInvariantMass_sweep_range = 5.; ///max value by which the invariant mass can change between events
+}
+
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+//________________________________________________________________________________________
+BetheHeitlerGenerator::BetheHeitlerGenerator(double _beam_E, double _spec_p0)
+    : 
+    fBeam_energy{_beam_E},
+    fSpectrometer_p0{_spec_p0}
+{
+    std::random_device rd;
+
+    fTwister = std::mt19937(rd()); 
+
+    fState = State_t{
+      .vertex = G4ThreeVector(0., 0., Get_foil_z(4)), 
+    }; 
+
+    fState.Pp = G4ThreeVector(
+			      fBeam_energy*std::sin(-5.*3.14159256/180.)/2., 
+			      0., 
+			      fBeam_energy*std::cos(5.*3.14159256/180.)/2.
+			      ); 
+    
+    fState.Pe = G4ThreeVector(
+			      fBeam_energy*std::sin(+5.*3.14159256/180.)/2., 
+			      0., 
+			      fBeam_energy*std::cos(5.*3.14159256/180.)/2.
+			      ); 
+    
+    fState.foil_num         = 4; 
+    fState.amplitude        = 0.; /// a negative amplitude indicates that this state is invalid  
+    fState.in_acceptance    = true;
+
+    fState.inv_mass = 0.5*(fRange_invariantMass[0] + fRange_invariantMass[1]);
+    fState.P_electron = G4ThreeVector(fState.inv_mass/2., 0., 0.); 
+
+    //photon energy
+    fState.amplitude = BetheHeitler_pairprod_amplitude(
+        fState.Pp, 
+        fState.Pe, 
+        fBeam_energy 
+    ); 
+
+    std::printf(" <%s>: amplitude: %f\n", __func__, fState.amplitude); 
+}
+//________________________________________________________________________________________
+G4ThreeVector BetheHeitlerGenerator::Random_rotation(const G4ThreeVector& v, double RMS_rotation_mag) 
+{
+  //implementing: vR = v + v x R 
+  //              vR_i = \delta_ij v_j   +  \epsilon_ijk R_j v_k    
+  // where: 
+  //      \delta_ij is the kroneker delta tensor, and 
+  //      \epsilon_ijk is the antisymmetric tensor. 
+  // and we use the fact that 'R' should be a small vector, so this is a first-order approximation w/r/t mag(R). 
+  double vx(v[0]), vy(v[1]), vz(v[2]); 
+  G4ThreeVector vR( vx, vy, vz );  
+
+  double mag = v.mag(); 
+
+  double RX = RMS_rotation_mag*Gaus();     
+  double RY = RMS_rotation_mag*Gaus();
+  double RZ = RMS_rotation_mag*Gaus();
+    
+  vR[0] +=  RY*vz - RZ*vy;  
+  vR[1] +=  RZ*vx - RX*vz; 
+  vR[2] +=  RX*vy - RY*vx; 
+
+  return vR.unit() * mag; 
+}
+//________________________________________________________________________________________
+void BetheHeitlerGenerator::SetRange_invariantMass(double min, double max)
+{
+    fRange_invariantMass[0] =min; fRange_invariantMass[1] =max; 
+}
+//________________________________________________________________________________________
+void BetheHeitlerGenerator::SetRange_x_sv(bool is_RHRS, double min, double max)
+{
+    if (is_RHRS) { fRange_R_x_sv[0] =min; fRange_R_x_sv[1] =max; }
+    else         { fRange_L_x_sv[0] =min; fRange_L_x_sv[1] =max; }
+}
+//________________________________________________________________________________________
+void BetheHeitlerGenerator::SetRange_y_sv(bool is_RHRS, double min, double max)
+{
+    if (is_RHRS) { fRange_R_y_sv[0] =min; fRange_R_y_sv[1] =max; }
+    else         { fRange_L_y_sv[0] =min; fRange_L_y_sv[1] =max; }
+}
+//________________________________________________________________________________________
+void BetheHeitlerGenerator::Update()
+{
+  fN_updates++; 
+  
+  auto pt = fState; 
+
+    double jump_r = Rand(); 
+    if (jump_r < kFoil_jump_prob) {
+      //decide whether to jump to the next or previous foil
+      if (jump_r / kFoil_jump_prob < 0.5) { pt.foil_num += +1; } else { pt.foil_num += -1; } 
+      //fix the new foil num if its out-of-range
+      if (pt.foil_num < 0) pt.foil_num = 0; 
+      if (pt.foil_num >= kN_foils) pt.foil_num = kN_foils-1; 
+    }
+
+    
+    pt.vertex = G4ThreeVector( 
+			      2.e-3*( 1. - 2.*Rand() ), 
+			      2.e-3*( 1. - 2.*Rand() ), 
+			      Get_foil_z(pt.foil_num)
+			       );
+    
+    pt.inv_mass += kInvariantMass_sweep_range*(1. - 2.*Rand());
+    if (pt.inv_mass < fRange_invariantMass[0]) pt.inv_mass = fRange_invariantMass[0];
+    if (pt.inv_mass > fRange_invariantMass[1]) pt.inv_mass = fRange_invariantMass[1];
+    
+    pt.in_acceptance =false; 
+
+    long long int max_tries = 2e3; 
+
+    long long int i_try=0; 
+
+    //_____________________________________________________________________________________
+    //take a vector in the rest-frame of the A', and boost it to the lab frame
+    auto boost_and_rotate = [&pt, this](const G4ThreeVector &p, double E)
+    {
+        double gamma = fBeam_energy / pt.inv_mass; 
+        double beta  = std::sqrt( 1. - 1./(gamma*gamma) ); 
+
+        G4ThreeVector p_boost(
+            p[0], 
+            p[1], 
+            gamma * (p[2] + beta*E)
+        ); 
+        
+        return p_boost; 
+    };
+    //_____________________________________________________________________________________
+
+    //_____________________________________________________________________________________
+    auto check_acceptance = [&](const G4ThreeVector& p, bool is_RHRS)
+    {   
+      //first, check momentum acceptance
+      if ( fabs((p.mag() - fSpectrometer_p0)/fSpectrometer_p0) > fRange_dp ) return false; 
+
+      double x_sv, y_sv;
+      
+      Project_onto_sieve(is_RHRS,
+			 pt.vertex,
+			 p,
+			 x_sv, y_sv);
+      
+      double xmin = is_RHRS ? fRange_R_x_sv[0] : fRange_L_x_sv[0];
+      double xmax = is_RHRS ? fRange_R_x_sv[1] : fRange_L_x_sv[1];
+      
+      if (x_sv > xmax || x_sv < xmin) return false;
+      
+      double ymin = is_RHRS ? fRange_R_y_sv[0] : fRange_L_y_sv[0];
+      double ymax = is_RHRS ? fRange_R_y_sv[1] : fRange_L_y_sv[1];
+      
+      if (y_sv > ymax || y_sv < ymin) return false;
+      
+      return true;
+    };
+    //_____________________________________________________________________________________
+    
+    do {                
+        pt.P_electron = Random_rotation(pt.P_electron, kRotation_RMS); 
+        pt.P_electron = pt.P_electron.unit() * (pt.inv_mass/2.);
+        
+        //rotate the direction of the beam electron
+        pt.Pe = boost_and_rotate( pt.P_electron, pt.inv_mass/2.); 
+        pt.Pp = boost_and_rotate(-pt.P_electron, pt.inv_mass/2.);
+
+        if (check_acceptance(pt.Pp, true) && check_acceptance(pt.Pe, false)) { 
+            pt.in_acceptance =true; 
+            break; 
+        }
+
+    } while (++i_try < max_tries); 
+    
+#ifndef DEBUG 
+    if ((pt.in_acceptance==false) && (fState.in_acceptance==true)) { return; }
+#endif 
+    
+    pt.amplitude = BetheHeitler_pairprod_amplitude( pt.Pp, pt.Pe, fBeam_energy );
+
+    bool accepted=false; 
+    
+    double old_amp = fState.amplitude; 
+    if (pt.in_acceptance) {
+        if ( pt.amplitude > fState.amplitude || pt.amplitude/fState.amplitude > Rand() ) {
+
+            fState = pt; 
+            accepted=true; 
+        }
+    }
+#ifdef DEBUG
+
+    printf(
+	   "~~~~~~~~~~~~~~~~~~~~~ phase space ~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+	   "Positron:\n"
+	   "    P           (%+.2f, %+.2f, %.2f) MeV/c\n"
+	   "   |P|          %.2f MeV/c\n"
+	   "\n"
+	   "Electron:\n"
+	   "    P           (%+.2f, %+.2f, %.2f) MeV/c\n"
+	   "   |P|          %.2f MeV/c\n"
+	   "\n"
+	   "amplitude      %.4e\n"
+	   "in acceptance? %s\n"
+	   "P-accept:      %.5f\n"
+	   "accepted?      %s\n"
+	   "\n",
+	   pt.Pp[0], pt.Pp[1], pt.Pp[2],
+	   pt.Pp.mag(),
+	   pt.Pe[0], pt.Pe[1], pt.Pe[2],
+	   pt.Pe.mag(),
+	   pt.amplitude,
+	   pt.in_acceptance ? "yes" : "no", 
+	   pt.in_acceptance ? min( pt.amplitude / old_amp, 1. ) : 0., 
+	   (accepted && pt.in_acceptance) ? "yes" : "no"
+	   ); 
+
+    if ((pt.in_acceptance==false) && (fState.in_acceptance==true)) { return; }
+#endif 
+};
+//________________________________________________________________________________________
+double BetheHeitlerGenerator::BetheHeitler_pairprod_amplitude(const G4ThreeVector& Pp, const G4ThreeVector& Pe, const double k) const
+{
+  //compute some quantities we will need.
+  // we assume that the incoming electron is relativistic, while the outgoing electron is not. 
+    
+  //photon 3-momentum
+  const G4ThreeVector K( 0., 0., k );
+
+  //magnitude of vectors
+  double pp = Pp.mag(); 
+  double pe = Pe.mag(); 
+    
+  // energy of particles 
+  double ep = std::sqrt( fMass_e*fMass_e + pp*pp ); 
+  double ee = std::sqrt( fMass_e*fMass_e + pe*pe ); 
+    
+  //four-vector dot product of K and P1,P0 
+  double K_dot_Pp = k*ep - (K*Pp); 
+  double K_dot_Pe = k*ee - (K*Pe); 
+
+  //compute cos_phi (angle between (K,P0) and (K,P1) plane)
+  G4ThreeVector Pp_x_K = Pp.cross(K); 
+  G4ThreeVector Pe_x_K = Pe.cross(K); 
+  double cos_phi  = (Pp_x_K * Pe_x_K) / ( Pp_x_K.mag() * Pe_x_K.mag() ); 
+
+  //momentum transfer 
+  double q2 = (K - Pp - Pe).mag2(); 
+
+  double cos_theta_p = K * Pp / (k*pp);
+  double cos_theta_e = K * Pe / (k*pe);
+    
+  double sin_theta_p = std::sqrt( 1. - cos_theta_p*cos_theta_p ); 
+  double sin_theta_e = std::sqrt( 1. - cos_theta_e*cos_theta_e ); 
+    
+  double amplitude=0.;  
+        
+  amplitude += (pp*pp*sin_theta_p*sin_theta_p)*( 4.*ee*ee - q2 )/(K_dot_Pp*K_dot_Pp); 
+
+  amplitude += (pe*pe*sin_theta_e*sin_theta_e)*( 4.*ep*ep - q2 )/(K_dot_Pe*K_dot_Pe); 
+
+  amplitude += 2.*(pe*sin_theta_e)*(pp*sin_theta_p)*cos_phi*( 4.*ee*ep + q2 )/(K_dot_Pe*K_dot_Pp); 
+
+  amplitude += -2.*k*k*( pp*pp*sin_theta_p*sin_theta_p + pe*pe*sin_theta_e*sin_theta_e  
+			 + 2.*(pe*sin_theta_e)*(pp*sin_theta_p)*cos_phi )/(K_dot_Pe*K_dot_Pp); 
+    
+  amplitude *= - sin_theta_e*sin_theta_p * pp*pe/(k * q2*q2); 
+
+  return amplitude; 
+}
+//__________________________________________________________________________________________
+void BetheHeitlerGenerator::Project_onto_sieve(bool is_RHRS,
+					       const G4ThreeVector& R1_hcs,
+					       const G4ThreeVector& dR_hcs,
+					       double &x_sv,
+					       double &y_sv)
+{
+  //this assumes that 'R' and 'dR' are both given in Hall Coordinate System (HCS)
+
+  //R1 is a displacement vector, and dR is only a direction.
+  //so we need to construct R2, a second displacement vector.
+  auto R2_hcs = R1_hcs + dR_hcs;
+
+  auto R1 = ApexTargetGeometry::HCS_to_SCS(R1_hcs, is_RHRS);
+  auto R2 = ApexTargetGeometry::HCS_to_SCS(R2_hcs, is_RHRS);
+
+  auto S  = R2 - R1;
+
+  R1 += -1.*ApexTargetGeometry::Get_sieve_pos(is_RHRS);
+
+  x_sv = R1.x() + (S.x()/S.z())*(0. - R1.z());
+  y_sv = R1.y() + (S.y()/S.z())*(0. - R1.z());
+  return;
+}
+//__________________________________________________________________________________________

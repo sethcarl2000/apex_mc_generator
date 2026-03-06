@@ -467,6 +467,7 @@ HRSPrimaryGeneratorMessenger::HRSPrimaryGeneratorMessenger(HRSPrimaryGeneratorAc
   sieveYHighCmd->SetParameterName("sieve_y_high",false);
   sieveYHighCmd->SetDefaultValue(0.);
   sieveYHighCmd->SetDefaultUnit("mm");
+
   
   
   
@@ -548,7 +549,31 @@ HRSPrimaryGeneratorMessenger::HRSPrimaryGeneratorMessenger(HRSPrimaryGeneratorAc
     &HRSPrimaryGeneratorAction::Set_ElectronEnergyMax,
     "MeV", 1108*1.10
   ); 
-
+  /*
+  //command to toggle generation of bethe-heitler events
+  AddCmd_bool(
+	      "/mydet/generate_Bethe-Heitler",
+	      "generate_Bethe-Heitler",
+	      &HRSPrimaryGeneratorAction::Set_GenBetheHeitler,
+	      true
+	      );
+  */
+  
+  AddCmd_double_with_unit(
+			  "/mydet/pair_mass_min",
+			  "pair_mass_min",
+			  &HRSPrimaryGeneratorAction::Set_PairMassMin,
+			  "MeV", 120.
+			  );
+  AddCmd_double_with_unit(
+			  "/mydet/pair_mass_max",
+			  "pair_mass_max",
+			  &HRSPrimaryGeneratorAction::Set_PairMassMax,
+			  "MeV", 270.
+			  );
+  
+	      
+  
   //Beam energy
   AddCmd_double_with_unit(
      "/mydet/beam_energy",
