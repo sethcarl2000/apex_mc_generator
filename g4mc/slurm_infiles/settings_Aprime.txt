@@ -1,0 +1,46 @@
+/run/verbose 2
+/control/verbose 0
+/tracking/verbose 0
+/stepping/verbose 0
+/mydet/verbose 0
+/tracking/particleOnly e-
+
+/stepping/makeTXToutput false
+/stepping/killAtQ1 true
+
+/tracking/noSecondary 1
+/tracking/thisTrackOnly 0
+# see the same variable in HRSUsage.ini
+
+/mydet/particle1/momentumLow  1058 MeV
+/mydet/particle1/momentumHigh 1149 MeV
+
+/mydet/particleNum 1
+/mydet/particle1/particleName e-
+
+# we won't simulate the sieve for now. 
+/mydet/simulateSieve false
+
+# RHRS sieve-face acceptance cuts
+/mydet/R_sieveXLow    -85.0 mm
+/mydet/R_sieveXHigh    85.0 mm
+/mydet/R_sieveYLow   -100.0 mm 
+/mydet/R_sieveYHigh    20.0 mm
+
+# LHRS sieve-face acceptance cuts
+/mydet/L_sieveXLow    -85.0 mm
+/mydet/L_sieveXHigh    85.0 mm
+/mydet/L_sieveYLow    -20.0 mm 
+/mydet/L_sieveYHigh   100.0 mm
+
+
+# Momentum acceptance cuts for both arms
+/mydet/electron_energy_min 1030 MeV
+/mydet/electron_energy_max 1170 MeV
+
+# Beam energy (used for A' kinematic generation)
+/mydet/beam_energy 2200 MeV
+
+# Simulate the use of the 10 production foils
+/mydet/target_type production-foils
+

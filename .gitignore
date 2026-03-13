@@ -1,7 +1,11 @@
 g4mc/build
 g4mc/run
 
+# build files
 simc_hrs/build
 
+# root files
+*.root
 
-*.roo
+# emacs file backups
+*~
