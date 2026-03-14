@@ -3,3 +3,6 @@ g4mc/build
 simc_hrs/build
 
 *.roo
+
+# windows 'zone identifier' files
+*:Zone.Identifier
