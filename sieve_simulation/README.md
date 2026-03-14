@@ -1,18 +1,10 @@
--------------------------------------------------------------------
-
-     =========================================================
-     Geant4 - an Object-Oriented Toolkit for Simulation in HEP
-     =========================================================
-
-                            Example B1
-                            -----------
+\page ExampleB1 Example B1
 
  This example demonstrates a very simple application where an energy
  deposit is accounted in user actions and their associated objects
  and a dose in a selected volume is calculated.
 
-
- 1- GEOMETRY DEFINITION
+## GEOMETRY DEFINITION
 
    The geometry is constructed in the B1::DetectorConstruction class.
    The setup consists of a an envelope of box shape containing two
@@ -23,26 +15,32 @@
    are made from tissue and bone materials.
    The materials are created with the help of the G4NistManager class,
    which allows to build a material from the NIST database using their
-   names. All available materials can be found in the Geant4 User's Guide
-   for Application Developers, Appendix 10: Geant4 Materials Database.
+   names. Available materials and their compositions can be found in
+   <a href="http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides
+                                    /ForApplicationDeveloper/html/apas10.html">
+   the Geant4 User's Guide for Application Developers, Appendix 10:
+   Geant4 Materials Database
+   </a>.
 
- 2- PHYSICS LIST
+## PHYSICS LIST
 
    The particle's type and the physic processes which will be available
    in this example are set in the QBBC physics list. This physics list
    requires data files for electromagnetic and hadronic processes.
-   See more on installation of the datasets in Geant4 Installation Guide,
-   Chapter 3.3: Note On Geant4 Datasets:
-   http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides
-                                           /InstallationGuide/html/ch03s03.html
+   See more on installation of the datasets in
+   <a href="http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides
+                                         /InstallationGuide/html/ch03s03.html">
+   Geant4 Installation Guide, Chapter 3.3: Note On Geant4 Datasets </a>.
    The following datasets: G4LEDATA, G4LEVELGAMMADATA, G4NEUTRONXSDATA,
    G4SAIDXSDATA and G4ENSDFSTATEDATA are mandatory for this example.
 
    In addition the build-in interactive command:
-               /process/(in)activate processName
-   allows to activate/inactivate the processes one by one.
+```
+/process/(in)activate processName
+```
+     allows to activate/inactivate the processes one by one.
 
- 3- ACTION INITALIZATION
+## ACTION INITALIZATION
 
    A newly introduced class, B1::ActionInitialization, instantiates and registers
    to Geant4 kernel all user action classes.
@@ -58,7 +56,7 @@
       B1::ActionInitialization::BuildForMaster()
    which is invoked only in multi-threading mode.
 
- 4- PRIMARY GENERATOR
+## PRIMARY GENERATOR
 
    The primary generator is defined in the B1::PrimaryGeneratorAction class.
    The default kinematics is a 6 MeV gamma, randomly distributed in front
@@ -66,7 +64,7 @@
    This default setting can be changed via the Geant4 built-in commands
    of the G4ParticleGun class.
 
- 5- DETECTOR RESPONSE
+## DETECTOR RESPONSE
 
    This example demonstrates a simple scoring implemented directly
    in the user action classes.  Alternative ways of scoring via Geant4 classes
@@ -84,7 +82,7 @@
    workers is merged to the master in B1::RunAction::EndOfRunAction() and the final
    result is printed on the screen.
 
-   G4Parameter<G4double> type instead of G4double type is used for the B1::RunAction
+   G4Accumulable<G4double> type instead of G4double type is used for the B1::RunAction
    data members in order to facilitate merging of the values accumulated on workers
    to the master.  Currently the accumulables have to be registered to G4AccumulablesManager
    and G4AccumulablesManager::Merge() has to be called from the users code. This is planned
@@ -94,9 +92,9 @@
    An example of creating and computing new units (e.g., dose) is also shown
    in the class constructor.
 
- The following paragraphs are common to all basic examples
+<hr>
 
- A- VISUALISATION
+## VISUALISATION
 
    The visualization manager is set via the G4VisExecutive class
    in the main() function in exampleB1.cc.
@@ -104,69 +102,104 @@
    in the macro vis.mac. This macro is automatically read from
    the main function when the example is used in interactive running mode.
 
-   By default, vis.mac opens an OpenGL viewer (/vis/open OGL).
-   The user can change the initial viewer by commenting out this line
-   and instead uncommenting one of the other /vis/open statements, such as
-   HepRepFile or DAWNFILE (which produce files that can be viewed with the
-   HepRApp and DAWN viewers, respectively).  Note that one can always
-   open new viewers at any time from the command line.  For example, if
-   you already have a view in, say, an OpenGL window with a name
-   "viewer-0", then
-      /vis/open DAWNFILE
-   then to get the same view
-      /vis/viewer/copyView viewer-0
-   or to get the same view *plus* scene-modifications
-      /vis/viewer/set/all viewer-0
-   then to see the result
-      /vis/viewer/flush
+   By default, vis.mac opens the default viewer (/vis/open).
+   This chooses a graphics system (in order of priority):
+   - by argument in G4VisExecutive construction.
+   - by environment variable, G4VIS_DEFAULT_DRIVER.
+   - by information in ~/.g4session.
+   - by mode (batch/interactive) and if interactive, by your build flags.
 
-   The DAWNFILE, HepRepFile drivers are always available
+   The user can change the initial viewer
+   - with environment variable G4VIS_DEFAULT_DRIVER. The format is
+     ```
+     <graphics-system> [<window-size-hint>]
+     ```
+     Set this, e.g:
+     - (bash) export G4VIS_DEFAULT_DRIVER=TSG
+     - (tcsh) setenv G4VIS_DEFAULT_DRIVER OI
+       - The window-size-hint can optionally be added, e.g:
+       - (bash) export G4VIS_DEFAULT_DRIVER="RayTracerQt 1000x1000-0+0"
+   - on the command line, precede the app invocation, e.g:
+     - ```
+       G4VIS_DEFAULT_DRIVER=Vtk ./<application-name>
+       ```
+   - with ~/.g4session.
+
+   For other suggestions for G4VIS_DEFAULT_DRIVER (see list of registered
+   graphics systems printed at the start):
+   - DAWNFILE: to create a .prim file suitable for viewing in DAWN.
+   - VRML2FILE: to create a .wrl file suitable for viewing in a VRML viewer.
+   - "TSG_OFFSCREEN 1200x1200": to create an image file with TSG.
+     - See the tsg_offscreen.mac in examples/basic/B5 for more commands
+       to change the file format, file name, picture size, etc.
+
+   See "Choosing a graphics viewer" in the Application Guide for details.
+
+   Of course you can change the viewer by editing the /vis/open line in vis.mac.
+
+   Also, after the initial viewer opens, you may open a different viewer by typing
+   on the command line, e.g:
+```
+/vis/open DAWNFILE
+```
+   or
+```
+/vis/open RayTraceQt
+```
+   (if you are using the Qt GUI).
+
+   The view parameters of the existing viewer are copied.
+
+   The DAWNFILE and similar drivers are always available
    (since they require no external libraries), but the OGL driver requires
    that the Geant4 libraries have been built with the OpenGL option.
 
-   From Release 9.6 the vis.mac macro in example B1 has additional commands
+   The vis.mac macro in example B1 has additional commands
    that demonstrate additional functionality of the vis system, such as
    displaying text, axes, scales, date, logo and shows how to change
    viewpoint and style.  Consider copying these to other examples or
    your application.  To see even more commands use help or
    ls or browse the available UI commands in the Application
-   Developers Guide, Section 7.1.
+   Developers Guide, "Controlling Visualization from Commands".
 
-   For more information on visualization, including information on how to
-   install and run DAWN, OpenGL and HepRApp, see the visualization tutorials,
-   for example,
-   http://geant4.slac.stanford.edu/Presentations/vis/G4[VIS]Tutorial/G4[VIS]Tutorial.html
-   (where [VIS] can be replaced by DAWN, OpenGL and HepRApp)
-
-   The tracks are automatically drawn at the end of each event, accumulated
-   for all events and erased at the beginning of the next run.
-
- B- USER INTERFACES
+## USER INTERFACES
 
    The user command interface is set via the G4UIExecutive class
    in the main() function in exampleB1.cc
+
    The selection of the user command interface is then done automatically
    according to the Geant4 configuration or it can be done explicitly via
    the third argument of the G4UIExecutive constructor (see exampleB4a.cc).
 
- C- HOW TO RUN
+   The gui.mac macros are provided in examples B2, B4 and B5. This macro
+   is automatically executed if Geant4 is built with any GUI session.
+   It is also possible to customise the icons menu bar which is
+   demonstrated in the icons.mac macro in example B5.
 
-    - Execute exampleB1 in the 'interactive mode' with visualization:
-        % ./exampleB1
-      and type in the commands from run1.mac line by line:
-        Idle> /control/verbose 2
-        Idle> /tracking/verbose 1
-        Idle> /run/beamOn 10
-        Idle> ...
-        Idle> exit
+## HOW TO RUN
+
+   - Execute exampleB1 in the 'interactive mode' with visualization
+```
+% exampleB1
+and type in the commands from run1.mac line by line:
+Idle> /control/verbose 2
+Idle> /tracking/verbose 1
+Idle> /run/beamOn 10
+Idle> ...
+Idle> exit
+```
       or
-        Idle> /control/execute run1.mac
-        ....
-        Idle> exit
+```
+Idle> /control/execute run1.mac
+....
+Idle> exit
+```
 
-    - Execute exampleB1  in the 'batch' mode from macro files
-      (without visualization)
-        % ./exampleB1 run2.mac
-        % ./exampleB1 exampleB1.in > exampleB1.out
+   - Execute exampleB1 in the 'batch' mode from macro files
+   (without visualization)
+```
+% exampleB1 run2.mac
+% exampleB1 exampleB1.in > exampleB1.out
+```
 
 

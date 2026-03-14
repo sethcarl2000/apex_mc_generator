@@ -23,8 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file B1/include/EventAction.hh
+/// \file EventAction.hh
 /// \brief Definition of the B1::EventAction class
 
 #ifndef B1EventAction_h
@@ -33,13 +32,14 @@
 #include "G4UserEventAction.hh"
 #include "globals.hh"
 
-/// Event action class
-///
+class G4Event;
 
 namespace B1
 {
 
 class RunAction;
+
+/// Event action class
 
 class EventAction : public G4UserEventAction
 {
@@ -54,13 +54,11 @@ class EventAction : public G4UserEventAction
 
   private:
     RunAction* fRunAction = nullptr;
-    G4double   fEdep = 0.;
+    G4double fEdep = 0.;
 };
 
-}
+}  // namespace B1
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
-

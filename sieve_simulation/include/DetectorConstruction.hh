@@ -23,23 +23,21 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file B1/include/DetectorConstruction.hh
+/// \file DetectorConstruction.hh
 /// \brief Definition of the B1::DetectorConstruction class
 
 #ifndef B1DetectorConstruction_h
 #define B1DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
-#include "globals.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
 
-/// Detector construction class to define materials and geometry.
-
 namespace B1
 {
+
+/// Detector construction class to define materials and geometry.
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
@@ -55,7 +53,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4LogicalVolume* fScoringVolume = nullptr;
 };
 
-}
+}  // namespace B1
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

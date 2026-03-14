@@ -1,4 +1,4 @@
-set(CMAKE_C_COMPILER "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/bin/x86_64-conda-linux-gnu-cc")
+set(CMAKE_C_COMPILER "/home/sethcarl2000/miniconda3/envs/g4sbs-env/bin/x86_64-conda-linux-gnu-cc")
 set(CMAKE_C_COMPILER_ARG1 "")
 set(CMAKE_C_COMPILER_ID "GNU")
 set(CMAKE_C_COMPILER_VERSION "13.3.0")
@@ -18,15 +18,15 @@ set(CMAKE_C_SIMULATE_ID "")
 set(CMAKE_C_COMPILER_FRONTEND_VARIANT "GNU")
 set(CMAKE_C_SIMULATE_VERSION "")
 
-set(CMAKE_C_COMPILER_SYSROOT "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/bin/../x86_64-conda-linux-gnu/sysroot/usr")
-set(CMAKE_COMPILER_SYSROOT "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/bin/../x86_64-conda-linux-gnu/sysroot/usr")
+set(CMAKE_C_COMPILER_SYSROOT "/home/sethcarl2000/miniconda3/envs/g4sbs-env/bin/../x86_64-conda-linux-gnu/sysroot/usr")
+set(CMAKE_COMPILER_SYSROOT "/home/sethcarl2000/miniconda3/envs/g4sbs-env/bin/../x86_64-conda-linux-gnu/sysroot/usr")
 
 
-set(CMAKE_AR "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/bin/x86_64-conda-linux-gnu-ar")
-set(CMAKE_C_COMPILER_AR "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/bin/x86_64-conda-linux-gnu-gcc-ar")
-set(CMAKE_RANLIB "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/bin/x86_64-conda-linux-gnu-ranlib")
-set(CMAKE_C_COMPILER_RANLIB "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/bin/x86_64-conda-linux-gnu-gcc-ranlib")
-set(CMAKE_LINKER "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/bin/x86_64-conda-linux-gnu-ld")
+set(CMAKE_AR "/home/sethcarl2000/miniconda3/envs/g4sbs-env/bin/x86_64-conda-linux-gnu-ar")
+set(CMAKE_C_COMPILER_AR "/home/sethcarl2000/miniconda3/envs/g4sbs-env/bin/x86_64-conda-linux-gnu-gcc-ar")
+set(CMAKE_RANLIB "/home/sethcarl2000/miniconda3/envs/g4sbs-env/bin/x86_64-conda-linux-gnu-ranlib")
+set(CMAKE_C_COMPILER_RANLIB "/home/sethcarl2000/miniconda3/envs/g4sbs-env/bin/x86_64-conda-linux-gnu-gcc-ranlib")
+set(CMAKE_LINKER "/home/sethcarl2000/miniconda3/envs/g4sbs-env/bin/x86_64-conda-linux-gnu-ld")
 set(CMAKE_MT "")
 set(CMAKE_TAPI "CMAKE_TAPI-NOTFOUND")
 set(CMAKE_COMPILER_IS_GNUCC 1)
@@ -69,7 +69,7 @@ endif()
 
 
 
-set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/include;/home/sethcarl2000/miniconda3/envs/root_Geant4_env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include;/home/sethcarl2000/miniconda3/envs/root_Geant4_env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include-fixed;/home/sethcarl2000/miniconda3/envs/root_Geant4_env/x86_64-conda-linux-gnu/sysroot/usr/include")
+set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "/home/sethcarl2000/miniconda3/envs/g4sbs-env/include;/home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include;/home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include-fixed;/home/sethcarl2000/miniconda3/envs/g4sbs-env/x86_64-conda-linux-gnu/sysroot/usr/include")
 set(CMAKE_C_IMPLICIT_LINK_LIBRARIES "gcc;gcc_s;c;gcc;gcc_s")
-set(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "/home/sethcarl2000/miniconda3/envs/root_Geant4_env/lib;/home/sethcarl2000/miniconda3/envs/root_Geant4_env/lib/gcc/x86_64-conda-linux-gnu/13.3.0;/home/sethcarl2000/miniconda3/envs/root_Geant4_env/lib/gcc;/home/sethcarl2000/miniconda3/envs/root_Geant4_env/x86_64-conda-linux-gnu/lib;/home/sethcarl2000/miniconda3/envs/root_Geant4_env/x86_64-conda-linux-gnu/sysroot/lib;/home/sethcarl2000/miniconda3/envs/root_Geant4_env/x86_64-conda-linux-gnu/sysroot/usr/lib")
+set(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "/home/sethcarl2000/miniconda3/envs/g4sbs-env/lib;/home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0;/home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc;/home/sethcarl2000/miniconda3/envs/g4sbs-env/x86_64-conda-linux-gnu/lib;/home/sethcarl2000/miniconda3/envs/g4sbs-env/x86_64-conda-linux-gnu/sysroot/lib;/home/sethcarl2000/miniconda3/envs/g4sbs-env/x86_64-conda-linux-gnu/sysroot/usr/lib")
 set(CMAKE_C_IMPLICIT_LINK_FRAMEWORK_DIRECTORIES "")

@@ -23,8 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file B1/include/ActionInitialization.hh
+/// \file ActionInitialization.hh
 /// \brief Definition of the B1::ActionInitialization class
 
 #ifndef B1ActionInitialization_h
@@ -32,10 +31,10 @@
 
 #include "G4VUserActionInitialization.hh"
 
-/// Action initialization class.
-
 namespace B1
 {
+
+/// Action initialization class.
 
 class ActionInitialization : public G4VUserActionInitialization
 {
@@ -47,7 +46,7 @@ class ActionInitialization : public G4VUserActionInitialization
     void Build() const override;
 };
 
-}
+}  // namespace B1
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

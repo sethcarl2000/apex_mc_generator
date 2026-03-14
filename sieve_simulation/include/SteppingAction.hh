@@ -23,25 +23,23 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file B1/include/SteppingAction.hh
+/// \file SteppingAction.hh
 /// \brief Definition of the B1::SteppingAction class
 
 #ifndef B1SteppingAction_h
 #define B1SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
-#include "globals.hh"
 
 class G4LogicalVolume;
-
-/// Stepping action class
-///
+class G4Step;
 
 namespace B1
 {
 
 class EventAction;
+
+/// Stepping action class
 
 class SteppingAction : public G4UserSteppingAction
 {
@@ -57,7 +55,7 @@ class SteppingAction : public G4UserSteppingAction
     G4LogicalVolume* fScoringVolume = nullptr;
 };
 
-}
+}  // namespace B1
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

@@ -23,27 +23,27 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file B1/include/RunAction.hh
+/// \file RunAction.hh
 /// \brief Definition of the B1::RunAction class
 
 #ifndef B1RunAction_h
 #define B1RunAction_h 1
 
 #include "G4UserRunAction.hh"
+
 #include "G4Accumulable.hh"
 #include "globals.hh"
 
 class G4Run;
+
+namespace B1
+{
 
 /// Run action class
 ///
 /// In EndOfRunAction(), it calculates the dose in the selected volume
 /// from the energy deposit accumulated via stepping and event actions.
 /// The computed dose is then printed on the screen.
-
-namespace B1
-{
 
 class RunAction : public G4UserRunAction
 {
@@ -52,16 +52,15 @@ class RunAction : public G4UserRunAction
     ~RunAction() override = default;
 
     void BeginOfRunAction(const G4Run*) override;
-    void   EndOfRunAction(const G4Run*) override;
+    void EndOfRunAction(const G4Run*) override;
 
-    void AddEdep (G4double edep);
+    void AddEdep(G4double edep);
 
   private:
     G4Accumulable<G4double> fEdep = 0.;
     G4Accumulable<G4double> fEdep2 = 0.;
 };
 
-}
+}  // namespace B1
 
 #endif
-
