@@ -29,12 +29,21 @@
 #include "DetectorConstruction.hh"
 
 #include "G4Box.hh"
+#include "G4Tubs.hh"
 #include "G4Cons.hh"
 #include "G4LogicalVolume.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4VisAttributes.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4UnionSolid.hh"
+#include "G4MultiUnion.hh"
 #include "G4Trd.hh"
+
+namespace {
+  constexpr G4double inch = 2.54 * cm; 
+}
 
 namespace B1
 {
@@ -44,60 +53,161 @@ namespace B1
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
   // Get nist material manager
+  // 
   G4NistManager* nist = G4NistManager::Instance();
 
   // Envelope parameters
-  //
-  G4double env_sizeXY = 20 * cm, env_sizeZ = 30 * cm;
-  G4Material* env_mat = nist->FindOrBuildMaterial("G4_WATER");
+  // 
+  G4double env_sizeXY = 10 * cm, env_sizeZ = 10 * cm;
+  G4Material* env_mat = nist->FindOrBuildMaterial("G4_Galactic"); /// this represents a high-vaccuum environment 
 
   // Option to switch on/off checking of volumes overlaps
-  //
+  // 
   G4bool checkOverlaps = true;
+
+  
+  // 
+  // Tungsten sieve face 
+  // 
+  G4Material* tungsten_mat = nist->FindOrBuildMaterial("G4_W"); //tungsten material
+  
 
   //
   // World
   //
-  G4double world_sizeXY = 1.2 * env_sizeXY;
-  G4double world_sizeZ = 1.2 * env_sizeZ;
-  G4Material* world_mat = nist->FindOrBuildMaterial("G4_AIR");
+  G4double world_sizeXY = 10. * cm;
+  G4double world_sizeZ  = 10. * cm;
+  G4Material* world_mat = nist->FindOrBuildMaterial("G4_Galactic");
 
-  auto solidWorld =
-    new G4Box("World",  // its name
-              0.5 * world_sizeXY, 0.5 * world_sizeXY, 0.5 * world_sizeZ);  // its size
+  auto solidWorld = new G4Box(/*its name: */"World",  /*its dimensions: */world_sizeXY/2., world_sizeXY/2., world_sizeZ/2.); 
 
-  auto logicWorld = new G4LogicalVolume(solidWorld,  // its solid
-                                        world_mat,  // its material
-                                        "World");  // its name
+  auto logic_World = new G4LogicalVolume(
+    solidWorld,  // its solid
+    world_mat,  // its material
+    "World");  // its name
 
-  auto physWorld = new G4PVPlacement(nullptr,  // no rotation
-                                     G4ThreeVector(),  // at (0,0,0)
-                                     logicWorld,  // its logical volume
-                                     "World",  // its name
-                                     nullptr,  // its mother  volume
-                                     false,  // no boolean operation
-                                     0,  // copy number
-                                     checkOverlaps);  // overlaps checking
+  auto phys_World = new G4PVPlacement(
+    nullptr,  // no rotation
+    G4ThreeVector(),  // at (0,0,0)
+    logic_World,  // its logical volume
+    "World",  // its name
+    nullptr,  // its mother  volume
+    false,  // no boolean operation
+    0,  // copy number
+    checkOverlaps  // overlaps checking
+  ); 
+  
+  /// Position of the sieve
+  G4ThreeVector position_sieve(0., 0., 0.); 
+  /// Rotation of the sieve 
+  G4RotationMatrix *rotation_sieve = nullptr; 
+  
+  /// dimensions of the sieve 
+  const G4double sieve_dx = 3.250 * inch; 
+  const G4double sieve_dy = 4.250 * inch; 
+  const G4double sieve_dz = 0.500 * inch; 
 
-  //
-  // Envelope
-  //
-  auto solidEnv = new G4Box("Envelope",  // its name
-                            0.5 * env_sizeXY, 0.5 * env_sizeXY, 0.5 * env_sizeZ);  // its size
+  const G4double holeRad_small = 0.055/2. * inch; 
+  const G4double holeRad_back  = 0.075/2. * inch; 
+  const G4double holeRad_big   = 0.106/2. * inch; 
 
-  auto logicEnv = new G4LogicalVolume(solidEnv,  // its solid
-                                      env_mat,  // its material
-                                      "Envelope");  // its name
+  /// Sieve containter volume 
+  // Physical volume
+  auto solid_SieveContainer = new G4Box(
+    "sieve_container", 
+    (sieve_dx + 1*cm)/2.,
+    (sieve_dy + 1*cm)/2.,
+    (sieve_dz + 1*cm)/2. 
+  );
+  // logical volume
+  auto logic_sieveContainer = new G4LogicalVolume(
+    solid_SieveContainer, 
+    world_mat, 
+    "logic_sieveContainer"
+  );
+  //make the sieve container invisible
+  logic_sieveContainer->SetVisAttributes(G4VisAttributes::GetInvisible()); 
 
-  new G4PVPlacement(nullptr,  // no rotation
-                    G4ThreeVector(),  // at (0,0,0)
-                    logicEnv,  // its logical volume
-                    "Envelope",  // its name
-                    logicWorld,  // its mother  volume
-                    false,  // no boolean operation
-                    0,  // copy number
-                    checkOverlaps);  // overlaps checking
+  //place the sieve container in the world
+  new G4PVPlacement(
+    rotation_sieve, 
+    position_sieve, 
+    logic_sieveContainer,
+    "Sieve Container",
+    logic_World,
+    true, 
+    0, 
+    checkOverlaps
+  ); 
 
+  /// sieve face -----------------------------------------
+  // Solid volume
+  auto solid_sieveFace = new G4Box(
+    "solid_sieveFace", 
+    sieve_dx/2., 
+    sieve_dy/2., 
+    sieve_dz/2.
+  ); 
+  
+  // now, add sieve holes ass a 'subtraction volume'
+  auto solid_sieveHole_small = new G4Tubs(
+    "solid_sieveHole_small", 
+    0., holeRad_small, 
+    1.2*sieve_dz,
+    0., 2.*CLHEP::pi 
+  );
+
+  /// wider-back sieve hole
+  /// some sieve-holes have a larger bore diameter in the back-half of the sieve 
+  auto solid_sieveHole_back = new G4Tubs(
+    "solid_sieveHole_back",
+    0., holeRad_back, 
+    1.2*sieve_dz/2., 
+    0., 2.*CLHEP::pi
+  );
+  auto solid_sieveHole_wideBack = new G4UnionSolid(
+    "soild_sieveHole_wideBack",
+    solid_sieveHole_small, 
+    solid_sieveHole_back, 
+    G4Transform3D(G4RotationMatrix(), G4ThreeVector(0., 0., +1.2*sieve_dz/2.))
+  );
+
+
+
+  // logical sieve-hole volume 
+  auto logic_sieveHole_small = new G4LogicalVolume(
+    solid_sieveHole_small, 
+    world_mat, 
+    "logic_sieveHole_small"
+  ); 
+
+
+  // make a 'subtraction solid' of the sieve face (sieve face with holes drilled into it )
+  auto solid_sieveWithHoles = new G4SubtractionSolid(
+    "solid_sieveWithHoles", 
+    solid_sieveFace, 
+    solid_sieveHole_small, 
+    G4Transform3D(G4RotationMatrix(), G4ThreeVector())
+  ); 
+  // logical volume 
+  auto logic_sieveFace = new G4LogicalVolume(
+    solid_sieveWithHoles, 
+    tungsten_mat, 
+    "logic_sieveFace"
+  );
+  //add the fsieve face as a placement 
+  new G4PVPlacement(
+    nullptr,         // no rotation
+    G4ThreeVector(0., 0., 0.), // placement at origin
+    logic_sieveFace,
+    "Sieve Face",
+    logic_sieveContainer, 
+    0, 
+    checkOverlaps
+  ); 
+  // -----------------------------------------------------
+
+/*  
   //
   // Shape 1
   //
@@ -155,12 +265,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   // Set Shape2 as scoring volume
   //
-  fScoringVolume = logicShape2;
-
+*/ 
+  fScoringVolume = logic_sieveContainer;
   //
   // always return the physical World
   //
-  return physWorld;
+  return phys_World;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
