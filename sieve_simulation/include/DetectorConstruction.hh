@@ -31,6 +31,7 @@
 
 #include "G4VUserDetectorConstruction.hh"
 #include "G4MultiUnion.hh"
+#include "G4String.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -38,17 +39,25 @@ class G4LogicalVolume;
 namespace B1
 {
 
+class DetectorMessenger; 
+
 /// Detector construction class to define materials and geometry.
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
-    DetectorConstruction() = default;
-    ~DetectorConstruction() override = default;
+    DetectorConstruction();
+    ~DetectorConstruction() override;
 
     G4VPhysicalVolume* Construct() override;
 
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
+
+    /// @brief set which arm to use (RHRS or LHRS)
+    void SetArm(G4String arm); 
+
+    /// @return 'true' if RHRS, 'false' if LHRS
+    bool Is_RHRS() const { return f_is_RHRS; }
 
   protected:
     G4LogicalVolume* fScoringVolume = nullptr;
@@ -57,6 +66,10 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     /// @param is_RHRS true = RHRS, false = LHRS
     /// @return A multi-union solid of all sieve-holes for the arm
     G4MultiUnion* Generate_sieveHoles_solid(const bool is_RHRS); 
+
+    G4bool f_is_RHRS{false}; 
+
+    DetectorMessenger* fMessenger; 
 };
 
 }  // namespace B1

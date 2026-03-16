@@ -47,10 +47,14 @@ SteppingAction::SteppingAction(EventAction* eventAction) : fEventAction(eventAct
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
+  //ask the detector construction class for a ptr to the scoring volume
   if (!fScoringVolume) {
     const auto detConstruction = static_cast<const DetectorConstruction*>(
       G4RunManager::GetRunManager()->GetUserDetectorConstruction());
     fScoringVolume = detConstruction->GetScoringVolume();
+
+    //ask the detector construction which arm we're using 
+    f_is_RHRS = detConstruction->Is_RHRS(); 
   }
 
   // get volume of the current step

@@ -27,6 +27,7 @@
 /// \brief Implementation of the B1::DetectorConstruction class
 
 #include "DetectorConstruction.hh"
+#include "DetectorMessenger.hh"
 
 #include "G4Box.hh"
 #include "G4Tubs.hh"
@@ -46,6 +47,7 @@
 
 namespace {
   constexpr G4double inch = 2.54 * cm; 
+  constexpr G4double deg_to_rad = CLHEP::pi / 180.; 
 
 }
 
@@ -53,10 +55,22 @@ namespace B1
 {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+DetectorConstruction::DetectorConstruction()
+{
+  fMessenger = new DetectorMessenger(this); 
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+DetectorConstruction::~DetectorConstruction()
+{
+  delete fMessenger; 
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
-  const bool is_RHRS = false; 
+  const bool is_RHRS = Is_RHRS(); 
   
   // Get nist material manager
   // 
@@ -108,11 +122,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   const G4double sieve_dy = 3.250 * inch; 
   const G4double sieve_dz = 0.500 * inch; 
 
+  const G4double sieve_y_angle = is_RHRS ? -25. * deg_to_rad : +25. * deg_to_rad; 
+
   /// Position of the sieve
   G4ThreeVector position_sieve(0., 0., +sieve_dz/2.); 
   /// Rotation of the sieve 
   G4RotationMatrix *rotation_sieve = new G4RotationMatrix(
-    CLHEP::HepRotationX(25.*CLHEP::pi/180.) * CLHEP::HepRotationZ(CLHEP::pi/2) 
+    CLHEP::HepRotationX(sieve_y_angle) * CLHEP::HepRotationZ(CLHEP::pi/2) 
   );
   
   
@@ -299,6 +315,11 @@ G4MultiUnion* DetectorConstruction::Generate_sieveHoles_solid(const bool is_RHRS
   solid_allSieveHoles->Voxelize(); 
 
   return solid_allSieveHoles; 
+}
+
+void DetectorConstruction::SetArm(G4String arm)
+{
+  if (arm=="RHRS") { f_is_RHRS=true; } else { f_is_RHRS=false; } 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

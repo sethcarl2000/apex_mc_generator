@@ -53,6 +53,9 @@ class SteppingAction : public G4UserSteppingAction
   private:
     EventAction* fEventAction = nullptr;
     G4LogicalVolume* fScoringVolume = nullptr;
+
+    /// 'true' if RHRS, 'false' if LHRS
+    bool f_is_RHRS{false}; 
 };
 
 }  // namespace B1
