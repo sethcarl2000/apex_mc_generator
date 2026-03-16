@@ -28,6 +28,7 @@
 
 #include "DetectorConstruction.hh"
 #include "DetectorMessenger.hh"
+#include "ApexTargetGeometry.hh"
 
 #include "G4Box.hh"
 #include "G4Tubs.hh"
@@ -44,6 +45,8 @@
 #include "G4UnionSolid.hh"
 #include "G4MultiUnion.hh"
 #include "G4Trd.hh"
+
+#include <stdio.h> 
 
 namespace {
   constexpr G4double inch = 2.54 * cm; 
@@ -95,11 +98,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
   // World
   //
-  G4double world_sizeXY = 10. * cm;
-  G4double world_sizeZ  = 10. * cm;
+  G4double world_sizeXY = 100. * mm;
+  G4double world_sizeZ  = 1600.* mm;
   G4Material* world_mat = nist->FindOrBuildMaterial("G4_Galactic");
 
-  auto solidWorld = new G4Box(/*its name: */"World",  /*its dimensions: */world_sizeXY/2., world_sizeXY/2., world_sizeZ/2.); 
+  auto solidWorld = new G4Box("World",  // its name:
+    // its dimensions
+    world_sizeXY/2., world_sizeXY/2., world_sizeZ/2.
+  ); 
 
   auto logic_World = new G4LogicalVolume(
     solidWorld,  // its solid
@@ -122,14 +128,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   const G4double sieve_dy = 3.250 * inch; 
   const G4double sieve_dz = 0.500 * inch; 
 
-  const G4double sieve_y_angle = is_RHRS ? -25. * deg_to_rad : +25. * deg_to_rad; 
+  const G4double sieve_y_angle = ApexTargetGeometry::Get_sieve_angle(is_RHRS); 
 
-  /// Position of the sieve
-  G4ThreeVector position_sieve(0., 0., +sieve_dz/2.); 
+  
   /// Rotation of the sieve 
   G4RotationMatrix *rotation_sieve = new G4RotationMatrix(
-    CLHEP::HepRotationX(sieve_y_angle) * CLHEP::HepRotationZ(CLHEP::pi/2) 
+    CLHEP::HepRotationY(sieve_y_angle) * CLHEP::HepRotationZ(-CLHEP::pi/2)  
   );
+  
+  /// Position of the sieve
+  /// this function gives the sieve position in SIEVE coordinates, so we need to rotate it to HALL coordinates
+  G4ThreeVector position_sieve = ApexTargetGeometry::Get_sieve_pos(is_RHRS); 
+  position_sieve = (*rotation_sieve) * position_sieve; 
+
+  printf("sieve position: %f, %f, %f\n", position_sieve[0], position_sieve[1], position_sieve[2]);  
   
   
   /// Sieve containter volume 
@@ -138,7 +150,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     "sieve_container", 
     (sieve_dx + 1*cm)/2.,
     (sieve_dy + 1*cm)/2.,
-    (sieve_dz + 1*cm)/2. 
+    (sieve_dz + 2*cm)/2. 
   );
   // logical volume
   auto logic_sieveContainer = new G4LogicalVolume(
@@ -192,8 +204,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   logic_sieveFace->SetVisAttributes(G4VisAttributes(true)); 
   //add the fsieve face as a placement 
   new G4PVPlacement(
-    nullptr,         // no rotation
-    G4ThreeVector(0., 0., 0.), // placement at origin
+    nullptr,         // no rotation relative to the sieve's container volume
+    G4ThreeVector(0., 0., +sieve_dz/2.), //place the sieve within its container volume such that the upstream face of the central 'big hole' is the defined origin of the sieve block.
     logic_sieveFace,
     "Sieve Face",
     logic_sieveContainer, 
