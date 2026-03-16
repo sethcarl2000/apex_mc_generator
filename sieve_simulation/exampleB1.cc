@@ -90,9 +90,8 @@ int main(int argc, char** argv)
   //
   if (!ui) {
     // batch mode
-    G4String command = "/control/execute ";
-    G4String fileName = argv[1];
-    UImanager->ApplyCommand(command + fileName);
+    G4String command  = "/control/execute " + G4String(argv[1]);
+    UImanager->ApplyCommand(command);
   }
   else {
     // interactive mode

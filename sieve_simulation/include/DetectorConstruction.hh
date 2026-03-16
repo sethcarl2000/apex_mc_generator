@@ -30,6 +30,7 @@
 #define B1DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include "G4MultiUnion.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -51,6 +52,11 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
   protected:
     G4LogicalVolume* fScoringVolume = nullptr;
+    
+    /// @brief Generate multi-union solid of all sieve holes
+    /// @param is_RHRS true = RHRS, false = LHRS
+    /// @return A multi-union solid of all sieve-holes for the arm
+    G4MultiUnion* Generate_sieveHoles_solid(const bool is_RHRS); 
 };
 
 }  // namespace B1

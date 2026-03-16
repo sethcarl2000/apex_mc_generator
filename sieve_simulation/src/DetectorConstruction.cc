@@ -43,6 +43,7 @@
 
 namespace {
   constexpr G4double inch = 2.54 * cm; 
+
 }
 
 namespace B1
@@ -52,6 +53,8 @@ namespace B1
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
+  const bool is_RHRS = false; 
+  
   // Get nist material manager
   // 
   G4NistManager* nist = G4NistManager::Instance();
@@ -107,10 +110,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   const G4double sieve_dy = 4.250 * inch; 
   const G4double sieve_dz = 0.500 * inch; 
 
-  const G4double holeRad_small = 0.055/2. * inch; 
-  const G4double holeRad_back  = 0.075/2. * inch; 
-  const G4double holeRad_big   = 0.106/2. * inch; 
-
   /// Sieve containter volume 
   // Physical volume
   auto solid_SieveContainer = new G4Box(
@@ -141,60 +140,34 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   ); 
 
   /// sieve face -----------------------------------------
+
   // Solid volume
   auto solid_sieveFace = new G4Box(
     "solid_sieveFace", 
     sieve_dx/2., 
     sieve_dy/2., 
     sieve_dz/2.
-  ); 
-  
-  // now, add sieve holes ass a 'subtraction volume'
-  auto solid_sieveHole_small = new G4Tubs(
-    "solid_sieveHole_small", 
-    0., holeRad_small, 
-    1.2*sieve_dz,
-    0., 2.*CLHEP::pi 
-  );
+  );   
+  // first, we create 3 different types of sieve-holes:
 
-  /// wider-back sieve hole
-  /// some sieve-holes have a larger bore diameter in the back-half of the sieve 
-  auto solid_sieveHole_back = new G4Tubs(
-    "solid_sieveHole_back",
-    0., holeRad_back, 
-    1.2*sieve_dz/2., 
-    0., 2.*CLHEP::pi
-  );
-  auto solid_sieveHole_wideBack = new G4UnionSolid(
-    "soild_sieveHole_wideBack",
-    solid_sieveHole_small, 
-    solid_sieveHole_back, 
-    G4Transform3D(G4RotationMatrix(), G4ThreeVector(0., 0., +1.2*sieve_dz/2.))
-  );
-
-
-
-  // logical sieve-hole volume 
-  auto logic_sieveHole_small = new G4LogicalVolume(
-    solid_sieveHole_small, 
-    world_mat, 
-    "logic_sieveHole_small"
-  ); 
-
+  auto solid_allSieveHoles = Generate_sieveHoles_solid(is_RHRS); 
 
   // make a 'subtraction solid' of the sieve face (sieve face with holes drilled into it )
   auto solid_sieveWithHoles = new G4SubtractionSolid(
     "solid_sieveWithHoles", 
     solid_sieveFace, 
-    solid_sieveHole_small, 
+    solid_allSieveHoles, 
     G4Transform3D(G4RotationMatrix(), G4ThreeVector())
   ); 
+  //solid_sieveWithHoles->CreatePolyhedron(); 
+
   // logical volume 
   auto logic_sieveFace = new G4LogicalVolume(
     solid_sieveWithHoles, 
     tungsten_mat, 
     "logic_sieveFace"
   );
+  logic_sieveFace->SetVisAttributes(G4VisAttributes(true)); 
   //add the fsieve face as a placement 
   new G4PVPlacement(
     nullptr,         // no rotation
@@ -202,6 +175,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     logic_sieveFace,
     "Sieve Face",
     logic_sieveContainer, 
+    true, 
     0, 
     checkOverlaps
   ); 
@@ -268,9 +242,116 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 */ 
   fScoringVolume = logic_sieveContainer;
   //
-  // always return the physical World
+  //  always return the physical World
   //
   return phys_World;
+}
+
+G4MultiUnion* DetectorConstruction::Generate_sieveHoles_solid(const bool is_RHRS)
+{     
+  const G4double sieve_dz = 0.500 * inch; 
+
+  const G4double holeRad_small = 0.055/2. * inch; 
+  const G4double holeRad_back  = 0.075/2. * inch; 
+  const G4double holeRad_big   = 0.106/2. * inch; 
+
+  /// A 'small' sieve-hole with a constant bore diameter
+  auto solid_sieveHole_small = new G4Tubs(
+    "solid_sieveHole_small", 
+    0., holeRad_small, 
+    1.2*sieve_dz,
+    0., 2.*CLHEP::pi 
+  );
+
+  /// A 'big' sieve-hole with a constnat bore diameter
+  auto solid_sieveHole_big = new G4Tubs(
+    "solid_sieveHole_small", 
+    0., holeRad_big, 
+    1.2*sieve_dz,
+    0., 2.*CLHEP::pi 
+  );
+
+  /// A sieve-hole with a wider diameter at the back 
+  auto solid_sieveHole_wideBack = new G4UnionSolid(
+    "soild_sieveHole_wideBack",
+    solid_sieveHole_small, 
+    new G4Tubs(               //this is the wider-radius downstream part of the hole 
+      "solid_sieveHole_back",
+      0., holeRad_back, 
+      1.2*sieve_dz/2., 
+      0., 2.*CLHEP::pi
+    ),
+    G4Transform3D(G4RotationMatrix(), G4ThreeVector(0., 0., +1.2*sieve_dz/2.))
+  );
+
+  //now, let's put them all in one place 
+  auto solid_allSieveHoles = new G4MultiUnion("solid_allSieveHoles"); 
+
+  const double dx = 0.230 * inch; //all units in meters
+
+  //the sign is different here, because the L & R-sieves are mirror-images of
+  // of one another
+  const double dy = is_RHRS ? +0.190 * inch : -0.190 * inch;
+  
+  //the first row is 8 rows above (-x) the center hole
+  const double x0 = -dx * 8.; 
+  //the first column is 7-spaces +y from the center
+  const double y0 =  dy * 7.; 
+
+  const int nRows=17; 
+  for (int row=0; row<nRows; row++) { 
+      //17 rows in total, numbered 0-16.
+      // row 0 is the highest in HCS, so lowest-X in TCS.
+      // Recall that in TCS, the central 'big hole' is the origin of x & y.
+      
+      //even rows are shifted in +y half a col-spacing
+      bool evenRow = (row % 2==0); 
+      int nCols;
+      if (evenRow) { nCols = 15; }
+      else  {
+          if (row==1 || row==15) {nCols = 12;} //each odd row has a 'gap' missing, except these two
+          else                   {nCols = 11;}
+      } 
+      
+      for (int col=0; col<nCols; col++) { 
+      
+          //check wheter this hole is a 'big' hole
+          bool bigHole ((row==8 && col==7) || (row==12 && col==3)); 
+
+          //get this hole's x-position
+          double x = x0 + ((double)row)*dx;
+          double y = y0 - ((double)col)*dy;
+
+          if (!evenRow) { 
+              y += -dy/2.; //odd-holes are shifted in y a bit
+              //skip over the gap which happens in some rows, but not these. 
+              if ( (row!=1 && row!=15) && col>5 ) y += -dy; 
+          }
+
+          //find out what kind of sieve hole this is 
+          G4VSolid* hole_solid; 
+          
+          if (bigHole) {
+            hole_solid = solid_sieveHole_big;
+          } else {
+            if ((row <= 2 || row >= 14) && col <= 12) {
+              hole_solid = solid_sieveHole_wideBack; 
+            } else {
+              hole_solid = solid_sieveHole_small; 
+            }
+          } 
+
+          solid_allSieveHoles->AddNode(
+            hole_solid, 
+            G4Transform3D(G4RotationMatrix(), G4ThreeVector(x, y, 0.))
+          );
+
+      }//for (int col=0; col<nCols; col++) 
+  }//for (int row=0; row<nRows; row++) 
+
+  solid_allSieveHoles->Voxelize(); 
+
+  return solid_allSieveHoles; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
