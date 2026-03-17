@@ -44,6 +44,7 @@
 #include "G4UnionSolid.hh"
 #include "G4MultiUnion.hh"
 #include "G4Trd.hh"
+#include "RunParameters.hh"
 
 #include <stdio.h> 
 
@@ -63,16 +64,6 @@ DetectorConstruction::DetectorConstruction()
   fMessenger = new UserMessenger<DetectorConstruction>(this); 
   
   G4String command_prefix = "/detector/"; 
-  
-  //add all the commands we want
-  fMessenger->AddCommand_string(
-    command_prefix + "arm",  //command name
-    "HRS_arm",               // parameter name
-    &DetectorConstruction::SetArm, // associated function in DetectorConstruction
-    "RHRS",                  // default value
-    "RHRS LHRS",             // possible valid inputs
-    "Deterimes whether the LHRS or RHRS will be simulated. valid inputs are 'RHRS or LHRS'"
-  ); 
 
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -86,7 +77,7 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
-  const bool is_RHRS = Is_RHRS(); 
+  const bool is_RHRS = RunParameters::Instance()->Is_RHRS(); 
   
   // Get nist material manager
   // 

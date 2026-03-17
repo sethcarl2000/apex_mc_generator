@@ -32,6 +32,7 @@
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "SteppingAction.hh"
+#include "RunParameters.hh"
 
 namespace B1
 {
@@ -42,6 +43,9 @@ void ActionInitialization::BuildForMaster() const
 {
   auto runAction = new RunAction;
   SetUserAction(runAction);
+  
+  //initalize the run parameters
+  RunParameters::Instance(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
