@@ -43,6 +43,8 @@ namespace B1
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
+  fMessenger = new UserMessenger<PrimaryGeneratorAction>(this); 
+
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
 

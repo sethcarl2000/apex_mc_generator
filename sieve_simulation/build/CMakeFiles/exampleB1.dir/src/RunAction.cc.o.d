@@ -268,6 +268,70 @@ CMakeFiles/exampleB1.dir/src/RunAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/globals.hh \
  /home/sethcarl2000/j_research_linux/apex_mc_generator/sieve_simulation/include/DetectorConstruction.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VUserDetectorConstruction.hh \
+ /home/sethcarl2000/j_research_linux/apex_mc_generator/sieve_simulation/include/UserMessenger.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcommand.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ApplicationState.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ThreeVector.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ThreeVector.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/defs.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ThreeVector.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIparameter.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UImessenger.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIdirectory.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcommand.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4String.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcmdWithAString.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4MultiUnion.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/geomdefs.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Transform3D.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Transform3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/defs.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Transform3D.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/Rotation.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationInterfaces.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/LorentzVector.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/LorentzVector.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ZMxpv.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/AxisAngle.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/AxisAngle.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationInterfaces.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationX.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationX.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Units/PhysicalConstants.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Units/defs.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Units/SystemOfUnits.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationY.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationY.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationZ.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationZ.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/Rotation.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Point3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/BasicVector3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Vector3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Normal3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Point3D.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Vector3D.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4SurfBits.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Voxelizer.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4RotationMatrix.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Box.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomTypes.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomConfig.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4CSGSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Polyhedron.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/HepPolyhedron.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4TwoVector.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/TwoVector.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/TwoVector.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Normal3D.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Visible.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Visible.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Box.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VFacet.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/windefs.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Voxelizer.icc \
  /home/sethcarl2000/j_research_linux/apex_mc_generator/sieve_simulation/include/PrimaryGeneratorAction.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VUserPrimaryGeneratorAction.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4AccumulableManager.hh \
@@ -309,30 +373,6 @@ CMakeFiles/exampleB1.dir/src/RunAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/this_thread_sleep.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Region.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VPhysicalVolume.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/geomdefs.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4RotationMatrix.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ThreeVector.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ThreeVector.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/defs.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ThreeVector.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/Rotation.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationInterfaces.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/LorentzVector.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/LorentzVector.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ZMxpv.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/AxisAngle.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/AxisAngle.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationInterfaces.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationX.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationX.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Units/PhysicalConstants.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Units/defs.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Units/SystemOfUnits.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationY.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationY.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationZ.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationZ.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/Rotation.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VPhysicalVolume.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4LogicalVolume.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ParticleDefinition.hh \
@@ -386,14 +426,6 @@ CMakeFiles/exampleB1.dir/src/RunAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4NavigationHistory.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/x86_64-conda-linux-gnu/sysroot/usr/include/assert.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4AffineTransform.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Transform3D.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Transform3D.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/defs.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Transform3D.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Point3D.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/BasicVector3D.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Vector3D.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Normal3D.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4AffineTransform.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4NavigationLevel.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4NavigationLevelRep.hh \
@@ -447,8 +479,6 @@ CMakeFiles/exampleB1.dir/src/RunAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Navigator.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4NormalNavigation.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VNavigation.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4AuxiliaryNavServices.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4AuxiliaryNavServices.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4NormalNavigation.icc \
@@ -554,10 +584,6 @@ CMakeFiles/exampleB1.dir/src/RunAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/trkgdefs.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4TrackingMessenger.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UImessenger.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIdirectory.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcommand.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ApplicationState.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIparameter.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UserTrackingAction.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4RunManagerKernel.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/rundefs.hh \

@@ -3,11 +3,12 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/x86_64-conda-linux-gnu/sysroot/usr/include/stdc-predef.h \
  /home/sethcarl2000/j_research_linux/apex_mc_generator/sieve_simulation/include/PrimaryGeneratorAction.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VUserPrimaryGeneratorAction.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Box.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomTypes.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomConfig.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4CSGSolid.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.hh \
+ /home/sethcarl2000/j_research_linux/apex_mc_generator/sieve_simulation/include/UserMessenger.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcommand.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ApplicationState.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ThreeVector.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/globals.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ios.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Types.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GlobalConfig.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/complex \
@@ -190,7 +191,7 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/istream.tcc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/sstream.tcc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/tls.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4String.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/iostream \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/algorithm \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/stl_algo.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/algorithmfwd.h \
@@ -199,14 +200,11 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/stl_tempbuf.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/pstl/glue_algorithm_defs.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/pstl/execution_defs.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4String.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/cstring \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/x86_64-conda-linux-gnu/sysroot/usr/include/string.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/x86_64-conda-linux-gnu/sysroot/usr/include/bits/string3.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/iostream \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4String.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/geomdefs.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/globals.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ios.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/templates.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/climits \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/limits.h \
@@ -247,15 +245,35 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/parse_numbers.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/std_mutex.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/unique_lock.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ThreeVector.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ThreeVector.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/defs.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ThreeVector.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIparameter.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/vector \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/stl_uninitialized.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/stl_vector.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/stl_bvector.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/vector.tcc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UImessenger.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIdirectory.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcommand.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4String.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcmdWithAString.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/functional \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/std_function.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/unordered_map \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/unordered_map.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/hashtable.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/hashtable_policy.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/enable_special_members.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/array \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/compare \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Box.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomTypes.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomConfig.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4CSGSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/geomdefs.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Polyhedron.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/HepPolyhedron.h \
@@ -317,7 +335,6 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/future \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/atomic_futex.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/atomic \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/std_function.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/std_thread.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/thread \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/this_thread_sleep.h \
@@ -363,8 +380,6 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Random/Hurd288Engine.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Random/JamesRandom.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Random/MixMaxRng.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/array \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/compare \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Random/MTwistEngine.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Random/RandEngine.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Random/RanecuEngine.h \

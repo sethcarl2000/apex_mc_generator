@@ -246,30 +246,35 @@ CMakeFiles/exampleB1.dir/src/DetectorConstruction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/stl_vector.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/stl_bvector.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/vector.tcc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Box.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomTypes.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomConfig.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4CSGSolid.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/geomdefs.hh \
+ /home/sethcarl2000/j_research_linux/apex_mc_generator/sieve_simulation/include/UserMessenger.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcommand.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ApplicationState.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ThreeVector.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ThreeVector.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/defs.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/ThreeVector.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIparameter.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UImessenger.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIdirectory.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcommand.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4String.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UIcmdWithAString.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/functional \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/std_function.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/unordered_map \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/unordered_map.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/hashtable.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/hashtable_policy.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/enable_special_members.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/array \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/compare \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4MultiUnion.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/geomdefs.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VSolid.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Polyhedron.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/HepPolyhedron.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4TwoVector.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/TwoVector.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/TwoVector.icc \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Point3D.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Point3D.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/defs.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/BasicVector3D.h \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Normal3D.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Normal3D.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Transform3D.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Transform3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/defs.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Transform3D.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/Rotation.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationInterfaces.h \
@@ -289,10 +294,37 @@ CMakeFiles/exampleB1.dir/src/DetectorConstruction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationZ.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/RotationZ.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/Rotation.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Point3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/BasicVector3D.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Vector3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Geometry/Normal3D.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Point3D.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Vector3D.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4SurfBits.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Voxelizer.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4RotationMatrix.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Box.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomTypes.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4GeomConfig.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4CSGSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Polyhedron.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/HepPolyhedron.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4TwoVector.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/TwoVector.h \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/CLHEP/Vector/TwoVector.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Normal3D.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Visible.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Visible.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Box.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VFacet.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/windefs.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Voxelizer.icc \
+ /home/sethcarl2000/j_research_linux/apex_mc_generator/sieve_simulation/include/ApexTargetGeometry.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4ThreeVector.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4SystemOfUnits.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Box.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Tubs.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Tubs.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Cons.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Cons.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4LogicalVolume.hh \
@@ -319,13 +351,11 @@ CMakeFiles/exampleB1.dir/src/DetectorConstruction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/future \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/atomic_futex.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/atomic \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/std_function.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/std_thread.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/thread \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/lib/gcc/x86_64-conda-linux-gnu/13.3.0/include/c++/bits/this_thread_sleep.h \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Region.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VPhysicalVolume.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4RotationMatrix.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VPhysicalVolume.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4LogicalVolume.icc \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4NistManager.hh \
@@ -362,6 +392,18 @@ CMakeFiles/exampleB1.dir/src/DetectorConstruction.cc.o: \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Pow.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Exp.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4PVPlacement.hh \
- /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4SystemOfUnits.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VisAttributes.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/graphics_reps_defs.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Colour.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Color.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VisAttributes.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4SubtractionSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4BooleanSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4DisplacedSolid.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4AffineTransform.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4AffineTransform.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4VBooleanProcessor.hh \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4BooleanSolid.icc \
+ /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4UnionSolid.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Trd.hh \
  /home/sethcarl2000/miniconda3/envs/g4sbs-env/include/Geant4/G4Trd.icc

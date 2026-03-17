@@ -30,6 +30,7 @@
 #define B1DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include "UserMessenger.hh"
 #include "G4MultiUnion.hh"
 #include "G4String.hh"
 
@@ -69,7 +70,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     G4bool f_is_RHRS{false}; 
 
-    DetectorMessenger* fMessenger; 
+    //DetectorMessenger* fMessenger; 
+    //this class' messenger 
+    UserMessenger<DetectorConstruction> *fMessenger; 
 };
 
 }  // namespace B1

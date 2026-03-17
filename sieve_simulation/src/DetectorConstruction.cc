@@ -27,7 +27,6 @@
 /// \brief Implementation of the B1::DetectorConstruction class
 
 #include "DetectorConstruction.hh"
-#include "DetectorMessenger.hh"
 #include "ApexTargetGeometry.hh"
 
 #include "G4Box.hh"
@@ -60,7 +59,21 @@ namespace B1
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 DetectorConstruction::DetectorConstruction()
 {
-  fMessenger = new DetectorMessenger(this); 
+  //fMessenger = new DetectorMessenger(this); 
+  fMessenger = new UserMessenger<DetectorConstruction>(this); 
+  
+  G4String command_prefix = "/detector/"; 
+  
+  //add all the commands we want
+  fMessenger->AddCommand_string(
+    command_prefix + "arm",  //command name
+    "HRS_arm",               // parameter name
+    &DetectorConstruction::SetArm, // associated function in DetectorConstruction
+    "RHRS",                  // default value
+    "RHRS LHRS",             // possible valid inputs
+    "Deterimes whether the LHRS or RHRS will be simulated. valid inputs are 'RHRS or LHRS'"
+  ); 
+
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 DetectorConstruction::~DetectorConstruction()

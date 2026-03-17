@@ -10,7 +10,7 @@
 /run/numberOfThreads 4
 #
 # specify which arm to use
-/detector/arm RHRS
+/detector/arm LHRS
 # 
 # Initialize kernel
 /run/initialize

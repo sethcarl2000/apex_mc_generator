@@ -30,6 +30,7 @@
 #define B1PrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "UserMessenger.hh"
 
 class G4ParticleGun;
 class G4Event;
@@ -56,6 +57,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
 
   private:
+
+    UserMessenger<PrimaryGeneratorAction> *fMessenger; 
+
     G4ParticleGun* fParticleGun = nullptr;  // pointer a to G4 gun class
     G4Box* fEnvelopeBox = nullptr;
 };
