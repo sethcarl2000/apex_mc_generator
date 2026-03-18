@@ -29,6 +29,7 @@
 #include "DetectorConstruction.hh"
 #include "ApexTargetGeometry.hh"
 
+#include "G4VSolid.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
 #include "G4Cons.hh"
@@ -75,7 +76,9 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
-  const bool is_RHRS = RunParameters::Instance()->Is_RHRS(); 
+  const RunParameters* run_params = RunParameters::Instance(); 
+
+  const bool is_RHRS = run_params->Is_RHRS(); 
   
   // Get nist material manager
   // 
@@ -197,6 +200,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   ); 
   //solid_sieveWithHoles->CreatePolyhedron(); 
 
+  // Let's make the target 
+  
+
   // logical volume 
   auto logic_sieveFace = new G4LogicalVolume(
     solid_sieveWithHoles, 
@@ -244,7 +250,39 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   );
   fScoringVolume = logic_scoringVolume; 
 
-  fScoringVolume = logic_sieveContainer;
+
+  //now, we construct the target
+  G4String target_name = run_params->GetTargetName(); 
+
+  G4VSolid *solid_target = nullptr; 
+  G4RotationMatrix* rotation_target; 
+
+  //if (target_name == "V1") {  
+    solid_target = new G4Tubs(
+      "solid_V1", 
+      0., 100./2.*um, 
+      1.*cm,
+      0., 2.*CLHEP::pi
+    ); 
+    rotation_target = new G4RotationMatrix( CLHEP::HepRotationX(CLHEP::pi/2.) ); 
+  //} 
+
+  auto logic_target = new G4LogicalVolume(
+    solid_target, 
+    tungsten_mat, 
+    "logic_target"
+  ); 
+  new G4PVPlacement(
+    rotation_target,
+    ApexTargetGeometry::GetTargetPosition(target_name),
+    logic_target, 
+    "Target", 
+    logic_World, 
+    false, 
+    0, 
+    false
+  );
+
   //
   //  always return the physical World
   //
@@ -356,11 +394,6 @@ G4MultiUnion* DetectorConstruction::Generate_sieveHoles_solid(const bool is_RHRS
   solid_allSieveHoles->Voxelize(); 
 
   return solid_allSieveHoles; 
-}
-
-void DetectorConstruction::SetArm(G4String arm)
-{
-  if (arm=="RHRS") { f_is_RHRS=true; } else { f_is_RHRS=false; } 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
