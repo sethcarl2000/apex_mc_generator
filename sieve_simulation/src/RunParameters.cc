@@ -36,6 +36,7 @@ RunParameters::RunParameters()
         "Determines path for output data file" 
     ); 
 
+    //minimum momentum 
     fMessenger->AddCommand_doubleWithUnit(
         cmd_prefix + "min_momentum", 
         "min_momentum", 
@@ -45,6 +46,7 @@ RunParameters::RunParameters()
         "Minimum momentum of leptons to be saved to the output file"
     ); 
 
+    //maximum momentum 
     fMessenger->AddCommand_doubleWithUnit(
         cmd_prefix + "max_momentum", 
         "max_momentum", 
@@ -53,6 +55,27 @@ RunParameters::RunParameters()
         "MeV", 
         "Maximum momentum of leptons to be saved to the output file"
     ); 
+    
+    //choose which target to use 
+    fMessenger->AddCommand_string(
+        cmd_prefix + "target", 
+        "target", 
+        &RunParameters::SetTargetName, 
+        "V2", 
+        "V1 V2 V3", 
+        "Deterimes which target to simulate"
+    ); 
+
+    //beam energy 
+    fMessenger->AddCommand_doubleWithUnit(
+        cmd_prefix + "beam_energy", 
+        "beam_energy", 
+        &RunParameters::SetBeamEnergy, 
+        2200.,
+        "MeV", 
+        "Beam energy"
+    ); 
+
 }   
 //______________________________________________________________________________
 void RunParameters::SetArm(G4String arm)
