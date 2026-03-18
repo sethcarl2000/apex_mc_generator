@@ -54,12 +54,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
 
-    /// @brief set which arm to use (RHRS or LHRS)
-    void SetArm(G4String arm); 
-
-    /// @return 'true' if RHRS, 'false' if LHRS
-    bool Is_RHRS() const { return f_is_RHRS; }
-
   protected:
     G4LogicalVolume* fScoringVolume = nullptr;
     

@@ -1,5 +1,5 @@
-#ifndef ApexTargetGeometry_HH
-#define ApexTargetGeometry_HH
+#ifndef ApexTargetGeometry_h
+#define ApexTargetGeometry_h 1 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -13,6 +13,7 @@
 #include "G4ThreeVector.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "G4SystemOfUnits.hh"
+#include "G4String.hh"
 
 namespace ApexTargetGeometry {
   
@@ -34,11 +35,20 @@ namespace ApexTargetGeometry {
   // z-axis. 
   inline G4ThreeVector Get_sieve_pos(bool _is_RHRS) {
     return G4ThreeVector(  
-        _is_RHRS ?  -1.101*mm :  -1.301*mm,
-		_is_RHRS ?  -3.885*mm :  +6.672*mm,
-		_is_RHRS ? 794.609*mm : 795.766*mm 
+      _is_RHRS ?  -1.101*mm :  -1.301*mm,
+      _is_RHRS ?  -3.885*mm :  +6.672*mm,
+      _is_RHRS ? 794.609*mm : 795.766*mm 
     ); 
   } 
+
+  inline G4ThreeVector GetTargetPosition(G4String target_name) {
+
+    if (target_name == "V1") return G4ThreeVector( -3.23*mm, 0., -196.20*mm ); 
+    if (target_name == "V2") return G4ThreeVector( -0.72*mm, 0.,   +3.80*mm ); 
+    if (target_name == "V3") return G4ThreeVector( +1.73*mm, 0., +203.80*mm ); 
+
+    return G4ThreeVector(0.,0.,0.);
+  }
   
 }; 
 

@@ -63,8 +63,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   //set the electron beam generation spot to be a little upstream
   G4ThreeVector vertex_position 
     = ApexTargetGeometry::GetTargetPosition(target_name) - G4ThreeVector(0., 0., 200.*um); 
-
-  G4cout << "vertex position: " << vertex_position[0] << " " << vertex_position[1] << " " << vertex_position[2] << G4endl; 
   
   fParticleGun->SetParticlePosition(vertex_position); 
 }

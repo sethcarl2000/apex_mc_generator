@@ -71,10 +71,6 @@ RunAction::RunAction()
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
   accumulableManager->Register(fEdep);
   accumulableManager->Register(fEdep2);
-
-  // Register the analysis manager 
-  auto analysisManager = G4AnalysisManager::Instance(); 
-  analysisManager->SetVerboseLevel(1); 
   
 }
 
@@ -89,26 +85,28 @@ void RunAction::BeginOfRunAction(const G4Run*)
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
   accumulableManager->Reset();
 
-  //open the file with the analysis manager 
+  
+  // Register the analysis manager 
   auto analysisManager = G4AnalysisManager::Instance(); 
+  analysisManager->SetVerboseLevel(1); 
+
   analysisManager->OpenFile( RunParameters::Instance()->GetPathOutfile() ); 
   // create the 'branches' we want 
   analysisManager->CreateNtuple("tracks_sieve", "Tracks which have passed thru the sieve"); 
   
   std::vector<G4String> branches{
-    "position_sieve_x",
-    "position_sieve_y",
-    "position_sieve_z", 
     "momentum_sieve_x",
     "momentum_sieve_y",
-    "momentum_sieve_z"
+    "momentum_sieve_z",
+    "position_sieve_x",
+    "position_sieve_y",
+    "position_sieve_z" 
   };
   for (auto branch : branches) analysisManager->CreateNtupleDColumn(branch); 
 
   analysisManager->FinishNtuple(); 
   
   analysisManager->SetDefaultFileType("root"); 
-  
 
 }
 
@@ -167,6 +165,7 @@ void RunAction::EndOfRunAction(const G4Run* run)
   auto analysisManager = G4AnalysisManager::Instance(); 
   analysisManager->Write(); 
   analysisManager->CloseFile(); 
+  G4cout << G4endl << "in <" << __func__ << ">: Closed file with path: '" << analysisManager->GetFileName() << "'\n"; 
 
   G4cout << G4endl << " The run is " << nofEvents << " " << runCondition << G4endl << G4endl;
   G4cout << "  --> cumulated edep per run in scoring volume = " << G4BestUnit(edep, "Energy") 

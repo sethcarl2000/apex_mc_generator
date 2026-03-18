@@ -243,13 +243,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
     logic_scoringVolume, 
     "Scoring Volume", 
-    logic_sieveContainer, 
+    logic_World, 
     true, 
     0, 
     checkOverlaps
   );
   fScoringVolume = logic_scoringVolume; 
-
 
   //now, we construct the target
   G4String target_name = run_params->GetTargetName(); 
@@ -342,53 +341,55 @@ G4MultiUnion* DetectorConstruction::Generate_sieveHoles_solid(const bool is_RHRS
 
   const int nRows=17; 
   for (int row=0; row<nRows; row++) { 
-      //17 rows in total, numbered 0-16.
-      // row 0 is the highest in HCS, so lowest-X in TCS.
-      // Recall that in TCS, the central 'big hole' is the origin of x & y.
+
+    //17 rows in total, numbered 0-16.
+    // row 0 is the highest in HCS, so lowest-X in TCS.
+    // Recall that in TCS, the central 'big hole' is the origin of x & y.
+    
+    //even rows are shifted in +y half a col-spacing
+    bool evenRow = (row % 2==0); 
+    int nCols;
+    if (evenRow) { nCols = 15; }
+    else  {
+        if (row==1 || row==15) {nCols = 12;} //each odd row has a 'gap' missing, except these two
+        else                   {nCols = 11;}
+    } 
+    
+    for (int col=0; col<nCols; col++) { 
+    
+      //check wheter this hole is a 'big' hole
+      bool bigHole ((row==8 && col==7) || (row==12 && col==3)); 
+
+      //get this hole's x-position
+      double x = x0 + ((double)row)*dx;
+      double y = y0 - ((double)col)*dy;
+
+      if (!evenRow) { 
+          y += -dy/2.; //odd-holes are shifted in y a bit
+          //skip over the gap which happens in some rows, but not these. 
+          if ( (row!=1 && row!=15) && col>5 ) y += -dy; 
+      }
+
+      //find out what kind of sieve hole this is 
+      G4VSolid* hole_solid; 
       
-      //even rows are shifted in +y half a col-spacing
-      bool evenRow = (row % 2==0); 
-      int nCols;
-      if (evenRow) { nCols = 15; }
-      else  {
-          if (row==1 || row==15) {nCols = 12;} //each odd row has a 'gap' missing, except these two
-          else                   {nCols = 11;}
+      if (bigHole) {
+        hole_solid = solid_sieveHole_big;
+      } else {
+        if ((row <= 2 || row >= 14) && col <= 12) {
+          hole_solid = solid_sieveHole_wideBack; 
+        } else {
+          hole_solid = solid_sieveHole_small; 
+        }
       } 
-      
-      for (int col=0; col<nCols; col++) { 
-      
-          //check wheter this hole is a 'big' hole
-          bool bigHole ((row==8 && col==7) || (row==12 && col==3)); 
 
-          //get this hole's x-position
-          double x = x0 + ((double)row)*dx;
-          double y = y0 - ((double)col)*dy;
+      solid_allSieveHoles->AddNode(
+        hole_solid, 
+        G4Transform3D(G4RotationMatrix(), G4ThreeVector(x, y, 0.))
+      );
 
-          if (!evenRow) { 
-              y += -dy/2.; //odd-holes are shifted in y a bit
-              //skip over the gap which happens in some rows, but not these. 
-              if ( (row!=1 && row!=15) && col>5 ) y += -dy; 
-          }
+    }//for (int col=0; col<nCols; col++) 
 
-          //find out what kind of sieve hole this is 
-          G4VSolid* hole_solid; 
-          
-          if (bigHole) {
-            hole_solid = solid_sieveHole_big;
-          } else {
-            if ((row <= 2 || row >= 14) && col <= 12) {
-              hole_solid = solid_sieveHole_wideBack; 
-            } else {
-              hole_solid = solid_sieveHole_small; 
-            }
-          } 
-
-          solid_allSieveHoles->AddNode(
-            hole_solid, 
-            G4Transform3D(G4RotationMatrix(), G4ThreeVector(x, y, 0.))
-          );
-
-      }//for (int col=0; col<nCols; col++) 
   }//for (int row=0; row<nRows; row++) 
 
   solid_allSieveHoles->Voxelize(); 

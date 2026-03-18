@@ -90,15 +90,15 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   G4double p_track_mag = p_track.mag(); 
   
   //only save leptons inside our momentum acceptance 
-  if (p_track_mag < run_params->GetMomentum_min() || 
-      p_track_mag > run_params->GetMomentum_max() ) { kill_track(); return; }
-
+  /*if (p_track_mag < run_params->GetMomentum_min() || 
+      p_track_mag > run_params->GetMomentum_max() ) { kill_track(); return; }*/ 
+      
   //only save positrons for the right arm, and electrons for the left
-  if (f_is_RHRS) {
+  /*if (f_is_RHRS) {
     if (track->GetParticleDefinition() != G4Positron::Positron() ) { kill_track(); return; }
   } else {
     if (track->GetParticleDefinition() != G4Electron::Electron() ) { kill_track(); return; }  
-  }
+  }*/ 
 
       
   //get the analysis manager, and fill out relevant information. 

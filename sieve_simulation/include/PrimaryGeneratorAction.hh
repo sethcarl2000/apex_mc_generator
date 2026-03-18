@@ -31,6 +31,7 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "UserMessenger.hh"
+#include "G4ThreeVector.hh"
 
 class G4ParticleGun;
 class G4Event;
@@ -59,6 +60,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   private:
 
     UserMessenger<PrimaryGeneratorAction> *fMessenger; 
+
+    G4double fBeamEnergy; 
+    G4ThreeVector fGunPosition; 
 
     G4ParticleGun* fParticleGun = nullptr;  // pointer a to G4 gun class
     G4Box* fEnvelopeBox = nullptr;

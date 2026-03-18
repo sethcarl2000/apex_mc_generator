@@ -22,6 +22,8 @@ private:
     G4bool f_is_RHRS; 
     G4String fPathOutfile;
     G4double fMomentum_min, fMomentum_max; 
+    G4String fTargetName; 
+    G4double fBeamEnergy; 
 
 public: 
 
@@ -37,9 +39,11 @@ public:
     //   List setters to set run information 
     //
     void SetArm(G4String);
-    void SetPathOutfile(G4String _val) { fPathOutfile=_val; } 
+    void SetPathOutfile(G4String _val)  { fPathOutfile=_val; } 
     void SetMomentum_min(G4double _val) { fMomentum_min=_val; }
     void SetMomentum_max(G4double _val) { fMomentum_max=_val; }
+    void SetTargetName(G4String _val)   { fTargetName=_val; }
+    void SetBeamEnergy(G4double _val)   { fBeamEnergy=_val; }
 
     //_________________________________________________________________________
     // 
@@ -57,6 +61,12 @@ public:
 
     /// @return maximum momentum, MeV
     G4double GetMomentum_max() const { return fMomentum_max; }
+
+    /// @return name of target
+    G4String GetTargetName() const { return fTargetName; }
+
+    /// @return beam energy (MeV)
+    G4double GetBeamEnergy() const { return fBeamEnergy; }
 }; 
 
 }
