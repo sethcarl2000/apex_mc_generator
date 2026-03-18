@@ -248,10 +248,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //logic_scoringVolume->SetVisAttributes(G4VisAttributes::GetInvisible()); 
   new G4PVPlacement(
     nullptr, 
-    G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
+    //G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
+    ApexTargetGeometry::GetTargetPosition(run_params->GetTargetName()) + G4ThreeVector(0,0, 1*cm),
     logic_scoringVolume, 
     "Scoring Volume", 
-    logic_sieveContainer, 
+    //logic_sieveContainer, 
+    logic_World,
     true, 
     0, 
     checkOverlaps
@@ -277,7 +279,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     tungsten_mat, 
     G4String("logic_" + target_name)
   ); 
-  
+
   new G4PVPlacement(
     rotation_target,
     ApexTargetGeometry::GetTargetPosition(target_name),

@@ -42,6 +42,13 @@
 #include "G4Step.hh"
 #include "G4Track.hh"
 
+#include <math.h>
+
+namespace {
+  //the minimum angle between the beam and an electron/positron that may make it into the detector
+  const G4double max_cosine = std::cos( 0.045 ); 
+}
+
 namespace B1
 {
 
@@ -99,6 +106,9 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   } else {
     if (track->GetParticleDefinition() != G4Electron::Electron() ) { kill_track(); return; }  
   } 
+
+  //check opening angle 
+  if ( p_track.z() / p_track_mag > max_cosine ) { kill_track(); return; }
 
       
   //get the analysis manager, and fill out relevant information. 

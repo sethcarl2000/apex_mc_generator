@@ -22,16 +22,16 @@
 /global/beam_energy 2200 MeV
 
 # Set bounds on momentum acceptance
-/global/min_momentum 10
+/global/min_momentum 500
 /global/max_momentum 2250
 
 # Set output file 
 /global/path_outfile data/test_LHRS.root
 
 # Set Target 
-/global/target V1
+/global/target V2
 
 # Start the run 
 /run/initialize
-/run/beamOn 50000000
+/run/beamOn 100000000
 
