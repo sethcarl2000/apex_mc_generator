@@ -5,6 +5,7 @@
 #include "G4UImessenger.hh"
 #include "G4String.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 #include <functional>
 #include <vector>
 
@@ -65,14 +66,55 @@ public:
 
         cmd->SetParameterName(parameter_name, this); 
         cmd->SetDefaultValue(default_value);
-        cmd->SetCandidates(candidates); 
-        cmd->SetGuidance(guidance); 
+        if (candidates != "") cmd->SetCandidates(candidates); 
+        if (guidance != "")   cmd->SetGuidance(guidance); 
 
         /// construct a 'signal function' which tells the DetectorConstruction class about our updated command
         auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
         {
             auto cmd_ptr = dynamic_cast<G4UIcmdWithAString*>(parent_ptr);
             (fTarget->*signal_slot)(new_val);
+            return; 
+        }; 
+        
+        // our new UI command  
+        UIcommand_t new_ui_command {
+            .ptr = cmd, 
+            .fcn = signal_fcn
+        }; 
+        
+        //add this command to the list of all commands
+        fCommands.push_back(new_ui_command); 
+    }
+
+    /// @brief a small macro add a double-with-unit command to the list of commands 
+    /// @param cmd_name name of the command, as it appears in a macro
+    /// @param parameter_name name of the command parameter (i don't know what this is)
+    /// @param signal_slot signal slot in target class to propagate this command to (see implementation in this class's constructor for an example)
+    /// @param default_value default value of the command
+    /// @param default_unit default unit of quantity 
+    /// @param guidance command guidance
+    void AddCommand_doubleWithUnit(
+        G4String cmd_name, 
+        G4String parameter_name, 
+        void (UserClass::*signal_slot)(G4double), 
+        G4double default_value,
+        G4String default_unit,
+        G4String guidance=""
+    )
+    { 
+        auto cmd = new G4UIcmdWithADoubleAndUnit(cmd_name, this);
+
+        cmd->SetParameterName(parameter_name, this); 
+        cmd->SetDefaultValue(default_value);
+        cmd->SetDefaultUnit(default_unit); 
+        if (guidance != "")   cmd->SetGuidance(guidance); 
+
+        /// construct a 'signal function' which tells the DetectorConstruction class about our updated command
+        auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
+        {
+            auto cmd_ptr = dynamic_cast<G4UIcmdWithADoubleAndUnit*>(parent_ptr);
+            (fTarget->*signal_slot)(cmd_ptr->GetNewDoubleValue(new_val));
             return; 
         }; 
         

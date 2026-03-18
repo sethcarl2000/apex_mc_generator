@@ -20,6 +20,8 @@ private:
 
     ///now, list all parameters of interest 
     G4bool f_is_RHRS; 
+    G4String fPathOutfile;
+    G4double fMomentum_min, fMomentum_max; 
 
 public: 
 
@@ -34,9 +36,10 @@ public:
     // 
     //   List setters to set run information 
     //
-
     void SetArm(G4String);
-
+    void SetPathOutfile(G4String _val) { fPathOutfile=_val; } 
+    void SetMomentum_min(G4double _val) { fMomentum_min=_val; }
+    void SetMomentum_max(G4double _val) { fMomentum_max=_val; }
 
     //_________________________________________________________________________
     // 
@@ -46,6 +49,14 @@ public:
     /// @return 'true' if we're dealing with the RHRS, 'false' if LHRS 
     bool Is_RHRS() const { return f_is_RHRS; }
     
+    /// @return path to output root file 
+    G4String GetPathOutfile() const { return fPathOutfile; }
+
+    /// @return minimum momentum, MeV
+    G4double GetMomentum_min() const { return fMomentum_min; }
+
+    /// @return maximum momentum, MeV
+    G4double GetMomentum_max() const { return fMomentum_max; }
 }; 
 
 }

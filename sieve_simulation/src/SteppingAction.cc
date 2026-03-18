@@ -29,12 +29,18 @@
 #include "SteppingAction.hh"
 
 #include "DetectorConstruction.hh"
+#include "RunParameters.hh"
 #include "EventAction.hh"
 
 #include "G4Event.hh"
 #include "G4LogicalVolume.hh"
 #include "G4RunManager.hh"
+#include "G4AnalysisManager.hh"
+#include "G4ThreeVector.hh"
+#include "G4Electron.hh"
+#include "G4Positron.hh"
 #include "G4Step.hh"
+#include "G4Track.hh"
 
 namespace B1
 {
@@ -54,7 +60,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     fScoringVolume = detConstruction->GetScoringVolume();
 
     //ask the detector construction which arm we're using 
-    f_is_RHRS = detConstruction->Is_RHRS(); 
+    f_is_RHRS = RunParameters::Instance()->Is_RHRS(); 
   }
 
   // get volume of the current step
@@ -67,6 +73,56 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
   fEventAction->AddEdep(edepStep);
+
+  // post step point: 
+  //const G4StepPoint* postStepPoint = step->GetPostStepPoint(); 
+
+  G4Track* track = step->GetTrack(); 
+
+  const G4ThreeVector& p_track = track->GetMomentum();  
+
+  // kills current track 
+  auto kill_track = [track]() { track->SetTrackStatus(fStopAndKill); };
+
+  //check if the track is inside the momentum acceptance
+  const RunParameters* run_params = RunParameters::Instance(); 
+
+  G4double p_track_mag = p_track.mag(); 
+  
+  //only save leptons inside our momentum acceptance 
+  if (p_track_mag < run_params->GetMomentum_min() || 
+      p_track_mag > run_params->GetMomentum_max() ) { kill_track(); return; }
+
+  //only save positrons for the right arm, and electrons for the left
+  if (f_is_RHRS) {
+    if (track->GetParticleDefinition() != G4Positron::Positron() ) { kill_track(); return; }
+  } else {
+    if (track->GetParticleDefinition() != G4Electron::Electron() ) { kill_track(); return; }  
+  }
+
+      
+  //get the analysis manager, and fill out relevant information. 
+  auto analysisManager = G4AnalysisManager::Instance(); 
+
+  int i_col=0; 
+
+  //save the momentum 
+  analysisManager->FillNtupleDColumn(i_col++, p_track.x());
+  analysisManager->FillNtupleDColumn(i_col++, p_track.y());
+  analysisManager->FillNtupleDColumn(i_col++, p_track.z());
+  
+  const G4ThreeVector& r_track = track->GetPosition(); 
+
+  //save the position 
+  analysisManager->FillNtupleDColumn(i_col++, r_track.x());
+  analysisManager->FillNtupleDColumn(i_col++, r_track.y());
+  analysisManager->FillNtupleDColumn(i_col++, r_track.z());
+
+  //save this as a distinct event 
+  analysisManager->AddNtupleRow(); 
+
+  //now, get rid of this track, to avoid saving it twice. 
+  kill_track(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

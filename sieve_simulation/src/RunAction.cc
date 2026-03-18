@@ -28,6 +28,8 @@
 
 #include "RunAction.hh"
 
+#include "RunParameters.hh"
+
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorAction.hh"
 
@@ -39,6 +41,9 @@
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
+#include "G4AnalysisManager.hh"
+
+#include <vector> 
 
 namespace B1
 {
@@ -54,6 +59,9 @@ RunAction::RunAction()
   const G4double nanogray = 1.e-9 * gray;
   const G4double picogray = 1.e-12 * gray;
 
+  //initalize the run parameters
+  RunParameters::Instance(); 
+
   new G4UnitDefinition("milligray", "milliGy", "Dose", milligray);
   new G4UnitDefinition("microgray", "microGy", "Dose", microgray);
   new G4UnitDefinition("nanogray", "nanoGy", "Dose", nanogray);
@@ -63,6 +71,26 @@ RunAction::RunAction()
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
   accumulableManager->Register(fEdep);
   accumulableManager->Register(fEdep2);
+
+  // Register the analysis manager 
+  auto analysisManager = G4AnalysisManager::Instance(); 
+  analysisManager->SetDefaultFileType("root"); 
+  analysisManager->SetFileName( RunParameters::Instance()->GetPathOutfile() ); 
+
+  // create the 'branches' we want 
+  analysisManager->CreateNtuple("tracks_sieve", "Tracks which have passed thru the sieve"); 
+  
+  std::vector<G4String> branches{
+    "position_sieve_x",
+    "position_sieve_y",
+    "position_sieve_z", 
+    "momentum_sieve_x",
+    "momentum_sieve_y",
+    "momentum_sieve_z"
+  };
+  for (auto branch : branches) analysisManager->CreateNtupleDColumn(branch); 
+
+  analysisManager->FinishNtuple(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -75,6 +103,11 @@ void RunAction::BeginOfRunAction(const G4Run*)
   // reset accumulables to their initial values
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
   accumulableManager->Reset();
+
+  //open the file with the analysis manager 
+  auto analysisManager = G4AnalysisManager::Instance(); 
+  analysisManager->OpenFile(); 
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -127,6 +160,11 @@ void RunAction::EndOfRunAction(const G4Run* run)
   else {
     G4cout << G4endl << "--------------------End of Local Run------------------------";
   }
+
+  //save & close the output file 
+  auto analysisManager = G4AnalysisManager::Instance(); 
+  analysisManager->Write(); 
+  analysisManager->CloseFile(); 
 
   G4cout << G4endl << " The run is " << nofEvents << " " << runCondition << G4endl << G4endl;
   G4cout << "  --> cumulated edep per run in scoring volume = " << G4BestUnit(edep, "Energy") 

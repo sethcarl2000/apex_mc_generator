@@ -26,6 +26,33 @@ RunParameters::RunParameters()
         "RHRS LHRS",             // possible valid inputs
         "Deterimes whether the LHRS or RHRS will be simulated. valid inputs are 'RHRS or LHRS'"
     ); 
+
+    fMessenger->AddCommand_string(
+        cmd_prefix + "path_outfile", 
+        "path_outfile",
+        &RunParameters::SetPathOutfile,
+        "output.root",
+        "",
+        "Determines path for output data file" 
+    ); 
+
+    fMessenger->AddCommand_doubleWithUnit(
+        cmd_prefix + "min_momentum", 
+        "min_momentum", 
+        &RunParameters::SetMomentum_min, 
+        1104.*(1. - 0.06),
+        "MeV", 
+        "Minimum momentum of leptons to be saved to the output file"
+    ); 
+
+    fMessenger->AddCommand_doubleWithUnit(
+        cmd_prefix + "max_momentum", 
+        "max_momentum", 
+        &RunParameters::SetMomentum_max, 
+        1104.*(1. + 0.06),
+        "MeV", 
+        "Maximum momentum of leptons to be saved to the output file"
+    ); 
 }   
 //______________________________________________________________________________
 void RunParameters::SetArm(G4String arm)

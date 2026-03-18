@@ -50,8 +50,6 @@
 
 namespace {
   constexpr G4double inch = 2.54 * cm; 
-  constexpr G4double deg_to_rad = CLHEP::pi / 180.; 
-
 }
 
 namespace B1
@@ -205,7 +203,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     tungsten_mat, 
     "logic_sieveFace"
   );
-  logic_sieveFace->SetVisAttributes(G4VisAttributes(true)); 
   //add the fsieve face as a placement 
   new G4PVPlacement(
     nullptr,         // no rotation relative to the sieve's container volume
@@ -218,6 +215,34 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     checkOverlaps
   ); 
   // -----------------------------------------------------
+
+  /// Scoring volume -------------------------------------
+  //
+  // This volume will monitor the tracks, and record ones we want to keep (and kill the ones we don't)
+  const G4double scoring_volume_thickness = 2*cm; 
+  auto solid_scoringVolume = new G4Box(
+    "solid_scoringVolume",
+    sieve_dx/2., 
+    sieve_dy/2., 
+    scoring_volume_thickness/2.
+  ); 
+  auto logic_scoringVolume = new G4LogicalVolume(
+    solid_scoringVolume,
+    world_mat,
+    "logic_scoringVolume"
+  ); 
+  logic_scoringVolume->SetVisAttributes(G4VisAttributes::GetInvisible()); 
+  new G4PVPlacement(
+    nullptr, 
+    G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
+    logic_scoringVolume, 
+    "Scoring Volume", 
+    logic_sieveContainer, 
+    true, 
+    0, 
+    checkOverlaps
+  );
+  fScoringVolume = logic_scoringVolume; 
 
   fScoringVolume = logic_sieveContainer;
   //
