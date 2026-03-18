@@ -74,23 +74,8 @@ RunAction::RunAction()
 
   // Register the analysis manager 
   auto analysisManager = G4AnalysisManager::Instance(); 
-  analysisManager->SetDefaultFileType("root"); 
-  analysisManager->SetFileName( RunParameters::Instance()->GetPathOutfile() ); 
-
-  // create the 'branches' we want 
-  analysisManager->CreateNtuple("tracks_sieve", "Tracks which have passed thru the sieve"); 
+  analysisManager->SetVerboseLevel(1); 
   
-  std::vector<G4String> branches{
-    "position_sieve_x",
-    "position_sieve_y",
-    "position_sieve_z", 
-    "momentum_sieve_x",
-    "momentum_sieve_y",
-    "momentum_sieve_z"
-  };
-  for (auto branch : branches) analysisManager->CreateNtupleDColumn(branch); 
-
-  analysisManager->FinishNtuple(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -106,7 +91,24 @@ void RunAction::BeginOfRunAction(const G4Run*)
 
   //open the file with the analysis manager 
   auto analysisManager = G4AnalysisManager::Instance(); 
-  analysisManager->OpenFile(); 
+  analysisManager->OpenFile( RunParameters::Instance()->GetPathOutfile() ); 
+  // create the 'branches' we want 
+  analysisManager->CreateNtuple("tracks_sieve", "Tracks which have passed thru the sieve"); 
+  
+  std::vector<G4String> branches{
+    "position_sieve_x",
+    "position_sieve_y",
+    "position_sieve_z", 
+    "momentum_sieve_x",
+    "momentum_sieve_y",
+    "momentum_sieve_z"
+  };
+  for (auto branch : branches) analysisManager->CreateNtupleDColumn(branch); 
+
+  analysisManager->FinishNtuple(); 
+  
+  analysisManager->SetDefaultFileType("root"); 
+  
 
 }
 
