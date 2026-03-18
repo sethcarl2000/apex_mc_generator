@@ -314,6 +314,9 @@ HRSPrimaryGeneratorMessenger::HRSPrimaryGeneratorMessenger(HRSPrimaryGeneratorAc
   gunZLowCmd->SetDefaultUnit("mm");
   //sprintf(strGuid,"zlow>=%f && zlow<=%f",mpga->kZLow/mm,mpga->kZHigh/mm);  //zlow>-15. && zlow<15.
 
+  //simulate sieve
+  simulateSieveCmd = unique_ptr<G4UIcmdWithABool>(new G4UIcmdWithABool("/mydet/simulateSieve", this)); 
+  
   // Random generator of coordinate on sieve
   //random X (mm) - low
   sieveXLowCmd = unique_ptr<g4uic_double_unit>(new g4uic_double_unit("/mydet/sieveXLow",this));
@@ -814,6 +817,10 @@ void HRSPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String ne
   if( command==sieveYHighCmd.get() )
     { target->SetGunSieveYHigh(sieveYHighCmd->GetNewDoubleValue(newValue)); }
   
+
+  //simulate sieve?
+  if( command==simulateSieveCmd.get() )
+    { target->Set_simulateSieve(simulateSieveCmd->GetNewBoolValue(newValue)); }
   
   //vertex 
   //X-range

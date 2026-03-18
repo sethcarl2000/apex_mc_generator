@@ -3,6 +3,8 @@
 # vertex bounds for uniform generation. These reflect the surveyed position of the V1
 #  vertical wire. 
 
+/mydet/simulateSieve true
+
 /mydet/gunXLow  -3.225 mm
 /mydet/gunXHigh -3.225 mm
 

@@ -22,7 +22,8 @@
 #                 - [no option given] - proudction target
 #                 - 'production'      - production target
 #                 - 'V1','V2','V3'    - vertical wires
-#
+#                 - 'targetCenter'    - the (0,0,0) coordinate (center of scatt. chamber)
+#   
 #   Suggested usage (Bash terminal):
 #
 #    > sbatch --job-name=apex_mc_Q1_R --time=90 script_gen-Q1-tracks R 100000

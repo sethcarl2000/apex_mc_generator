@@ -121,7 +121,7 @@ two are missing.
 
 - [_number of monte-carlo events_] a positive integer which is the number of events to simulate. 
 
-- [_target_] (optional) The target to use; as of writing, valid inputs are 'proudction','V1','V2','V3'. 'production' is default if none is specified.   
+- [_target_] (optional) The target to use; as of writing, valid inputs are 'proudction','V1','V2','V3' and 'targetCenter'. 'production' is default if none is specified.  'targetCenter' generates events at (0,0,0) (the center of the APEX scattering chamber, NOT the hall-A center). 
   This parameter changes the range over which the paritcles are generated. For 'production', particles are uniformly generated in a 'box' which correpsonds 
   to the approximate extent of the APEX production target, which was 10 tungsten foils spaced evenly along the z-axis of the scattering chamber. For each 
   of the vertical wire targets (V1,V2,V3), the generation of particles is restricted to the survey-verified positions of the vertical wires. particles are

@@ -217,10 +217,10 @@ int main(int argc, char *argv[])
       double _z(172.050);
       double _dxdz(track.Q1.dxdz);
       double _dydz(track.Q1.dydz);
-      double _x_fp(0.);
-      double _dx_fp(0.);
-      double _y_fp(0.);
-      double _dy_fp(0.);
+      double _x_tra(0.);
+      double _dx_tra(0.);
+      double _y_tra(0.);
+      double _dy_tra(0.);
       double _m2(0.510*0.510);
       double _fry(0.);
       bool   _ok_spec(false);
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
       
       if (is_RHRS) { 
 	mc_hrsr_(&_p_spec, &_dpp, &_x, &_y, &_z, &_dxdz, &_dydz,
-		 &_x_fp, &_dx_fp, &_y_fp, &_dy_fp, &_m2, &_fry,
+		 &_x_tra, &_dx_tra, &_y_tra, &_dy_tra, &_m2, &_fry,
 		 &_pathlen, &_skipto_Q1_flag, &_ok_spec);
       } else       {
 
@@ -240,14 +240,14 @@ int main(int argc, char *argv[])
 	//good-looking results if you just feed the Left-arm data into 'mc_hrsr',
 	//and use the fact that the spectrometers are mirrored (flip y & dy/dz). 
 	mc_hrsr_(&_p_spec, &_dpp, &_x, &_y, &_z, &_dxdz, &_dydz,
-		 &_x_fp, &_dx_fp, &_y_fp, &_dy_fp, &_m2, &_fry,
+		 &_x_tra, &_dx_tra, &_y_tra, &_dy_tra, &_m2, &_fry,
 		 &_pathlen, &_skipto_Q1_flag, &_ok_spec);
 	
-	_y_fp  *= -1.;
-	_dy_fp *= -1.; 
+	_y_tra  *= -1.;
+	_dy_tra *= -1.; 
 	
       }
-
+      
       
 #if DEBUG	
       cout << "print debug? " << (_print_debug?"True":"False") << endl; 
@@ -256,13 +256,21 @@ int main(int argc, char *argv[])
       printf("pathlen:%-5.4f\n",_pathlen);
 #endif
 
-      //      if (_ok_spec) n_success++; 
+      //the fortran code outputs in cm, but we want the output in meters.
+      _x_tra = _x_tra/100.;
+      _y_tra = _y_tra/100.; 
+
       
-      //just initialize this as null, for now
-      track.fp.x    = _x_fp/100.;
-      track.fp.y    = _y_fp/100.;
-      track.fp.dxdz = _dx_fp;
-      track.fp.dydz = _dy_fp;
+      //Note: the fortran subroutine technically outputs coordinates in whats called
+      // vdc 'transport' coordinates, hence the prefix 'tra'. to convert from
+      // transport coordinates to focal-plane coordinates (fp), all you need to do is:
+      //
+      //    dxdz_fp = dxdz_tra - x_tra/6.
+      // 
+      track.fp.x    = _x_tra;
+      track.fp.y    = _y_tra;
+      track.fp.dxdz = _dx_tra - _x_tra/6.;
+      track.fp.dydz = _dy_tra;
 
       track.flag_keep = _ok_spec; 
 
@@ -281,6 +289,18 @@ int main(int argc, char *argv[])
     
     //Deifine final output variables. This way, no one needs our class dictionary
     // to intepret the HRSTrack_t or HRSCoord_t structs
+    .Define("x_sv",    [](const TVector3 &v){return v.x();},    {"position_sieve"})
+    .Define("y_sv",    [](const TVector3 &v){return v.y();},    {"position_sieve"})
+    .Define("dxdz_sv", [](const TVector3 &v){return v.x()/v.z();}, {"momentum_sieve"})
+    .Define("dydz_sv", [](const TVector3 &v){return v.y()/v.z();}, {"momentum_sieve"})
+    .Define("dpp_sv",  [hrs_momentum](const TVector3 &v) {return ( v.Mag() - hrs_momentum ) / hrs_momentum;}, {"momentum_sieve"})
+
+    .Define("x_q1",    [](const TVector3 &v){return v.x();},    {"position_Q1"})
+    .Define("y_q1",    [](const TVector3 &v){return v.y();},    {"position_Q1"})
+    .Define("dxdz_q1", [](const TVector3 &v){return v.x()/v.z();}, {"momentum_Q1"})
+    .Define("dydz_q1", [](const TVector3 &v){return v.y()/v.z();}, {"momentum_Q1"})
+    .Define("dpp_q1",  [hrs_momentum](const TVector3 &v) {return ( v.Mag() - hrs_momentum ) / hrs_momentum;}, {"momentum_Q1"})
+    
     .Define("x_fp",    [](const HRSTrack_t &track){return track.fp.x;}, {"track"})
     .Define("y_fp",    [](const HRSTrack_t &track){return track.fp.y;}, {"track"})
     .Define("dxdz_fp", [](const HRSTrack_t &track){return track.fp.dxdz;}, {"track"})
@@ -301,10 +321,26 @@ int main(int argc, char *argv[])
 
   //record all data to the final output tree
   df_output_postcut.Snapshot(fp_tree_name.data(), path_outfile.data(),
-			     {"position_vtx",   "momentum_vtx",
-			      "position_sieve", "momentum_sieve",
-			      "position_Q1",    "momentum_Q1",
-			      "x_fp","y_fp","dxdz_fp","dydz_fp",
+			     {"position_vtx",
+			      "momentum_vtx",
+
+			      "x_sv",
+			      "y_sv",
+			      "dxdz_sv",
+			      "dydz_sv",
+			      "dpp_sv",
+
+			      "x_q1",
+			      "y_q1",
+			      "dxdz_q1",
+			      "dydz_q1",
+			      "dpp_q1",
+
+			      "x_fp",
+			      "y_fp",
+			      "dxdz_fp",
+			      "dydz_fp",
+
 			      "is_at_fp", "path_length"});
 
   
@@ -329,7 +365,24 @@ int main(int argc, char *argv[])
   
   cout << flush; 
   
+  //really quick, let's write down which HRS arm we used
+  auto outfile = new TFile(path_outfile.data(), "UPDATE");
+
+  if (!outfile || outfile->IsZombie()) {
+    fprintf(stderr, "Error in <%s>: Could not re-open output file to record the"
+	    "TParameter<bool> *param_is_RHRS parameter. Check that something "
+	    "isn't wrong with this output file.\nOuput file path: %s",
+	    here, path_outfile.data());
+  }
   
+  //we can use the same TParameter<bool>* ptr we used above 
+  param_is_RHRS = new TParameter<bool>("is_RHRS", is_RHRS); 
+  param_is_RHRS->Write(); 
+
+  outfile->Close();
+
+  delete param_is_RHRS;
+  delete outfile; 
   
   return 0; 
   
