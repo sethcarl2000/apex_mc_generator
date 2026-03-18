@@ -80,12 +80,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
   // this function is called at the begining of ecah event
   //
-  
-  G4cout << "vertex position: " 
-    << fParticleGun->GetParticlePosition()[0] << " " 
-    << fParticleGun->GetParticlePosition()[1] << " " 
-    << fParticleGun->GetParticlePosition()[2] << G4endl; 
-
   fParticleGun->GeneratePrimaryVertex(event);
 }
 

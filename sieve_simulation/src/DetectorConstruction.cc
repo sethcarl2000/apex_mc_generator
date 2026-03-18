@@ -243,7 +243,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
     logic_scoringVolume, 
     "Scoring Volume", 
-    logic_World, 
+    logic_sieveContainer, 
     true, 
     0, 
     checkOverlaps
