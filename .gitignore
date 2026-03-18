@@ -5,6 +5,8 @@ simc_hrs/build
 sieve_simulation/build
 sieve_simulation/data
 sieve_simulation/*.root
+sieve_simulation/exampleB1
+sieve_simulation/out.log
 
 *.root
 
