@@ -1,6 +1,12 @@
 /run/verbose 2
 /run/numberOfThreads 4
-/detector/arm LHRS
+/detector/build_sieve false
+/global/min_momentum 1000 MeV
+/global/max_momentum 1200 MeV
+/global/active_arm LHRS
+/global/beam_energy 2200 MeV
+/global/path_outfile test.root
+/global/target V2
 /run/initialize
 /control/execute vis.mac
 /vis/open
