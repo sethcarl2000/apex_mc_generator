@@ -40,8 +40,6 @@ class G4LogicalVolume;
 namespace B1
 {
 
-class DetectorMessenger; 
-
 /// Detector construction class to define materials and geometry.
 
 class DetectorConstruction : public G4VUserDetectorConstruction
@@ -54,6 +52,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
 
+    void Set_BuildSieve(G4bool _val) { f_buildSieve=_val; }
+
   protected:
     G4LogicalVolume* fScoringVolume = nullptr;
     
@@ -63,6 +63,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4MultiUnion* Generate_sieveHoles_solid(const bool is_RHRS); 
 
     G4bool f_is_RHRS{false}; 
+
+    /// True if the sieve-face should be constructed, false otherwise 
+    G4bool f_buildSieve{true}; 
 
     //DetectorMessenger* fMessenger; 
     //this class' messenger 

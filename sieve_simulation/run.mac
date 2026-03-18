@@ -5,34 +5,33 @@
 #
 # Change the default number of workers (in multi-threading mode) 
 /run/numberOfThreads 20
-#
-# Initialize kernel
-/run/initialize
-#
+
+# Set verbosity 
 /control/verbose 1
 /run/verbose 1
-/event/verbose 1
+/event/verbose 0
 /tracking/verbose 0
-# 
-#
-#
 
-# pick which arm to use 
+# Say whether sieve should be constructed
+/detector/build_sieve false
+
+# Pick which arm to use 
 /global/active_arm LHRS
 
-# 
+# Set beam energy 
 /global/beam_energy 2200 MeV
 
-/global/path_outfile test.root
+# Set bounds on momentum acceptance
+/global/min_momentum 10
+/global/max_momentum 2250
 
+# Set output file 
+/global/path_outfile data/test_LHRS.root
+
+# Set Target 
 /global/target V1
 
-/run/beamOn 5
-# 
-# proton 210 MeV to the direction (0.,0.,1.)
-#
-/gun/particle proton
-/gun/energy 210 MeV
-/tracking/verbose 2
-#
-/run/beamOn 1
+# Start the run 
+/run/initialize
+/run/beamOn 50000000
+

@@ -9,9 +9,26 @@
 # Change the default number of threads (in multi-threaded mode)
 /run/numberOfThreads 4
 #
+# specify whether sieve should be built
+/detector/build_sieve false
+
+# specify minimum and maximum momentum to be written to file 
+/global/min_momentum 1000 MeV
+/global/max_momentum 1200 MeV
+
 # specify which arm to use
-/detector/arm LHRS
-# 
+/global/active_arm LHRS
+
+# specify beam energy 
+/global/beam_energy 2200 MeV
+
+# specify output file
+/global/path_outfile test.root
+
+# specify target
+/global/target V2
+
+
 # Initialize kernel
 /run/initialize
 #
