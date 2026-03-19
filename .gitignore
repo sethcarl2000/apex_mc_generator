@@ -9,3 +9,13 @@ simc_hrs/build
 
 # emacs file backups
 *~
+
+# some folders in the 
+sieve_simulation/build
+sieve_simulation/data
+sieve_simulation/exampleB1
+*.log
+
+# windows 'zone identifier' files
+*:Zone.Identifier
+ 

@@ -1,0 +1,50 @@
+# vis.mac – RayTracerX single-shot render
+# Uses the built-in ray-tracer; no OpenGL/interactive window needed.
+
+# Set some default verbose
+/control/verbose 2
+/control/saveHistory
+/run/verbose 2
+#
+# Change the default number of threads (in multi-threaded mode)
+/run/numberOfThreads 8
+#
+# Initialize kernel
+/run/initialize
+
+# ── 1. Select the RayTracerX driver ──────────────────────────────────────────
+/vis/open RayTracerX
+
+# ── 2. Draw the world volume (and everything inside it) ───────────────────────
+/vis/drawVolume
+
+# ── 3. Camera / viewpoint ─────────────────────────────────────────────────────
+# Theta = polar angle from +Z axis   (0° = top,  90° = equator)
+# Phi   = azimuthal angle from +X    (0° = +X,  90° = +Y, 180° = -X …)
+# Adjust these two numbers to taste.
+/vis/viewer/set/viewpointThetaPhi 70 20
+
+# ── 4. Zoom / scale ───────────────────────────────────────────────────────────
+# "zoom 1" fits the scene; increase to enlarge, decrease to shrink.
+/vis/viewer/zoom 1.2
+
+# ── 5. Rendering style ────────────────────────────────────────────────────────
+# "solid" fills surfaces with the material colour; alternatives are
+# "wireframe" and "cloud" (point cloud).
+/vis/viewer/set/style wireframe
+
+# ── 6. Lighting / surface normals (optional but improves depth perception) ────
+/vis/viewer/set/hiddenMarker false
+/vis/viewer/set/hiddenEdge  false
+
+# ── 7. RayTracerX image-size parameters ───────────────────────────────────────
+# These commands talk directly to the RayTracerX driver.
+/vis/rayTracer/theSolid true           # render filled surfaces, not outlines
+/vis/rayTracer/backgroundColour white  # white background for the PNG
+/vis/rayTracer/nColumn 1024            # image width  in pixels
+/vis/rayTracer/nRow    768             # image height in pixels
+
+# ── 8. Fire the ray-tracer and write the image ────────────────────────────────
+# The driver writes  g4RayTracer.jpeg  (or .bmp) in the current directory.
+# The integer argument is the run number embedded in the filename.
+/vis/viewer/flush
