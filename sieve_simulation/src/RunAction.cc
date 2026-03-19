@@ -66,11 +66,6 @@ RunAction::RunAction()
   new G4UnitDefinition("microgray", "microGy", "Dose", microgray);
   new G4UnitDefinition("nanogray", "nanoGy", "Dose", nanogray);
   new G4UnitDefinition("picogray", "picoGy", "Dose", picogray);
-
-  // Register accumulable to the accumulable manager
-  G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-  accumulableManager->Register(fEdep);
-  accumulableManager->Register(fEdep2);
   
 }
 
@@ -80,10 +75,6 @@ void RunAction::BeginOfRunAction(const G4Run*)
 {
   // inform the runManager to save random number seed
   G4RunManager::GetRunManager()->SetRandomNumberStore(false);
-
-  // reset accumulables to their initial values
-  G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-  accumulableManager->Reset();
 
   
   // Register the analysis manager 
@@ -117,9 +108,6 @@ void RunAction::EndOfRunAction(const G4Run* run)
   G4int nofEvents = run->GetNumberOfEvent();
   if (nofEvents == 0) return;
 
-  // Merge accumulables
-  G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-  accumulableManager->Merge();
 
   // Compute dose = total energy deposit in a run and its variance
   //
