@@ -175,7 +175,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   //place the sieve container in the world
   new G4PVPlacement(
-    rotation_sieve, 
+    // for reasons I don't understand, the rotation of the sieve needs to be the opposite 
+    // of whatever the rotation of the sieve's *position* vector is. 
+    new G4RotationMatrix( rotation_sieve->inverse() ), 
     position_sieve, 
     logic_sieveContainer,
     "Sieve Container",
@@ -248,12 +250,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //logic_scoringVolume->SetVisAttributes(G4VisAttributes::GetInvisible()); 
   new G4PVPlacement(
     nullptr, 
-    //G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
-    ApexTargetGeometry::GetTargetPosition(run_params->GetTargetName()) + G4ThreeVector(0,0, 1*cm),
+    G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
     logic_scoringVolume, 
     "Scoring Volume", 
-    //logic_sieveContainer, 
-    logic_World,
+    logic_sieveContainer, 
     true, 
     0, 
     checkOverlaps
