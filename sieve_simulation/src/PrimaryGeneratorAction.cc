@@ -46,7 +46,7 @@
 namespace
 { 
   // maximum value of phi (azimuth around beam) from the horizontal of a generated lepton 
-  constexpr G4double kPhi_max = 45.*deg; 
+  constexpr G4double kPhi_max = 90.*deg; 
 
   // minimum angle between the beam and a generated lepton 
   constexpr G4double kTheta_min = 0.045*rad; 
@@ -71,9 +71,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   auto run_params = RunParameters::Instance(); 
 
   // default particle kinematic
-  fParticleGun->SetParticleDefinition(G4Electron::Electron());
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
-  fParticleGun->SetParticleEnergy(run_params->GetBeamEnergy());
+  //fParticleGun->SetParticleDefinition(G4Electron::Electron());
+  //fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
+  //fParticleGun->SetParticleEnergy(run_params->GetBeamEnergy());
 
   G4String target_name = run_params->GetTargetName(); 
   
@@ -117,57 +117,46 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
   using namespace std; 
   
-  switch (fGeneratorMode)
-  {
-    case kPairProduction: { //______________________________________________________
+  // beam energy 
+  G4double beam_E = fBeamEnergy; 
 
-      // beam energy 
-      G4double beam_E = fBeamEnergy; 
+  // pick a random decay invariant mass
+  G4double mass = fMin_restMass  +  (fMax_restMass - fMin_restMass)*G4UniformRand(); 
 
-      // pick a random decay invariant mass
-      G4double mass = fMin_restMass  +  (fMax_restMass - fMin_restMass)*G4UniformRand(); 
+  // cosine between decay particle direction and beam (in the restframe of the particle)
+  G4double cosine_restframe = (1 - 2*G4UniformRand());  
 
-      // cosine between decay particle direction and beam (in the restframe of the particle)
-      G4double cosine_restframe = (1 - 2*G4UniformRand());  
+  // azimuthal angle of lepton around beam (defined so that phi=0 means it's in the horizontal plane)
+  G4double phi = kPhi_max * (1 - 2*G4UniformRand()); 
 
-      // azimuthal angle of lepton around beam (defined so that phi=0 means it's in the horizontal plane)
-      G4double phi = kPhi_max * (1 - 2*G4UniformRand()); 
+  G4double sine_restframe = sqrt( 1. - cosine_restframe*cosine_restframe ); 
 
-      G4double sine_restframe = sqrt( 1. - cosine_restframe*cosine_restframe ); 
+  // we're pretending the lepton is massless. 
+  auto p_lepton = G4ThreeVector( 
+    cos(phi) * sine_restframe * (f_is_RHRS ? -1 : +1), 
+    sin(phi) * sine_restframe, 
+    cosine_restframe
+  );
+  p_lepton *= (mass/2);
 
-      // we're pretending the lepton is massless. 
-      auto p_lepton = G4ThreeVector( 
-        cos(phi) * sine_restframe * (f_is_RHRS ? -1 : +1), 
-        sin(phi) * sine_restframe, 
-        cosine_restframe
-      );
-      p_lepton *= (mass/2); 
+  // gamma factor of decaying particle in lab frame
+  G4double gamma = beam_E/mass; 
 
-      // gamma factor of decaying particle in lab frame
-      G4double gamma = beam_E/mass; 
+  // boost the lepton to the lab frame
+  p_lepton[2] = gamma*( p_lepton[2] + (mass/2)*sqrt(1. - 1./(gamma*gamma)) );  
 
-      // boost the lepton to the lab frame
-      p_lepton[2] = gamma*( p_lepton[2] + (mass/2)*sqrt(1. - 1./(gamma*gamma)) );  
+  fParticleGun->SetParticleEnergy(p_lepton.mag()); 
+  fParticleGun->SetParticleMomentumDirection(p_lepton); 
 
-      fParticleGun->SetParticleMomentumDirection(p_lepton); 
-
-      // now, pick a random reaction vertex at the target
-      fParticleGun->SetParticlePosition(
-        G4ThreeVector(
-          fTargetPosition.x(), 
-          fTargetPosition.y() + (1 - 2*G4UniformRand())*fRasterAmplitude_vertical,
-          fTargetPosition.z() 
-        )
-      );
-      break;
-    } default: { //______________________________________________________
+  // now, pick a random reaction vertex at the target
+  fParticleGun->SetParticlePosition(
+    G4ThreeVector(
+      fTargetPosition.x(), 
+      fTargetPosition.y() + (1 - 2*G4UniformRand())*fRasterAmplitude_vertical,
+      fTargetPosition.z() 
+    )
+  );
       
-      
-      
-      break;
-    }
-  }
-
   fParticleGun->GeneratePrimaryVertex(event);
 }
 
