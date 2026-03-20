@@ -9,8 +9,10 @@ namespace B1
     /// @brief enum to represent types of event generation
     enum EGeneratorMode { 
       kPairProduction=1, 
-      kElastic
+      kFlat
     }; 
+    
+    enum ESieveMode { kAll=0, kSmall, kBig, kWideBack }; 
 
 /// @brief Singleton class which stores global run parameters, accesible by any class
 class RunParameters {
@@ -34,13 +36,21 @@ private:
     G4double fMin_restMass;
     // maximum rest mass for the decay particle
     G4double fMax_restMass; 
+    
+    /// some parameters used by 'flat' generator ----------------------------------------------
+    G4double fGunEnergy_max; 
+    G4double fGunEnergy_min; 
+    
     // (full) amplitude of the vertical raster 
     G4double fVerticalRasterAmplitude; 
     // center of target we're using
     G4ThreeVector fTargetPosition; 
     // the mode of paritlce generation 
     EGeneratorMode fGeneratorMode{kPairProduction}; 
-    
+
+    // the type of sieve generation (single-hole or all?)
+    ESieveMode fSieveMode{kAll}; 
+
 public: 
 
     RunParameters(); 
@@ -64,7 +74,10 @@ public:
     void SetVerticalRasterAmplitude(G4double amplitude) { fVerticalRasterAmplitude=amplitude; }
     void SetMass_min(G4double _x) { fMin_restMass=_x; }
     void SetMass_max(G4double _x) { fMax_restMass=_x; }
+    void SetSieveMode(G4String _v);
 
+    void SetGunEnergy_min(G4double _x) { fGunEnergy_min=_x; }
+    void SetGunEnergy_max(G4double _x) { fGunEnergy_max=_x; }
     //_________________________________________________________________________
     // 
     //   List of const methods to access read-only information 
@@ -99,6 +112,15 @@ public:
 
     /// @return minimum mass of the pair generator
     G4double GetMass_min() const { return fMin_restMass; }
+
+    /// @return the sieve generator mode 
+    ESieveMode GetSieveMode() const { return fSieveMode; }
+
+    /// @return min particle gun energy
+    G4double GetGunEnergy_min() const { return fGunEnergy_min; }
+
+    /// @return max particle gun energy 
+    G4double GetGunEnergy_max() const { return fGunEnergy_max; }
 }; 
 
 }
