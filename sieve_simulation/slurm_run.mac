@@ -1,0 +1,28 @@
+# Macro file for run on one of the sieves 
+# 
+# Can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+#
+# Change the default number of workers (in multi-threading mode) 
+/run/numberOfThreads 20
+
+# Set verbosity 
+/control/verbose 1
+/run/verbose 1
+/event/verbose 0
+/tracking/verbose 0
+
+# Say whether sieve should be constructed
+/detector/build_sieve false
+
+# Set beam energy 
+/global/beam_energy 2200 MeV
+
+# Set bounds on momentum acceptance
+/global/min_momentum 500
+/global/max_momentum 2250
+
+# Set Target 
+/global/target V2
+
+

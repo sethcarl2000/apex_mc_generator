@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#SBATCH --nodes 1
+#SBATCH --partition production
+#SBATCH --account halla
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 20
+#SBATCH --output=/volatile/halla/apex/mc/temp/slurm/%x.%j.out
+#SBATCH --error=/volatile/halla/apex/mc/temp/slurm/%x.%j.err
+#SBATCH --mem=8G 
+
+source ~/.login
+
+arm=${1}
+n_events=${2}
+
+VOL_DIR="/volatile/halla/apex/mc"
+SCRATCH_DIR="/scratch/${USER}/job_${SLURM_JOB_ID}"
+
+mkdir ${SCRATCH_DIR}
+cd ${SCRATCH_DIR}
+cp -r ${WORK_APEX}/apex_mc_generator/sieve_simulation/* .
+
+cat slurm_run.mac > my_run.mac
+
+echo "/global/active_arm ${arm}" >> my_run.mac
+echo "/global/path_outfile ${VOL_DIR}/tracks_sieve/out_${arm}_${SLURM_JOB_ID}.root" >> my_run.mac  
+echo "/run/initialize" >> my_run.mac
+echo "/run/beamOn ${n_events}" >> my_run.mac
+
+time ./exampleB1 my_run.mac 
+
+
+
+
