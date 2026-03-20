@@ -107,9 +107,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
     if (track->GetParticleDefinition() != G4Electron::Electron() ) { kill_track(); return; }  
   } 
 
-  //check opening angle 
-  if ( p_track.z() / p_track_mag > max_cosine ) { kill_track(); return; }
-
       
   //get the analysis manager, and fill out relevant information. 
   auto analysisManager = G4AnalysisManager::Instance(); 

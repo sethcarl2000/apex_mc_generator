@@ -3,7 +3,7 @@ g4mc/run
 
 # build files
 simc_hrs/build
-
+ 
 # root files
 *.root
 
@@ -18,4 +18,3 @@ sieve_simulation/exampleB1
 
 # windows 'zone identifier' files
 *:Zone.Identifier
- 
