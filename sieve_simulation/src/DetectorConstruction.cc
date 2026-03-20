@@ -49,10 +49,6 @@
 
 #include <stdio.h> 
 
-namespace {
-  constexpr G4double inch = 2.54 * cm; 
-}
-
 namespace B1
 {
 
@@ -136,9 +132,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   ); 
   
   /// dimensions of the sieve 
-  const G4double sieve_dx = 4.250 * inch; 
-  const G4double sieve_dy = 3.250 * inch; 
-  const G4double sieve_dz = 0.500 * inch; 
+  const G4double sieve_dx = Sieve_dx();
+  const G4double sieve_dy = Sieve_dy(); 
+  const G4double sieve_dz = Sieve_dz(); 
 
   const G4double sieve_y_angle = ApexTargetGeometry::Get_sieve_angle(is_RHRS); 
 
@@ -247,7 +243,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     world_mat,
     "logic_scoringVolume"
   ); 
-  //logic_scoringVolume->SetVisAttributes(G4VisAttributes::GetInvisible()); 
+
+  //only show the scoring box if the solid sieve was not built 
+  if (f_buildSieve) logic_scoringVolume->SetVisAttributes(G4VisAttributes::GetInvisible()); 
   new G4PVPlacement(
     nullptr, 
     G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
