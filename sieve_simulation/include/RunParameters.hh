@@ -6,7 +6,11 @@
 
 namespace B1 
 {
-    
+    /// @brief enum to represent types of event generation
+    enum EGeneratorMode { 
+      kPairProduction=1, 
+      kElastic
+    }; 
 
 /// @brief Singleton class which stores global run parameters, accesible by any class
 class RunParameters {
@@ -25,6 +29,18 @@ private:
     G4String fTargetName; 
     G4double fBeamEnergy; 
 
+    /// some parameters for the pair generator ------------------------------------------------
+    // minimum rest mass for the decay particle
+    G4double fMin_restMass;
+    // maximum rest mass for the decay particle
+    G4double fMax_restMass; 
+    // (full) amplitude of the vertical raster 
+    G4double fVerticalRasterAmplitude; 
+    // center of target we're using
+    G4ThreeVector fTargetPosition; 
+    // the mode of paritlce generation 
+    EGeneratorMode fGeneratorMode{kPairProduction}; 
+    
 public: 
 
     RunParameters(); 
@@ -44,6 +60,10 @@ public:
     void SetMomentum_max(G4double _val) { fMomentum_max=_val; }
     void SetTargetName(G4String _val)   { fTargetName=_val; }
     void SetBeamEnergy(G4double _val)   { fBeamEnergy=_val; }
+    void SetGeneratorMode(G4String mode); 
+    void SetVerticalRasterAmplitude(G4double amplitude) { fVerticalRasterAmplitude=amplitude; }
+    void SetMass_min(G4double _x) { fMin_restMass=_x; }
+    void SetMass_max(G4double _x) { fMax_restMass=_x; }
 
     //_________________________________________________________________________
     // 
@@ -67,6 +87,18 @@ public:
 
     /// @return beam energy (MeV)
     G4double GetBeamEnergy() const { return fBeamEnergy; }
+
+    /// @return the mode of particle generation
+    EGeneratorMode GetGeneratorMode() const { return fGeneratorMode; }
+
+    /// @return (full) amplitude of the vertical raster
+    G4double GetRasterAmplitude_vertical() const { return fVerticalRasterAmplitude; }
+
+    /// @return maximum mass of the pair generator
+    G4double GetMass_max() const { return fMax_restMass; }
+
+    /// @return minimum mass of the pair generator
+    G4double GetMass_min() const { return fMin_restMass; }
 }; 
 
 }

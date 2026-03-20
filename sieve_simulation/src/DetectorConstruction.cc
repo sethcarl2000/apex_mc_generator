@@ -110,8 +110,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
   // World
   //
-  G4double world_sizeXY = 100. * mm;
-  G4double world_sizeZ  = 1600.* mm;
+  G4double world_sizeXY =  50*cm;
+  G4double world_sizeZ  = 200*cm;
   G4Material* world_mat = nist->FindOrBuildMaterial("G4_Galactic");
 
   auto solidWorld = new G4Box("World",  // its name:
@@ -260,6 +260,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   );
   fScoringVolume = logic_scoringVolume; 
 
+  /* 
   //now, we construct the target
   G4String target_name = run_params->GetTargetName(); 
 
@@ -289,7 +290,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     false, 
     0, 
     false
-  );
+  );*/ 
 
   //
   //  always return the physical World

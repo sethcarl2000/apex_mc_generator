@@ -38,7 +38,20 @@
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include "G4Electron.hh"
+#include "G4Positron.hh"
 #include "Randomize.hh"
+
+#include <cmath> 
+
+namespace
+{ 
+  // maximum value of phi (azimuth around beam) from the horizontal of a generated lepton 
+  constexpr G4double kPhi_max = 45.*deg; 
+
+  // minimum angle between the beam and a generated lepton 
+  constexpr G4double kTheta_min = 0.045*rad; 
+} // namespace
+
 
 namespace B1
 {
@@ -48,6 +61,9 @@ namespace B1
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
   fMessenger = new UserMessenger<PrimaryGeneratorAction>(this); 
+
+  G4String command_prefix = "/generator/"; 
+
 
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
@@ -62,10 +78,27 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   G4String target_name = run_params->GetTargetName(); 
   
   //set the electron beam generation spot to be a little upstream
-  G4ThreeVector vertex_position 
-    = ApexTargetGeometry::GetTargetPosition(target_name) - G4ThreeVector(0., 0., 200.*um); 
-  
-  fParticleGun->SetParticlePosition(vertex_position); 
+  fTargetPosition  
+    = ApexTargetGeometry::GetTargetPosition(target_name); 
+
+  fRasterAmplitude_vertical = run_params->GetRasterAmplitude_vertical(); 
+
+  fBeamEnergy = run_params->GetBeamEnergy(); 
+
+  fGeneratorMode = run_params->GetGeneratorMode(); 
+
+  fMin_restMass = run_params->GetMass_min();
+  fMax_restMass = run_params->GetMass_max();
+
+  f_is_RHRS = run_params->Is_RHRS(); 
+
+  if (fGeneratorMode == kPairProduction) {
+    if (run_params->Is_RHRS()) {
+      fParticleGun -> SetParticleDefinition(G4Positron::Positron()); 
+    } else {
+      fParticleGun -> SetParticleDefinition(G4Electron::Electron()); 
+    }
+  }    
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -77,10 +110,64 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
-  // this function is called at the begining of ecah event
-  //
+  using namespace std; 
+  
+  switch (fGeneratorMode)
+  {
+    case kPairProduction: { //______________________________________________________
+
+      // beam energy 
+      G4double beam_E = fBeamEnergy; 
+
+      // pick a random decay invariant mass
+      G4double mass = fMin_restMass  +  (fMax_restMass - fMin_restMass)*G4UniformRand(); 
+
+      // cosine between decay particle direction and beam (in the restframe of the particle)
+      G4double cosine_restframe = (1 - 2*G4UniformRand());  
+
+      // azimuthal angle of lepton around beam (defined so that phi=0 means it's in the horizontal plane)
+      G4double phi = kPhi_max * (1 - 2*G4UniformRand()); 
+
+      G4double sine_restframe = sqrt( 1. - cosine_restframe*cosine_restframe ); 
+
+      // we're pretending the lepton is massless. 
+      auto p_lepton = G4ThreeVector( 
+        cos(phi) * sine_restframe * (f_is_RHRS ? -1 : +1), 
+        sin(phi) * sine_restframe, 
+        cosine_restframe
+      );
+      p_lepton *= (mass/2); 
+
+      // gamma factor of decaying particle in lab frame
+      G4double gamma = beam_E/mass; 
+
+      // boost the lepton to the lab frame
+      p_lepton[2] = gamma*( p_lepton[2] + (mass/2)*sqrt(1. - 1./(gamma*gamma)) );  
+
+      fParticleGun->SetParticleMomentumDirection(p_lepton); 
+
+      // now, pick a random reaction vertex at the target
+      fParticleGun->SetParticlePosition(
+        G4ThreeVector(
+          fTargetPosition.x(), 
+          fTargetPosition.y() + (1 - 2*G4UniformRand())*fRasterAmplitude_vertical,
+          fTargetPosition.z() 
+        )
+      );
+      break;
+    } default: { //______________________________________________________
+      
+      
+      
+      break;
+    }
+  }
+
   fParticleGun->GeneratePrimaryVertex(event);
 }
 

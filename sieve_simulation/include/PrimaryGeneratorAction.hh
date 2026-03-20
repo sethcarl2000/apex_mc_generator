@@ -47,6 +47,8 @@ namespace B1
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
+  private:     
+
   public:
     PrimaryGeneratorAction();
     ~PrimaryGeneratorAction() override;
@@ -58,10 +60,25 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
 
   private:
-
+    
     UserMessenger<PrimaryGeneratorAction> *fMessenger; 
+  
+    // center of the chosen target
+    G4ThreeVector fTargetPosition; 
 
+    // mode of the particle generator
+    G4int fGeneratorMode; 
+
+    // min/max invariant mass to generate
+    G4double fMin_restMass, fMax_restMass;
+    // beam energy  
     G4double fBeamEnergy; 
+    // vertical raster amplitude 
+    G4double fRasterAmplitude_vertical; 
+
+    // 'true' if RHRS, 'false' if LHRS
+    G4bool f_is_RHRS; 
+  
     G4ThreeVector fGunPosition; 
 
     G4ParticleGun* fParticleGun = nullptr;  // pointer a to G4 gun class

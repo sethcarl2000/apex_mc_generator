@@ -56,9 +56,12 @@ RunParameters::RunParameters()
         "Maximum momentum of leptons to be saved to the output file"
     ); 
     
+
+    G4String generator_prefix = "/generator/";
+
     //choose which target to use 
     fMessenger->AddCommand_string(
-        cmd_prefix + "target", 
+        generator_prefix + "target", 
         "target", 
         &RunParameters::SetTargetName, 
         "V2", 
@@ -68,14 +71,48 @@ RunParameters::RunParameters()
 
     //beam energy 
     fMessenger->AddCommand_doubleWithUnit(
-        cmd_prefix + "beam_energy", 
+        generator_prefix + "beam_energy", 
         "beam_energy", 
         &RunParameters::SetBeamEnergy, 
         2200.,
         "MeV", 
         "Beam energy"
     ); 
+        
+    fMessenger->AddCommand_string(
+        generator_prefix + "mode", 
+        "generator_mode",
+        &RunParameters::SetGeneratorMode,
+        "pair_production",
+        "pair_production elastic", 
+        "Set the mode of e-/e+ generation for the particle gun"
+    );
 
+    fMessenger->AddCommand_doubleWithUnit(
+        generator_prefix + "raster_amplitude",
+        "raster_amplitude", 
+        &RunParameters::SetVerticalRasterAmplitude,
+        2.,
+        "mm",
+        "Set the (full) amplitude of the vertical raster"
+    ); 
+    
+    fMessenger->AddCommand_doubleWithUnit(
+        generator_prefix + "min_restMass",
+        "min_restMass", 
+        &RunParameters::SetMass_min,
+        100.,
+        "MeV",
+        "Set the minimum of the decaying-particle rest-mass"
+    ); 
+    fMessenger->AddCommand_doubleWithUnit(
+        generator_prefix + "max_restMass",
+        "max_restMass", 
+        &RunParameters::SetMass_max,
+        400.,
+        "MeV",
+        "Set the maximum of the decaying-particle rest-mass"
+    ); 
 }   
 //______________________________________________________________________________
 void RunParameters::SetArm(G4String arm)
@@ -89,6 +126,11 @@ RunParameters* RunParameters::Instance()
     return fInstance; 
 }
 //______________________________________________________________________________
+void RunParameters::SetGeneratorMode(G4String mode)
+{ 
+  if (mode == "pair_production") { fGeneratorMode = kPairProduction; return; }
+  if (mode == "elastic")         { fGeneratorMode = kElastic; return; }
+}
 //______________________________________________________________________________
 //______________________________________________________________________________
 //______________________________________________________________________________
