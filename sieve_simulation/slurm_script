@@ -19,6 +19,7 @@ then
     run_id=0000
     n_cpus=20
     echo "We are not in a slurm job..." 
+    
 else
     run_id=${SLURM_JOB_ID}
     n_cpus=${SLURM_CPUS_PER_TASK}
@@ -56,7 +57,7 @@ echo "/run/numberOfThreads ${n_cpus}" >> my_run.mac
 
 echo "" >> my_run.mac
 echo "# Set output file" >> my_run.mac
-echo "/global/path_outfile ${OUTPUT_DIR}/test_sieve_${arm}_${run_id}.root" >> my_run.mac
+echo "/global/path_outfile ${OUTPUT_DIR}/sieve_trk_${arm}_${run_id}.root" >> my_run.mac
 
 echo "" >> my_run.mac
 echo "# Pick which arm to use" >> my_run.mac

@@ -46,5 +46,5 @@
 
 # Start the run 
 /run/initialize
-/run/beamOn 5000000
+/run/beamOn 50000
 

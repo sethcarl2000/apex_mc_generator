@@ -13,7 +13,7 @@
 /detector/build_sieve true
 
 # momenutm cuts
-/global/min_momentum  600 MeV
+/global/min_momentum  800 MeV
 /global/max_momentum 2200 MeV 
 
 #### Set some parameters of the particle generator ####
