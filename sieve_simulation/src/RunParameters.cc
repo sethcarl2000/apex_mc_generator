@@ -84,7 +84,7 @@ RunParameters::RunParameters()
         "generator_mode",
         &RunParameters::SetGeneratorMode,
         "pair_production",
-        "pair_production elastic", 
+        "pair_production flat", 
         "Set the mode of e-/e+ generation for the particle gun"
     );
 
@@ -97,6 +97,32 @@ RunParameters::RunParameters()
         "Set the (full) amplitude of the vertical raster"
     ); 
     
+    fMessenger->AddCommand_string(
+        cmd_prefix + "sieve_mode",
+        "sieve_mode",
+        &RunParameters::SetSieveMode,
+        "all",
+        "all small big wide_back",
+        "Set which mode the sieve will be generated in"
+    ); 
+
+    fMessenger->AddCommand_doubleWithUnit(
+        generator_prefix + "gunEnergy_min",
+        "gunEnergy_min", 
+        &RunParameters::SetGunEnergy_min,
+        1000,
+        "MeV",
+        "Set the minimum particle-gun energy"
+    ); 
+    fMessenger->AddCommand_doubleWithUnit(
+        generator_prefix + "gunEnergy_max",
+        "gunEnergy_max", 
+        &RunParameters::SetGunEnergy_max,
+        2200,
+        "MeV",
+        "Set the maximum particle-gun energy"
+    ); 
+
     fMessenger->AddCommand_doubleWithUnit(
         generator_prefix + "min_restMass",
         "min_restMass", 
@@ -128,10 +154,17 @@ RunParameters* RunParameters::Instance()
 //______________________________________________________________________________
 void RunParameters::SetGeneratorMode(G4String mode)
 { 
-  if (mode == "pair_production") { fGeneratorMode = kPairProduction; return; }
-  if (mode == "elastic")         { fGeneratorMode = kElastic; return; }
+  if (mode == "pair_production")    { fGeneratorMode = kPairProduction; return; }
+  if (mode == "flat")               { fGeneratorMode = kFlat; return; }
 }
 //______________________________________________________________________________
+void RunParameters::SetSieveMode(G4String mode)
+{
+    if (mode == "all")          { fSieveMode = kAll; }
+    if (mode == "small")        { fSieveMode = kSmall; }
+    if (mode == "big")          { fSieveMode = kBig; }
+    if (mode == "wide_back")    { fSieveMode = kWideBack; }
+}
 //______________________________________________________________________________
 //______________________________________________________________________________
 //______________________________________________________________________________

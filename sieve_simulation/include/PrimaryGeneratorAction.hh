@@ -32,6 +32,7 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "UserMessenger.hh"
 #include "G4ThreeVector.hh"
+#include "G4RotationMatrix.hh"
 
 class G4ParticleGun;
 class G4Event;
@@ -75,6 +76,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double fBeamEnergy; 
     // vertical raster amplitude 
     G4double fRasterAmplitude_vertical; 
+
+    G4RotationMatrix fSieveRotation; 
 
     // 'true' if RHRS, 'false' if LHRS
     G4bool f_is_RHRS; 

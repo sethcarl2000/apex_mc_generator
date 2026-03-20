@@ -32,6 +32,7 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "UserMessenger.hh"
 #include "G4MultiUnion.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4String.hh"
 
 class G4VPhysicalVolume;
@@ -39,6 +40,8 @@ class G4LogicalVolume;
 
 namespace B1
 {
+
+  constexpr G4double inch = 2.54*cm;
 
 /// Detector construction class to define materials and geometry.
 
@@ -53,6 +56,15 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
 
     void Set_BuildSieve(G4bool _val) { f_buildSieve=_val; }
+
+    /// @return full width of sieve
+    static G4double Sieve_dx() { return 4.250 * inch; }
+
+    /// @return full height of sieve
+    static G4double Sieve_dy() { return 3.250 * inch; }
+
+    /// @return thickness of sieve
+    static G4double Sieve_dz() { return 0.500 * inch; }
 
   protected:
     G4LogicalVolume* fScoringVolume = nullptr;

@@ -10,7 +10,7 @@
 /run/numberOfThreads 4
 #
 # specify whether sieve should be built
-/detector/build_sieve false
+/detector/build_sieve true
 
 #### Set some parameters of the particle generator ####
 # 
@@ -18,7 +18,11 @@
 /generator/beam_energy 2200 MeV
 #
 # mode of generation
-/generator/mode pair_production
+/generator/mode flat
+#
+# gun energy generation range
+/generator/gunEnergy_min 1000 MeV
+/generator/gunEnergy_max 2200 MeV 
 #
 # vertical raster amplitude
 /generator/raster_amplitude 2 mm
