@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#SBATCH --nodes 1
+#SBATCH --partition production
+#SBATCH --account halla
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 20
+#SBATCH --output=/volatile/halla/apex/mc/temp/slurm/%x.%j.out
+#SBATCH --error=/volatile/halla/apex/mc/temp/slurm/%x.%j.err
+#SBATCH --mem=8G 
+
+source ~/.login
+
+
+#check if we're within a slurm job; if not, then "${SLURM_JOB_ID}"=""
+if [ ! "${SLURM_JOB_ID}" ]
+then
+    #We aren't in slurm mode. 
+    run_id=0000
+    n_cpus=20
+    echo "We are not in a slurm job..." 
+    
+else
+    run_id=${SLURM_JOB_ID}
+    n_cpus=${SLURM_CPUS_PER_TASK}
+    echo "Slurm job id: ${SLURM_JOB_ID}"
+fi
+
+arm=${1}
+n_events=${2}
+
+# Path to source directory 
+SRC_DIR="${WORK_APEX}/apex_mc_generator/sieve_simulation" 
+
+# path to place to put files on the volatile disk
+OUTPUT_DIR="/volatile/halla/apex/mc/tracks_sieve"
+
+# path to scratch disk 
+SCRATCH_DIR="/scratch/${USER}/job_${run_id}"
+
+if [ -d "${SCRATCH_DIR}" ]; then
+    echo "<${0}>: Overwriting directory '${SCRATCH_DIR}'" 
+    rm -rf ${SCRATCH_DIR}/*
+else
+    echo "<${0}>: Creating directory '${SCRATCH_DIR}'" 
+    mkdir ${SCRATCH_DIR}
+fi 
+    
+cd ${SCRATCH_DIR}
+cp -r ${SRC_DIR}/* .
+
+cat slurm_run.mac > my_run.mac
+
+echo "" >> my_run.mac
+echo "# set number of worker threads" >> my_run.mac
+echo "/run/numberOfThreads ${n_cpus}" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Set output file" >> my_run.mac
+echo "/global/path_outfile ${OUTPUT_DIR}/sieve_trk_${arm}_${run_id}.root" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Pick which arm to use" >> my_run.mac
+echo "/global/active_arm ${arm}" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Start the run" >> my_run.mac
+echo "/run/initialize" >> my_run.mac
+echo "/run/beamOn ${n_events}" >> my_run.mac 
+
+echo "<${0}>: Executing G4 application" 
+time ./exampleB1 my_run.mac
+echo "<${0}>: done."
+
+
+
+
+
+
