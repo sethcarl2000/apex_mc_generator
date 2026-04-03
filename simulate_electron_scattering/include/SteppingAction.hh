@@ -30,6 +30,7 @@
 #define B1SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
+#include "G4Types.hh"
 
 class G4LogicalVolume;
 class G4Step;
@@ -51,6 +52,11 @@ class SteppingAction : public G4UserSteppingAction
     void UserSteppingAction(const G4Step*) override;
 
   private:
+
+    //minimum tan(theta) to 'save' a particle
+    G4double fMinTanTheta; 
+    G4double fMomentum_min, fMomentum_max; 
+
     EventAction* fEventAction = nullptr;
     G4LogicalVolume* fScoringVolume = nullptr;
 

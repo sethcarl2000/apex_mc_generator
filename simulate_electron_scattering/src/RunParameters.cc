@@ -1,6 +1,9 @@
 
 #include "RunParameters.hh"
+#include "G4ParticleTable.hh"
 #include "G4String.hh"
+#include "G4Exception.hh"
+#include "G4ExceptionSeverity.hh"
 
 namespace B1
 {
@@ -27,6 +30,7 @@ RunParameters::RunParameters()
         "Deterimes whether the LHRS or RHRS will be simulated. valid inputs are 'RHRS or LHRS'"
     ); 
 
+    //path to output file 
     fMessenger->AddCommand_string(
         cmd_prefix + "path_outfile", 
         "path_outfile",
@@ -55,55 +59,38 @@ RunParameters::RunParameters()
         "MeV", 
         "Maximum momentum of leptons to be saved to the output file"
     ); 
-    
+
+    //minimum angle 
+    fMessenger->AddCommand_doubleWithUnit(
+        cmd_prefix + "min_angle", 
+        "min_angle", 
+        &RunParameters::SetMinAngle, 
+        0.045,
+        "rad", 
+        "Minimum angle of scattered particles to save"
+    ); 
+
+    //thickness of the target 
+    fMessenger->AddCommand_doubleWithUnit(
+        "/detector/target_thickness", 
+        "target_thickness", 
+        &RunParameters::SetTargetThickness, 
+        0.100,
+        "mm", 
+        "thickness of the target"
+    ); 
+
 
     G4String generator_prefix = "/generator/";
 
-    //choose which target to use 
+    //name of particle to generate 
     fMessenger->AddCommand_string(
-        generator_prefix + "target", 
-        "target", 
-        &RunParameters::SetTargetName, 
-        "V2", 
-        "V1 V2 V3", 
-        "Deterimes which target to simulate"
-    ); 
-
-    //beam energy 
-    fMessenger->AddCommand_doubleWithUnit(
-        generator_prefix + "beam_energy", 
-        "beam_energy", 
-        &RunParameters::SetBeamEnergy, 
-        2200.,
-        "MeV", 
-        "Beam energy"
-    ); 
-        
-    fMessenger->AddCommand_string(
-        generator_prefix + "mode", 
-        "generator_mode",
-        &RunParameters::SetGeneratorMode,
-        "pair_production",
-        "pair_production flat", 
-        "Set the mode of e-/e+ generation for the particle gun"
-    );
-
-    fMessenger->AddCommand_doubleWithUnit(
-        generator_prefix + "raster_amplitude",
-        "raster_amplitude", 
-        &RunParameters::SetVerticalRasterAmplitude,
-        2.,
-        "mm",
-        "Set the (full) amplitude of the vertical raster"
-    ); 
-    
-    fMessenger->AddCommand_string(
-        cmd_prefix + "sieve_mode",
-        "sieve_mode",
-        &RunParameters::SetSieveMode,
-        "all",
-        "all small big wide_back",
-        "Set which mode the sieve will be generated in"
+        generator_prefix + "particle_name", 
+        "particle_name",
+        &RunParameters::SetGeneratedParticle,
+        "e-",
+        "e- e+",
+        "Determines which type of particle is thrown at the target" 
     ); 
 
     fMessenger->AddCommand_doubleWithUnit(
@@ -123,23 +110,21 @@ RunParameters::RunParameters()
         "Set the maximum particle-gun energy"
     ); 
 
-    fMessenger->AddCommand_doubleWithUnit(
-        generator_prefix + "min_restMass",
-        "min_restMass", 
-        &RunParameters::SetMass_min,
-        100.,
-        "MeV",
-        "Set the minimum of the decaying-particle rest-mass"
-    ); 
-    fMessenger->AddCommand_doubleWithUnit(
-        generator_prefix + "max_restMass",
-        "max_restMass", 
-        &RunParameters::SetMass_max,
-        400.,
-        "MeV",
-        "Set the maximum of the decaying-particle rest-mass"
-    ); 
 }   
+//______________________________________________________________________________
+void RunParameters::SetGeneratedParticle(G4String particle_name)
+{
+    auto particle_table = G4ParticleTable::GetParticleTable(); 
+    if (!particle_table) {
+        G4Exception(__func__, "null ptr", G4ExceptionSeverity::RunMustBeAborted, "Ptr to Particle Table is null");
+        fGeneratedParticle = nullptr; 
+        return;  
+    }
+    fGeneratedParticle = particle_table->FindParticle(particle_name); 
+    if (!fGeneratedParticle) {
+        G4Exception(__func__, "particle not found", G4ExceptionSeverity::RunMustBeAborted, "Particle specified not found"); 
+    }
+}
 //______________________________________________________________________________
 void RunParameters::SetArm(G4String arm)
 {
@@ -150,20 +135,6 @@ RunParameters* RunParameters::Instance()
 {
     if (fInstance==nullptr) fInstance = new RunParameters(); 
     return fInstance; 
-}
-//______________________________________________________________________________
-void RunParameters::SetGeneratorMode(G4String mode)
-{ 
-  if (mode == "pair_production")    { fGeneratorMode = kPairProduction; return; }
-  if (mode == "flat")               { fGeneratorMode = kFlat; return; }
-}
-//______________________________________________________________________________
-void RunParameters::SetSieveMode(G4String mode)
-{
-    if (mode == "all")          { fSieveMode = kAll; }
-    if (mode == "small")        { fSieveMode = kSmall; }
-    if (mode == "big")          { fSieveMode = kBig; }
-    if (mode == "wide_back")    { fSieveMode = kWideBack; }
 }
 //______________________________________________________________________________
 //______________________________________________________________________________

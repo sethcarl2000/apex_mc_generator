@@ -54,9 +54,16 @@ namespace B1
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SteppingAction::SteppingAction(EventAction* eventAction) : fEventAction(eventAction) {}
+SteppingAction::SteppingAction(EventAction* eventAction) : fEventAction(eventAction) {
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+  // tan(theta_min)
+  fMinTanTheta = std::tan( RunParameters::Instance()->GetMinAngle() ); 
+
+  fMomentum_min = RunParameters::Instance()->GetMomentum_min(); 
+  fMomentum_max = RunParameters::Instance()->GetMomentum_max(); 
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......s
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
@@ -77,19 +84,24 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   // check if we are in scoring volume
   if (volume != fScoringVolume) return;
 
-  // collect energy deposited in this step
-  G4double edepStep = step->GetTotalEnergyDeposit();
-  fEventAction->AddEdep(edepStep);
-
-  // post step point: 
-  //const G4StepPoint* postStepPoint = step->GetPostStepPoint(); 
-
   G4Track* track = step->GetTrack(); 
-
-  const G4ThreeVector& p_track = track->GetMomentum();  
 
   // kills current track 
   auto kill_track = [track]() { track->SetTrackStatus(fStopAndKill); };
+  
+  G4int charge{0}; 
+  auto particle_def = track->GetParticleDefinition(); 
+
+  //reject any particles which aren't positrons or electrons
+  if (particle_def == G4Electron::Electron()) {
+    charge = -1; 
+  } else {
+    if (particle_def == G4Positron::Positron()) {
+      charge = +1;
+    } else { kill_track(); return; }
+  }
+  
+  const G4ThreeVector& p_track = track->GetMomentum();  
 
   //check if the track is inside the momentum acceptance
   const RunParameters* run_params = RunParameters::Instance(); 
@@ -97,16 +109,12 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   G4double p_track_mag = p_track.mag(); 
   
   //only save leptons inside our momentum acceptance 
-  if (p_track_mag < run_params->GetMomentum_min() || 
-      p_track_mag > run_params->GetMomentum_max() ) { kill_track(); return; }
-  
-  //only save positrons for the right arm, and electrons for the left
-  if (f_is_RHRS) {
-    if (track->GetParticleDefinition() != G4Positron::Positron() ) { kill_track(); return; }
-  } else {
-    if (track->GetParticleDefinition() != G4Electron::Electron() ) { kill_track(); return; }  
-  } 
+  if (p_track_mag < fMomentum_min || p_track_mag > fMomentum_max ) { kill_track(); return; }  
 
+  //only save leptons whose angle with the beam is beyond a certain value
+  G4double tan_theta = sqrt( p_track[0]*p_track[0] + p_track[1]*p_track[1] ) / p_track[2]; 
+
+  if (p_track[2] < 0 || tan_theta < fMinTanTheta) { kill_track(); return; }
       
   //get the analysis manager, and fill out relevant information. 
   auto analysisManager = G4AnalysisManager::Instance(); 
@@ -124,6 +132,9 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   analysisManager->FillNtupleDColumn(i_col++, r_track.x());
   analysisManager->FillNtupleDColumn(i_col++, r_track.y());
   analysisManager->FillNtupleDColumn(i_col++, r_track.z());
+
+  //save the charge to identify what kind of particle it is 
+  analysisManager->FillNtupleIColumn(i_col++, charge);
 
   //save this as a distinct event 
   analysisManager->AddNtupleRow(); 

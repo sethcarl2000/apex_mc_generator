@@ -63,21 +63,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   private:
     
     UserMessenger<PrimaryGeneratorAction> *fMessenger; 
-  
-    // center of the chosen target
-    G4ThreeVector fTargetPosition; 
 
-    // mode of the particle generator
-    G4int fGeneratorMode; 
-
-    // min/max invariant mass to generate
-    G4double fMin_restMass, fMax_restMass;
     // beam energy  
-    G4double fBeamEnergy; 
-    // vertical raster amplitude 
-    G4double fRasterAmplitude_vertical; 
+    G4double fBeamEnergy_min, fBeamEnergy_max; 
 
-    G4RotationMatrix fSieveRotation; 
 
     // 'true' if RHRS, 'false' if LHRS
     G4bool f_is_RHRS; 

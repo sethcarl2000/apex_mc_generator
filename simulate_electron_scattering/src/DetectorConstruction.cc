@@ -95,14 +95,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Option to switch on/off checking of volumes overlaps
   // 
   G4bool checkOverlaps = true;
-
   
   // 
   // Tungsten sieve face 
   // 
   G4Material* tungsten_mat = nist->FindOrBuildMaterial("G4_W"); //tungsten material
   
-
   //
   // World
   //
@@ -138,104 +136,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   const G4double sieve_y_angle = ApexTargetGeometry::Get_sieve_angle(is_RHRS); 
 
-  
-  /// Rotation of the sieve 
-  G4RotationMatrix *rotation_sieve = new G4RotationMatrix(
-    CLHEP::HepRotationY(sieve_y_angle) * CLHEP::HepRotationZ(-CLHEP::pi/2)  
-  );
-  
-  /// Position of the sieve
-  /// this function gives the sieve position in SIEVE coordinates, so we need to rotate it to HALL coordinates
-  G4ThreeVector position_sieve = ApexTargetGeometry::Get_sieve_pos(is_RHRS); 
-  position_sieve = (*rotation_sieve) * position_sieve; 
-
-  printf("sieve position: %f, %f, %f\n", position_sieve[0], position_sieve[1], position_sieve[2]);  
-  
-  
-  /// Sieve containter volume 
-  // Physical volume
-  auto solid_SieveContainer = new G4Box(
-    "sieve_container", 
-    (sieve_dx + 1*cm)/2.,
-    (sieve_dy + 1*cm)/2.,
-    (sieve_dz + 2*cm)/2. 
-  );
-  // logical volume
-  auto logic_sieveContainer = new G4LogicalVolume(
-    solid_SieveContainer, 
-    world_mat, 
-    "logic_sieveContainer"
-  );
-  //make the sieve container invisible
-  logic_sieveContainer->SetVisAttributes(G4VisAttributes::GetInvisible()); 
-
-  //place the sieve container in the world
-  new G4PVPlacement(
-    // for reasons I don't understand, the rotation of the sieve needs to be the opposite 
-    // of whatever the rotation of the sieve's *position* vector is. 
-    new G4RotationMatrix( rotation_sieve->inverse() ), 
-    position_sieve, 
-    logic_sieveContainer,
-    "Sieve Container",
-    logic_World,
-    true, 
-    0, 
-    checkOverlaps
-  ); 
-
-  /// sieve face -----------------------------------------
-
-  if (f_buildSieve) {
-    // Solid volume
-    auto solid_sieveFace = new G4Box(
-      "solid_sieveFace", 
-      sieve_dx/2., 
-      sieve_dy/2., 
-      sieve_dz/2.
-    );   
-    // first, we create 3 different types of sieve-holes:
-
-    auto solid_allSieveHoles = Generate_sieveHoles_solid(is_RHRS); 
-
-    // make a 'subtraction solid' of the sieve face (sieve face with holes drilled into it )
-    auto solid_sieveWithHoles = new G4SubtractionSolid(
-      "solid_sieveWithHoles", 
-      solid_sieveFace, 
-      solid_allSieveHoles, 
-      G4Transform3D(G4RotationMatrix(), G4ThreeVector())
-    ); 
-    //solid_sieveWithHoles->CreatePolyhedron(); 
-
-    // Let's make the target 
-
-    // logical volume 
-    auto logic_sieveFace = new G4LogicalVolume(
-      solid_sieveWithHoles, 
-      tungsten_mat, 
-      "logic_sieveFace"
-    );
-    
-    new G4PVPlacement(
-      nullptr,         // no rotation relative to the sieve's container volume
-      G4ThreeVector(0., 0., +sieve_dz/2.), //place the sieve within its container volume such that the upstream face of the central 'big hole' is the defined origin of the sieve block.
-      logic_sieveFace,
-      "Sieve Face",
-      logic_sieveContainer, 
-      true, 
-      0, 
-      checkOverlaps
-    ); 
-  }
-  // -----------------------------------------------------
-
   /// Scoring volume -------------------------------------
   //
   // This volume will monitor the tracks, and record ones we want to keep (and kill the ones we don't)
   const G4double scoring_volume_thickness = 2.5*mm; 
   auto solid_scoringVolume = new G4Box(
     "solid_scoringVolume",
-    sieve_dx/2. - 3*mm, 
-    sieve_dy/2. - 3*mm, 
+    20*cm, 
+    20*cm, 
     scoring_volume_thickness/2.
   ); 
   auto logic_scoringVolume = new G4LogicalVolume(
@@ -245,50 +153,48 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   ); 
 
   //only show the scoring box if the solid sieve was not built 
-  if (f_buildSieve) logic_scoringVolume->SetVisAttributes(G4VisAttributes::GetInvisible()); 
   new G4PVPlacement(
     nullptr, 
-    G4ThreeVector(0., 0., sieve_dz + scoring_volume_thickness/2. + 1.*mm), // let's leave a 1 mm gap between the scoring volume and the sieve
+    G4ThreeVector(0., 0., 2*cm), // let's leave a 2 cm gap between the target and the sieve
     logic_scoringVolume, 
     "Scoring Volume", 
-    logic_sieveContainer, 
+    logic_World, 
     true, 
     0, 
     checkOverlaps
   );
   fScoringVolume = logic_scoringVolume; 
 
-  /* 
-  //now, we construct the target
-  G4String target_name = run_params->GetTargetName(); 
+
 
   G4VSolid *solid_target = nullptr; 
   G4RotationMatrix *rotation_target = nullptr; 
 
-  solid_target = new G4Tubs(
-    G4String("solid_" + target_name), 
-    0., 100./2.*um, 
-    1.*cm,
-    0., 2.*CLHEP::pi
+  solid_target = new G4Box(
+    "solid_Target", 
+    1*cm/2.,
+    1*cm/2.,
+    run_params->GetTargetThickness()/2.
   ); 
-  rotation_target = new G4RotationMatrix( CLHEP::HepRotationX(CLHEP::pi/2.) ); 
+
+  //rotation_target = new G4RotationMatrix( CLHEP::HepRotationX(CLHEP::pi/2.) ); 
   
   auto logic_target = new G4LogicalVolume(
     solid_target, 
     tungsten_mat, 
-    G4String("logic_" + target_name)
+    G4String("logic_target")
   ); 
 
   new G4PVPlacement(
-    rotation_target,
-    ApexTargetGeometry::GetTargetPosition(target_name),
+    nullptr, //rotation_target,
+    G4ThreeVector(0, 0, 0),
     logic_target, 
     "Target", 
     logic_World, 
     false, 
     0, 
     false
-  );*/ 
+  );
 
   //
   //  always return the physical World
