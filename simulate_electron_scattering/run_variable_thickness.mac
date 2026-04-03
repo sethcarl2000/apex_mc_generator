@@ -4,7 +4,7 @@
 # or interactively: Idle> /control/execute run1.mac
 #
 # Change the default number of workers (in multi-threading mode) 
-/run/numberOfThreads 20
+/run/numberOfThreads 4
 
 # Set verbosity 
 /control/verbose 0
@@ -32,14 +32,3 @@
 
 # minimum angle to save particles 
 /global/min_angle -0.100 rad
-
-# Set output file 
-/global/path_outfile data/test_target_100um.root
-
-# target thickness
-/detector/target_thickness 0.100 mm 
-
-# Start the run 
-/run/initialize
-/run/beamOn 50000000
-

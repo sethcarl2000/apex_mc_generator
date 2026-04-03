@@ -9,31 +9,39 @@
 # Change the default number of threads (in multi-threaded mode)
 /run/numberOfThreads 4
 #
-# specify whether sieve should be built
-/detector/build_sieve true
+
+# Set verbosity 
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+
+# Pick which arm to use 
+/global/active_arm LHRS
+
+# momenutm cuts
+/global/min_momentum 1000 MeV
+/global/max_momentum 2200 MeV 
 
 #### Set some parameters of the particle generator ####
 # 
-# specify beam energy 
-/generator/beam_energy 2200 MeV
 #
-# mode of generation
-/generator/mode flat
-#
-# gun energy generation range
-/generator/gunEnergy_min 1000 MeV
-/generator/gunEnergy_max 2200 MeV 
-#
-# vertical raster amplitude
-/generator/raster_amplitude 2 mm
-#
-# invariant mass bounds
-/generator/min_restMass 100 MeV
-/generator/max_restMass 400 MeV 
-#
-# specify target
-/generator/target V2
+# min / max gun energy 
+/generator/gunEnergy_min 2200 MeV
+/generator/gunEnergy_max 2200 MeV
+# 
+# 
+# particle type to generate
+/generator/particle_name e- 
 
+# minimum angle to save particles 
+/global/min_angle 0.045 rad
+
+# Set output file 
+/global/path_outfile data/test_target_100um.root
+
+# target thickness
+/detector/target_thickness 0.100 mm 
 
 # specify minimum and maximum momentum to be written to file 
 /global/min_momentum 1000 MeV
@@ -42,11 +50,8 @@
 # specify which arm to use
 /global/active_arm LHRS
 
-
 # specify output file
 /global/path_outfile test.root
-
-
  
 # Initialize kernel
 /run/initialize
