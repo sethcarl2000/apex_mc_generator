@@ -155,7 +155,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //only show the scoring box if the solid sieve was not built 
   new G4PVPlacement(
     nullptr, 
-    G4ThreeVector(0., 0., 2*cm), // let's leave a 2 cm gap between the target and the sieve
+    G4ThreeVector(0., 0., run_params->GetTargetThickness()/2 + 2*mm), // let's leave a 2 cm gap between the target and the sieve
     logic_scoringVolume, 
     "Scoring Volume", 
     logic_World, 
@@ -172,8 +172,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   solid_target = new G4Box(
     "solid_Target", 
-    1*cm/2.,
-    1*cm/2.,
+    10*cm/2.,
+    10*cm/2.,
     run_params->GetTargetThickness()/2.
   ); 
 

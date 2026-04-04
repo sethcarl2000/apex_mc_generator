@@ -6,7 +6,7 @@ THICKNESS_SPACING=${2}
 
 N_RUNS=${3}
 
-N_EVENTS=200000
+N_EVENTS=400000
 
 echo "Executing ${3} runs, starting with a thickness of ${1} um, and each run spaced by ${2} um"
 
@@ -14,10 +14,9 @@ SIZE_UM=${STARTING_THICKNESS}
 
 echo "starting size: ${SIZE_MM} mm"
 
-i=0
-while [[ $i < ${N_RUNS} ]]; do
+for ((i=0; i<${N_RUNS}; i++)); do
 
-    echo "size: ${SIZE_MM} mm" 
+    echo "size: ${SIZE_UM} um" 
 
     PATH_MACRO="myrun_${SIZE_UM}um.mac"
     cp run_variable_thickness.mac ${PATH_MACRO}
@@ -42,8 +41,8 @@ while [[ $i < ${N_RUNS} ]]; do
 
     hadd -j 4 "${PATH_OUTFILE}" data/*um_t*
     rm data/*um_t*
+    rm "${PATH_MACRO}"
 
-    i=$(( i + 1 ))        
     SIZE_UM=$(( SIZE_UM + THICKNESS_SPACING ))
     
 done
