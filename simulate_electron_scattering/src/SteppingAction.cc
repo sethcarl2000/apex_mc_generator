@@ -61,6 +61,8 @@ SteppingAction::SteppingAction(EventAction* eventAction) : fEventAction(eventAct
 
   fMomentum_min = RunParameters::Instance()->GetMomentum_min(); 
   fMomentum_max = RunParameters::Instance()->GetMomentum_max(); 
+
+  fz_target_back = RunParameters::Instance()->GetTargetThickness()/2; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......s
@@ -128,10 +130,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   
   const G4ThreeVector& r_track = track->GetPosition(); 
 
-  //save the position 
-  analysisManager->FillNtupleDColumn(i_col++, r_track.x());
-  analysisManager->FillNtupleDColumn(i_col++, r_track.y());
-  analysisManager->FillNtupleDColumn(i_col++, r_track.z());
+  //save the position. project the particle onto the back of the target 
+  double dxdz = p_track.x() / p_track.z(); 
+  double dydz = p_track.y() / p_track.z(); 
+  
+  analysisManager->FillNtupleDColumn(i_col++, r_track.x() - dxdz*(r_track.z() - fz_target_back));
+  analysisManager->FillNtupleDColumn(i_col++, r_track.y() - dydz*(r_track.z() - fz_target_back));
+  analysisManager->FillNtupleDColumn(i_col++, fz_target_back);
 
   //save the charge to identify what kind of particle it is 
   analysisManager->FillNtupleIColumn(i_col++, charge);

@@ -57,6 +57,9 @@ class SteppingAction : public G4UserSteppingAction
     G4double fMinTanTheta; 
     G4double fMomentum_min, fMomentum_max; 
 
+    //the global z-position of the back of the target, which we want to project to 
+    G4double fz_target_back; 
+
     EventAction* fEventAction = nullptr;
     G4LogicalVolume* fScoringVolume = nullptr;
 

@@ -83,9 +83,24 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fBeamEnergy_min = run_params->GetGunEnergy_min(); 
   fBeamEnergy_max = run_params->GetGunEnergy_max(); 
 
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1)); 
+  fGunAngle = run_params->GetGunAngle(); 
+  fRasterAmplitude = run_params->GetRasterAmplitude(); 
 
-  fParticleGun->SetParticlePosition(G4ThreeVector(0, 0, -run_params->GetTargetThickness()/2 -1*cm)); 
+  //our 'pivot point' we rotate the gun around is the back of the target
+  G4double dist_to_pivot = 1*cm + 3*mm + run_params->GetTargetThickness(); 
+  
+  //set the angle of the particle gun
+  fParticleGun->SetParticleMomentumDirection(
+    G4ThreeVector(std::sin(fGunAngle), 0, std::cos(fGunAngle))
+  ); 
+  
+  fGunStartingPos = G4ThreeVector(
+    -dist_to_pivot*std::tan(fGunAngle),
+    0, 
+    -run_params->GetTargetThickness()/2 -1*cm 
+  ); 
+
+  fParticleGun->SetParticlePosition(fGunStartingPos);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -106,7 +121,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   fParticleGun->SetParticleEnergy(
     (fBeamEnergy_max - fBeamEnergy_min)*G4UniformRand() + fBeamEnergy_min
   );
-  
+
+  //choose a random starting point to launch the electron from
+  fParticleGun->SetParticlePosition(G4ThreeVector(
+    fGunStartingPos.x() + (2. - 1.)*G4UniformRand()*fRasterAmplitude, 
+    fGunStartingPos.y() + (2. - 1.)*G4UniformRand()*fRasterAmplitude, 
+    fGunStartingPos.z()
+  )); 
+
   fParticleGun->GeneratePrimaryVertex(event);
 }
 

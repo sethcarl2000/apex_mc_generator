@@ -43,6 +43,12 @@ private:
     // thickness of the target (unit - mm)
     G4double fTargetThickness; 
 
+    // gun angle with normal
+    G4double fGunAngle;
+
+    // raster amplitude (edge-length of square over which events are generated)
+    G4double fRasterAmplitude; 
+
 
 public: 
 
@@ -66,6 +72,8 @@ public:
     void SetGunEnergy_min(G4double _x) { fGunEnergy_min=_x; }
     void SetGunEnergy_max(G4double _x) { fGunEnergy_max=_x; }
     void SetMinAngle(G4double _x) { fMinAngle=_x; }
+    void SetGunAngle(G4double _x) { fGunAngle=_x; }
+    void SetRasterAmplitude(G4double _x) { fRasterAmplitude=_x; }
     //_________________________________________________________________________
     // 
     //   List of const methods to access read-only information 
@@ -97,6 +105,12 @@ public:
 
     /// @return max particle gun energy 
     G4double GetGunEnergy_max() const { return fGunEnergy_max; }
+
+    /// @return gun angle
+    G4double GetGunAngle() const { return fGunAngle; }
+
+    /// @return raster amplitude 
+    G4double GetRasterAmplitude() const { return fRasterAmplitude; }
 
 }; 
 

@@ -60,6 +60,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     // method to access particle gun
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
 
+    void SetRasterAmplitude(G4double _x) { fRasterAmplitude=_x; }
+    void SetGunAngle(G4double _x) { fGunAngle=_x; }
+
   private:
     
     UserMessenger<PrimaryGeneratorAction> *fMessenger; 
@@ -67,11 +70,19 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     // beam energy  
     G4double fBeamEnergy_min, fBeamEnergy_max; 
 
+    // the side-length of the square over which electrons will be thrown 
+    G4double fRasterAmplitude; 
+    G4double fGunZPos; //the z-position of the gun, which will not change. 
+
+    G4double fGunAngle; //angle the gun will make with the normal direction, in degrees
 
     // 'true' if RHRS, 'false' if LHRS
     G4bool f_is_RHRS; 
   
     G4ThreeVector fGunPosition; 
+
+    // the 'center' position of the gun (we add in raster after the fact)
+    G4ThreeVector fGunStartingPos; 
 
     G4ParticleGun* fParticleGun = nullptr;  // pointer a to G4 gun class
     G4Box* fEnvelopeBox = nullptr;

@@ -4,6 +4,7 @@
 #include "G4String.hh"
 #include "G4Exception.hh"
 #include "G4ExceptionSeverity.hh"
+#include "G4SystemOfUnits.hh"
 
 namespace B1
 {
@@ -79,8 +80,7 @@ RunParameters::RunParameters()
         "mm", 
         "thickness of the target"
     ); 
-
-
+        
     G4String generator_prefix = "/generator/";
 
     //name of particle to generate 
@@ -109,6 +109,26 @@ RunParameters::RunParameters()
         "MeV",
         "Set the maximum particle-gun energy"
     ); 
+    
+    fMessenger->AddCommand_doubleWithUnit(
+        generator_prefix + "gun_angle", 
+        "gun_angle", 
+        &RunParameters::SetGunAngle, 
+        0*deg,
+        "deg", 
+        "Angle the particle gun makes with the normal"
+    );
+    
+    //raster amplitude
+    fMessenger->AddCommand_doubleWithUnit(
+        generator_prefix + "raster_amplitude", 
+        "raster_amplitude", 
+        &RunParameters::SetRasterAmplitude, 
+        20*mm,
+        "mm", 
+        "Amplitude of the 'Raster' (side-length of the square over which events will be generated)"
+    ); 
+
 
 }   
 //______________________________________________________________________________

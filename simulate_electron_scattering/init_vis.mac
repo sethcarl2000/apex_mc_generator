@@ -19,10 +19,6 @@
 # Pick which arm to use 
 /global/active_arm LHRS
 
-# momenutm cuts
-/global/min_momentum 1000 MeV
-/global/max_momentum 2200 MeV 
-
 #### Set some parameters of the particle generator ####
 # 
 #
@@ -33,25 +29,28 @@
 # 
 # particle type to generate
 /generator/particle_name e- 
-
-# minimum angle to save particles 
-/global/min_angle 0.045 rad
+#
+#
+# minimum angle to save particles. set to negative value to make no cut on minimum angle 
+/global/min_angle -0.045 rad
+#
+#
+# angle of particle gun 
+/generator/gun_angle 45.0 deg
+#
+#
+# 'raster' amplitude (edge-size of square, over which particles will be generated)
+/generator/raster_amplitude 4 mm 
 
 # Set output file 
-/global/path_outfile data/test_target_100um.root
+/global/path_outfile data/test_target_1000um.root
 
 # target thickness
-/detector/target_thickness 0.100 mm 
+/detector/target_thickness 1.00 mm 
 
 # specify minimum and maximum momentum to be written to file 
 /global/min_momentum 1000 MeV
 /global/max_momentum 2200 MeV
-
-# specify which arm to use
-/global/active_arm LHRS
-
-# specify output file
-/global/path_outfile test.root
  
 # Initialize kernel
 /run/initialize
