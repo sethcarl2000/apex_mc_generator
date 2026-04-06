@@ -1,0 +1,45 @@
+# Macro file for run on one of the sieves 
+# 
+# Can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+#
+# Change the default number of workers (in multi-threading mode) 
+/run/numberOfThreads 20
+
+# Set verbosity 
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+
+# Pick which arm to use 
+/global/active_arm LHRS
+
+# momenutm cuts
+/global/min_momentum 1000 MeV
+/global/max_momentum 2201 MeV 
+
+#### Set some parameters of the particle generator ####
+# 
+#
+# min / max gun energy 
+/generator/gunEnergy_min 2200 MeV
+/generator/gunEnergy_max 2200 MeV
+# 
+# 
+# particle type to generate
+/generator/particle_name e- 
+
+# minimum angle to save particles 
+/global/min_angle +0.045 rad
+
+# Set output file 
+/global/path_outfile data/test_target_100um.root
+
+# target thickness
+/detector/target_thickness 0.100 mm 
+
+# Start the run 
+/run/initialize
+/run/beamOn 50000000
+
