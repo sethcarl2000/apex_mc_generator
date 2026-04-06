@@ -1,0 +1,86 @@
+#!/bin/bash
+
+#SBATCH --nodes 1
+#SBATCH --partition production
+#SBATCH --account halla
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 8
+#SBATCH --output=/volatile/halla/apex/mc/temp/slurm/%x.%j.out
+#SBATCH --error=/volatile/halla/apex/mc/temp/slurm/%x.%j.err
+#SBATCH --mem=500M 
+#SBATCH --gres=disk:1G
+
+source ~/.login
+
+
+#check if we're within a slurm job; if not, then "${SLURM_JOB_ID}"=""
+if [ ! "${SLURM_JOB_ID}" ]
+then
+    #We aren't in slurm mode. 
+    run_id=0000
+    n_cpus=8
+    echo "We are not in a slurm job... unique run id set to ${run_id}" 
+    
+else
+    if [ ! "${SLURM_ARRAY_TASK_ID}" ]
+    then
+	run_id="${SLURM_JOB_ID}"
+    else
+	run_id="${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+    fi
+    n_cpus=${SLURM_CPUS_PER_TASK}
+    echo "Unique run id: ${run_id}"
+fi
+exit 0
+
+arm=${1}
+n_events=${2}
+
+# Path to source directory 
+SRC_DIR="${WORK_APEX}/apex_mc_generator/sieve_simulation" 
+
+# path to place to put files on the volatile disk
+OUTPUT_DIR="/volatile/halla/apex/mc/tracks_sieve"
+
+# path to scratch disk 
+SCRATCH_DIR="/volatile/halla/apex/mc/temp/job_${run_id}"
+
+if [ -d "${SCRATCH_DIR}" ]; then
+    echo "<${0}>: Overwriting directory '${SCRATCH_DIR}'" 
+    rm -rf ${SCRATCH_DIR}/*
+else
+    echo "<${0}>: Creating directory '${SCRATCH_DIR}'" 
+    mkdir ${SCRATCH_DIR}
+fi 
+    
+cd ${SCRATCH_DIR}
+cp -r ${SRC_DIR}/* .
+
+cat slurm_run_flat.mac > my_run.mac
+
+echo "" >> my_run.mac
+echo "# set number of worker threads" >> my_run.mac
+echo "/run/numberOfThreads ${n_cpus}" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Set output file" >> my_run.mac
+echo "/global/path_outfile ${OUTPUT_DIR}/sieve_flat_${arm}_${run_id}.root" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Pick which arm to use" >> my_run.mac
+echo "/global/active_arm ${arm}" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Start the run" >> my_run.mac
+echo "/run/initialize" >> my_run.mac
+echo "/run/beamOn ${n_events}" >> my_run.mac 
+
+echo "<${0}>: Executing G4 application" 
+time ./exampleB1 my_run.mac
+echo "<${0}>: done."
+
+
+
+
+
+
