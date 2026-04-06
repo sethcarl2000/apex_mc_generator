@@ -1,0 +1,105 @@
+#!/bin/bash
+
+#SBATCH --nodes 1
+#SBATCH --partition production
+#SBATCH --account halla
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 20
+#SBATCH --output=/volatile/halla/apex/mc/temp/slurm/%x.%j.out
+#SBATCH --error=/volatile/halla/apex/mc/temp/slurm/%x.%j.err
+#SBATCH --mem=500M 
+#SBATCH --gres=disk:1G
+
+source ~/.login
+
+# Usage example:
+#
+# > sbatch --partition=production --job-name=apex_mc_simulate_foil --array=1-50 --time=60 slurm_tungsten_foil 100 250
+#
+# args:
+#
+# sbatch -- invoke sbatch command
+# --partition=production -- use partition 'production'
+# --job-name=apex_mc_simulate_foil -- pick a readable name
+# --array=1-50 -- submit 50 identical jobs with these parameters
+# --time=60 -- 60 minute budget
+# slurm_tungsten_foil  -- name of this script
+# 100 -- thickness of target tungsten foil, in um
+# 250 -- number of beam electrons, in units of 10^6. (so this will be 250M beam electrons)
+#
+
+#check if we're within a slurm job; if not, then "${SLURM_JOB_ID}"=""
+if [ ! "${SLURM_JOB_ID}" ]
+then
+    #We aren't in slurm mode. 
+    run_id=0000
+    n_cpus=20
+    echo "We are not in a slurm job... unique run id set to ${run_id}" 
+    
+else
+    if [ ! "${SLURM_ARRAY_TASK_ID}" ]
+    then
+	run_id="${SLURM_JOB_ID}"
+    else
+	run_id="${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+    fi
+    n_cpus=${SLURM_CPUS_PER_TASK}
+    echo "Unique run id: ${run_id}"
+fi
+
+thickness=${1}
+n_events=${2}
+
+n_events=$(echo "scale=0; ${n_events}*1000000" | bc)
+
+echo "run_id: ${run_id}, events: ${n_events}"
+
+
+# Path to source directory 
+SRC_DIR="${WORK_APEX}/apex_mc_generator/simulate_electron_scattering" 
+
+# path to place to put files on the volatile disk
+OUTPUT_DIR="/volatile/halla/apex/mc/tracks_sieve"
+
+# path to scratch disk 
+SCRATCH_DIR="/volatile/halla/apex/mc/temp/job_${run_id}"
+
+if [ -d "${SCRATCH_DIR}" ]; then
+    echo "<${0}>: Overwriting directory '${SCRATCH_DIR}'" 
+    rm -rf ${SCRATCH_DIR}/*
+else
+    echo "<${0}>: Creating directory '${SCRATCH_DIR}'" 
+    mkdir ${SCRATCH_DIR}
+fi 
+    
+cd ${SCRATCH_DIR}
+cp -r ${SRC_DIR}/* .
+
+cat run_foil.mac > my_run.mac
+
+echo "" >> my_run.mac
+echo "# set number of worker threads" >> my_run.mac
+echo "/run/numberOfThreads ${n_cpus}" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Set output file" >> my_run.mac
+echo "/global/path_outfile ${OUTPUT_DIR}/target_${thickness}um_${run_id}.root" >> my_run.mac
+
+thickness=$(echo "scale=3; ${thickness}/1000" | bc)
+echo "" >> my_run.mac
+echo "# set thickness of target" >> my_run.mac
+echo "/detector/target_thickness ${thickness} mm" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Start the run" >> my_run.mac
+echo "/run/initialize" >> my_run.mac
+echo "/run/beamOn ${n_events}" >> my_run.mac 
+
+echo "<${0}>: Executing G4 application" 
+time ./exampleB1 my_run.mac
+echo "<${0}>: done."
+
+
+
+
+

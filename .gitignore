@@ -16,5 +16,10 @@ sieve_simulation/data
 sieve_simulation/exampleB1
 *.log
 
+# some files in the electron scattering simulation folder
+simulate_electron_scattering/exampleB1
+simulate_electron_scattering/data
+simulate_electron_scattering/build 
+
 # windows 'zone identifier' files
 *:Zone.Identifier
