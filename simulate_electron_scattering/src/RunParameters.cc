@@ -118,7 +118,7 @@ RunParameters::RunParameters()
         "deg", 
         "Angle the particle gun makes with the normal"
     );
-    
+
     //raster amplitude
     fMessenger->AddCommand_doubleWithUnit(
         generator_prefix + "raster_amplitude", 

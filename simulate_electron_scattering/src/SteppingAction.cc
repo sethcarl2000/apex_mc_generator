@@ -127,6 +127,9 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   analysisManager->FillNtupleDColumn(i_col++, p_track.x());
   analysisManager->FillNtupleDColumn(i_col++, p_track.y());
   analysisManager->FillNtupleDColumn(i_col++, p_track.z());
+
+  analysisManager->FillNtupleDColumn(i_col++, p_track_mag); //momentum magnitude
+  analysisManager->FillNtupleDColumn(i_col++, std::atan(tan_theta)); //angle between track and z-axis
   
   const G4ThreeVector& r_track = track->GetPosition(); 
 

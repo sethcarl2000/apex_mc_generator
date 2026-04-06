@@ -89,9 +89,11 @@ void RunAction::BeginOfRunAction(const G4Run*)
     "momentum_sieve_x",
     "momentum_sieve_y",
     "momentum_sieve_z",
+    "momentum",
+    "theta",
     "position_sieve_x",
     "position_sieve_y",
-    "position_sieve_z"
+    "position_sieve_z", 
   };
   for (auto branch : branches) analysisManager->CreateNtupleDColumn(branch); 
 
