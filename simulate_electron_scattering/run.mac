@@ -31,7 +31,7 @@
 /generator/particle_name e- 
 
 # minimum angle to save particles 
-/global/min_angle -0.100 rad
+/global/min_angle +0.045 rad
 
 # Set output file 
 /global/path_outfile data/test_target_100um.root
