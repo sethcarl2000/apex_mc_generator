@@ -23,3 +23,6 @@ simulate_electron_scattering/build
 
 # windows 'zone identifier' files
 *:Zone.Identifier
+
+# build files for electron scattering
+simulate_electron_scattering/build
