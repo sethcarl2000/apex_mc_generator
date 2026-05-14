@@ -18,6 +18,7 @@
 #include "G4ios.hh"
 #include "G4String.hh"
 #include <string> 
+#include <vector> 
 
 using g4uic_double_unit = G4UIcmdWithADoubleAndUnit; 
 using g4uic_int         = G4UIcmdWithAnInteger;
@@ -81,7 +82,9 @@ void HRSPrimaryGeneratorMessenger::AddCmd_string(
     std::string name,
     std::string param_name,
     void (HRSPrimaryGeneratorAction::*signal_slot)(G4String),
-    std::string default_val)
+    std::string default_val,
+    std::vector<std::string> possible_inputs
+  )
 {
   UICommand_t ui_command;
 
@@ -89,6 +92,13 @@ void HRSPrimaryGeneratorMessenger::AddCmd_string(
 
   cmd->SetParameterName(param_name.c_str(), false); 
   cmd->SetDefaultValue(default_val.c_str());
+
+  //if we've been given a list of candidates, then add them together into one string
+  if (!possible_inputs.empty()) {
+    std::string candidates=possible_inputs.front();
+    for (int i=1; i<possible_inputs.size(); i++) candidates += " " + possible_inputs[i]; 
+    cmd->SetCandidates(candidates.c_str());  
+  }
 
   auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
   {
@@ -572,7 +582,22 @@ HRSPrimaryGeneratorMessenger::HRSPrimaryGeneratorMessenger(HRSPrimaryGeneratorAc
 			  "MeV", 270.
 			  );
   
+
+  AddCmd_string(
+      "/mydet/target", 
+      "generator_target", 
+      &HRSPrimaryGeneratorAction::AddTarget, 
+      "none",
+      {"production", "V1", "V2", "V3"} 
+  ); 
 	      
+  AddCmd_string(
+      "/mydet/target", 
+      "generator_target", 
+      &HRSPrimaryGeneratorAction::AddTarget, 
+      "none",
+      {"production", "V1", "V2", "V3"} 
+  ); 
   
   //Beam energy
   AddCmd_double_with_unit(

@@ -120,7 +120,8 @@ private: //commands
     std::string name,
     std::string param_name,
     void (HRSPrimaryGeneratorAction::*signal_slot)(G4String),
-    std::string default_val=""
+    std::string default_val="", 
+    std::vector<std::string> possible_inputs = {}
   );
 
   //add command with an int

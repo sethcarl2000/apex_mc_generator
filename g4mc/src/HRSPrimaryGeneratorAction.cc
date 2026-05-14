@@ -16,6 +16,7 @@
 #include "G4TransportationManager.hh"
 #include "G4FieldManager.hh"
 #include "G4Field.hh"
+#include "G4Exception.hh"
 #include "TString.h"
 #include "HRSBeamTarget.hh"
 #include "HRSVertex.hh"
@@ -27,6 +28,9 @@
 #include "TVector3.h"
 #include "ApexTargetGeometry.hh"
 #include "TFileHandler.hh"
+#include "EventWriter.hh"
+#include "TrackData_t.hh"
+#include "ArmMode.hh"
 
 #include <random>
 #include <stdexcept>
@@ -297,15 +301,61 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
 
   //G4cout<<"HRSPrimaryGeneratorAction() construction done!"<<G4endl;
 }
-
 HRSPrimaryGeneratorAction::~HRSPrimaryGeneratorAction()
 {
   delete particleGun;
   delete gunMessenger;
   //G4cout<<"delete HRSPrimaryGeneratorAction ... done!"<<G4endl;
 }
+//_______________________________________________________________________________________________________________
+void HRSPrimaryGeneratorAction::AddTarget(G4String target)
+{
+	static const std::map<G4String,ETargetMode> target_names{
+		{"none",		kNoTarget},
+		{"production", 	kProduction},
+		{"V1", 			kV1},
+		{"V2",			kV2},
+		{"V3",			kV3}
+	};
 
+	const auto it = target_names.find(target); 
+	if (it == target_names.end()) {
+		G4Exception(
+			"HRSPrimaryGenerator::AddTarget", 
+			"Invalid target name given",
+			G4ExceptionSeverity::RunMustBeAborted, 
+			Form("Target name given is invalid: '%s'", target.c_str())
+		);
+		return; 
+	}; 	
 
+	fTargetMode = it->second; 
+	return;
+}
+//_______________________________________________________________________________________________________________
+void HRSPrimaryGeneratorAction::SetArmMode(G4String mode)
+{
+	static const std::map<G4String,ArmMode::EMode> name_map{
+		{"both",	ArmMode::kBoth},
+		{"RHRS", 	ArmMode::kRHRS},
+		{"LHRS",	ArmMode::kLHRS}
+	};
+
+	const auto it = name_map.find(mode); 
+	if (it == name_map.end()) {
+		G4Exception(
+			"HRSPrimaryGenerator::SetArmMode", 
+			"Invalid target name given",
+			G4ExceptionSeverity::RunMustBeAborted, 
+			Form("Arm-mode name given is invalid: '%s'", mode.c_str())
+		);
+		return; 
+	}; 	
+
+	fArmMode = it->second; 
+	return;
+}	
+//_______________________________________________________________________________________________________________
 
 void HRSPrimaryGeneratorAction::Set_TargetType(G4String target)
 {
@@ -581,7 +631,6 @@ void HRSPrimaryGeneratorAction::GetMomentum(int i)
   }
   //G4cout << "Ending generator action" << G4endl;
 }
-
 ApexTargetGeometry::SieveHole HRSPrimaryGeneratorAction::Get_random_sievehole() 
 {
   //returns a random SieveHole from the list. The probability of any hole being selected is
@@ -608,6 +657,8 @@ ApexTargetGeometry::SieveHole HRSPrimaryGeneratorAction::Get_random_sievehole()
 //
 void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+
+
   //3 Jul 25 NOTE: I am overwriting this function; for APEX, we just need to simulate
   // electrons in the left arm, and positrons in the right arm.
   //____________________________________________________________________________________
@@ -639,6 +690,11 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   
   G4ThreeVector momentum_electron, momentum_positron;
 
+
+  auto& event_writer = EventWriter::Instance(); 
+  if (!event_writer.IsInitialized()) {
+	
+  }
   
   const long int max_first_try = 1e6; 
   long int i_try=0;  

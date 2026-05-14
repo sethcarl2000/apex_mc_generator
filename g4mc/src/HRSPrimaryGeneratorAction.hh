@@ -18,6 +18,9 @@
 #include "HRSBeamTarget.hh"
 #include "G4String.hh"
 
+#include "ArmMode.hh"
+#include <limits> 
+
 #include "ApexTargetGeometry.hh"
 #include "AprimeGenerator.hh"
 #include "BetheHeitlerGenerator.hh"
@@ -29,6 +32,8 @@
 #include <iostream>
 
 #include <string>
+#include <map> 
+#include "G4String.hh"
 
 #include "BField_Septum.hh"
 //#include "Randomize.hh"    //changed by jixie. Use my old Random function
@@ -71,6 +76,8 @@ public:
 
   void Set_outfile_path(const std::string &_str) { fOutfile_path=_str; }
   std::string Get_outfile_path() const { return fOutfile_path; }
+
+  ArmMode::EMode fArmMode; 
   
 private:
 
@@ -108,7 +115,7 @@ private:
   
   bool fSimulate_sieve; 
   
-  
+
   HRSBeamTarget *fBeamTarg;
   void   GetMomentum(int index);	//the result will be stored at momentum3V, ekin and momentum_direction;
   void   GetPosition();  //the result will be stored at postion3V
@@ -292,6 +299,16 @@ private:
 
   bool fGenBetheHeitler=true;
   double fRange_pairMass[2] = {120., 270.}; 
+
+  enum ETargetMode {
+	kNoTarget	=0,
+	kV1		=1<<0,
+	kV2		=1<<1,
+	kV3 	=1<<2, 
+	kProduction =1<<3
+  };
+
+  ETargetMode fTargetMode{kNoTarget}; 
   
   //inline double Get_mA() const { return Aprime::mA; }
   
@@ -313,7 +330,10 @@ public:
   inline void Set_PairMassMin(double _v) { fRange_pairMass[0]=_v; }
   inline void Set_PairMassMax(double _v) { fRange_pairMass[1]=_v; }
 
-  
+  //add target to the lists of targets
+  inline void AddTarget(G4String target_name); 
+
+
   inline void Set_BeamEnergy(double E) { BeamEnergy=E; }
   inline double Get_BeamEnergy() const { return BeamEnergy; }
   
@@ -515,10 +535,15 @@ public:
 
 
   //Choose which arm to use
+	inline ArmMode::EMode GetArmMode() const { return fArmMode; }
+
+	void SetArmMode(G4String arm_mode); 
+
   inline bool Is_RHRS() const { return f_isRHRS; }
   inline void Set_isRHRS(bool val) { f_isRHRS=val; }
-  
-  
+
+	
+
   inline void SetGunX(G4double val)
   {
     gunX = val;
