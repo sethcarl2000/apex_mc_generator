@@ -50,7 +50,7 @@ class G4Box;
 class HRSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   private:     
-
+  bool f_is_initialized{false}; 
   public:
     HRSPrimaryGeneratorAction();
     ~HRSPrimaryGeneratorAction() override;
@@ -58,12 +58,16 @@ class HRSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     // method from the base class
     void GeneratePrimaries(G4Event*) override;
 
-    // method to access particle gun
-    const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
+  // method to access particle gun
+  const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
 
+  void Set_Verbose(G4int _x) { fVerbose=_x; }; 
+  
   private:
     
     UserMessenger<HRSPrimaryGeneratorAction> *fMessenger; 
+
+  G4int fVerbose{0}; 
   
     // center of the chosen target
     G4ThreeVector fTargetPosition; 

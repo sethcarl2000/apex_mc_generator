@@ -43,6 +43,7 @@
 
 #include <cmath> 
 #include <array> 
+#include <stdio.h>
 
 namespace
 { 
@@ -79,26 +80,19 @@ namespace
 HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
 {
   fMessenger = new UserMessenger<HRSPrimaryGeneratorAction>(this); 
-
+  
   G4String command_prefix = "/generator/"; 
+  
+  fMessenger->AddCommand_int(command_prefix + "verbose",
+			     "generator_verbose",
+			     &HRSPrimaryGeneratorAction::Set_Verbose,
+			     0,
+			     "Set verbosity of primary generator"
+			     ); 
 
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
-
-  //get some information about this run 
-  auto& run_params = RunParameters::Instance(); 
-
-  f_sieve_x_min = run_params.Get_SieveXLow(); 
-  f_sieve_x_max = run_params.Get_SieveXHigh(); 
-  f_sieve_y_min = run_params.Get_SieveYLow(); 
-  f_sieve_y_max = run_params.Get_SieveYHigh(); 
-
-  f_momentum_min = run_params.Get_MomentumLow(); 
-  f_momentum_max = run_params.Get_MomentumHigh();
-
-  fTargetMode = run_params.Get_TargetMode(); 
   
-  fArmMode = run_params.Get_ArmMode(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -118,6 +112,35 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   using namespace std; 
   
   const auto& run_params = RunParameters::Instance(); 
+
+  //we have to do this here, instead of the constructor, because the macro
+  // with all of the info we want won't be read in until we get here. 
+  if (!f_is_initialized) {
+
+    //get some information about this run 
+    auto& run_params = RunParameters::Instance(); 
+
+    printf("<%s>: run_params.Get_TargetMode(): '%s'\n", __func__,
+	   TargetMode::GetName(run_params.Get_TargetMode()).c_str()
+	   );
+  
+    f_sieve_x_min = run_params.Get_SieveXLow(); 
+    f_sieve_x_max = run_params.Get_SieveXHigh(); 
+    f_sieve_y_min = run_params.Get_SieveYLow(); 
+    f_sieve_y_max = run_params.Get_SieveYHigh(); 
+
+    f_momentum_min = run_params.Get_MomentumLow(); 
+    f_momentum_max = run_params.Get_MomentumHigh();
+
+    f_vertical_raster_amplitude = run_params.Get_VerticalRasterAmplitude();
+    f_horizontal_raster_amplitude = run_params.Get_HorizontalRasterAmplitude(); 
+    
+    fTargetMode = run_params.Get_TargetMode(); 
+  
+    fArmMode = run_params.Get_ArmMode(); 
+    
+    f_is_initialized=true; 
+  }
   
   //pick a react vertex
   G4ThreeVector vertex, R_momentum, L_momentum;  
@@ -183,13 +206,25 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
         Form("HRSPrimaryGeneratorAction::%s",__func__),
         "Unsupported target mode", 
         G4ExceptionSeverity::RunMustBeAborted, 
-        Form("Target mode of Primary Generator is unsupported: '%s'",TargetMode::GetName(fTargetMode))
+        Form("Target mode of Primary Generator is unsupported: '%s'",TargetMode::GetName(fTargetMode).c_str())
       );
       return; 
   }
 
-  auto& event_writer = EventWriter::Instance(); 
+  //set the vertex to 'true' hall coordinates (the computation above was relative to the
+  // apex scattering chamber center).
+  vertex += ApexTargetGeometry::Get_APEX_Target_center();
+  
 
+  if (fVerbose >= 3) {
+    printf("<GeneratePrimaries>: vertex: % 6.1f, % 6.1f, % 6.1f\n", vertex[0], vertex[1], vertex[2]);
+  }
+  
+  //set the particle gun's position
+  fParticleGun->SetParticlePosition(vertex); 
+
+  auto& event_writer = EventWriter::Instance(); 
+  
   //take a position on the sieve-face, and convert it to hall coordinates (displaced from the apex scat. chamber center)
   auto sieve_pos_to_HCS = [](double x_sv, double y_sv, ArmMode::EMode mode) 
   { 
@@ -203,11 +238,9 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
       pos_on_sieve.rotateY( ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
 
       return pos_on_sieve; 
+
   }; 
   
-  //set the particle gun's position
-  fParticleGun->SetParticlePosition(vertex); 
-
   // right-arm (positron)
   if (RHRS_is_active()) {
     
@@ -221,7 +254,7 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     double momentum_mag = RandRange( f_momentum_min, f_momentum_max );
 
     R_momentum = (sieve_intercept - vertex).unit() * momentum_mag; 
-
+    
     //update data for the track data struct 
     auto& track_data = event_writer.GetTrackData(ArmMode::kRHRS_bool); 
 
@@ -234,8 +267,12 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     fParticleGun->SetParticleMomentumDirection(R_momentum); 
     fParticleGun->SetParticleDefinition(G4Positron::Positron()); 
     fParticleGun->GeneratePrimaryVertex(event); 
-  }
 
+    if (fVerbose >= 3) {
+      printf("<GeneratePrimaries>: generated positron with p: % 6.1f, % 6.1f, % 6.1f\n", R_momentum[0], R_momentum[1], R_momentum[2]);
+    }
+  }
+  
   // right-arm (positron) ----------------------------------------------------------------------
   if (LHRS_is_active()) {
     
@@ -263,6 +300,10 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     fParticleGun->SetParticleMomentumDirection(L_momentum); 
     fParticleGun->SetParticleDefinition(G4Electron::Electron()); 
     fParticleGun->GeneratePrimaryVertex(event); 
+    
+    if (fVerbose >= 3) {
+      printf("<GeneratePrimaries>: generated electron with p: % 6.1f, % 6.1f, % 6.1f\n", L_momentum[0], L_momentum[1], L_momentum[2]);
+     }
   }
 
 }

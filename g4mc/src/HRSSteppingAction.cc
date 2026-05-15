@@ -26,6 +26,7 @@
 #include "Vec3.hh"
 #include "EventWriter.hh"
 #include "ArmMode.hh"
+#include "RunParameters.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -241,6 +242,16 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   
   auto& event_writer = EventWriter::Instance(); 
 
+  if (!event_writer.IsInitialized()) {
+    auto& run_params = RunParameters::Instance(); 
+    event_writer.Initialize( 
+			    run_params.Get_ArmMode(),
+			    run_params.Get_OutfilePath(), 
+			    run_params.Get_ExpectedNEventsKept()
+			     ); 
+  }
+      
+  
   auto& track_data_R = event_writer.GetTrackData(ArmMode::kRHRS_bool);
   auto& track_data_L = event_writer.GetTrackData(ArmMode::kLHRS_bool);
 
@@ -280,7 +291,7 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   
   //check for secondary tracks
   if (iNoSecondary && (track_id != id_p) && (track_id != id_e)) {
-    if (GetVerbose()>=3) cout << "-(non-primary track killed.)";
+    if (GetVerbose()>=3) cout << "-(non-primary track killed)";
     kill_track();
     return;
   }
@@ -460,13 +471,22 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   
   //        if (theStep->GetTrack()->GetTrackID()==1)
   if ((*physVol_current == *physVol_Q1_left) || (*physVol_current == *physVol_Q1_right)) {
-  
+
+    if (GetVerbose()>=2) {
+      cout << "-(at Q1 phys vol)" << flush;
+    }
+
+    auto& run_params = RunParameters::Instance(); 
+    
     const bool is_RHRS(*physVol_current == *physVol_Q1_right); 
 
     if (is_RHRS) { //RHRS
     
       //check to make sure it's a positron
-      if (track_definition != positron) { kill_track(); return; }
+      if (track_definition != positron) {
+	if (GetVerbose()>=2) cout << "-(electron at right Q1! killed.)" << flush; 
+	kill_track(); return;
+      }
 
       //check to make sure that the RHRS is active (data is being saved for it)
       if (!event_writer.RHRS_active()) { kill_track(); return; }
@@ -474,7 +494,10 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     } else {  //LHRS
       
       //check to make sure it's an electron
-      if (track_definition != electron) { kill_track(); return; }
+      if (track_definition != electron) {
+	if (GetVerbose()>=2) cout << "-(positron at left Q1! killed.)" << flush; 
+	kill_track(); return;
+      }
 
       //check to make sure that the LHRS is active (data is being saved for it)
       if (!event_writer.LHRS_active()) { kill_track(); return; }
@@ -613,35 +636,32 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     track_data.track_id = track_id; 
 
     //kill this track; if septum is on (in apex mode, we don't simulate the HRS). 
-    if (mSeptumOn && Do_killAtQ1()) {
+    
+    if (GetVerbose() >= 2) cout << "-(killed at Q1)" << flush; 
+    //fOutFile->WriteTrack();
 
-      if (GetVerbose() >= 2) cout << "-(killed at Q1)" << flush; 
-      //fOutFile->WriteTrack();
+    //set status of this track
+    track_data.status = TrackData_t::kQ1; 
 
-      //set status of this track
-      track_data.status = TrackData_t::kQ1; 
+    //fOutFile->SetStatus(is_RHRS, TFileHandler::kQ1); 
 
-      //fOutFile->SetStatus(is_RHRS, TFileHandler::kQ1); 
+    //Get the status of both arms. check their track status.
+    //if we're in dual-arm mode, we have to wait for both positron and electron to reach the end before they can be saved. 
+    if (event_writer.GetArmMode() == ArmMode::kBoth) { 
 
-      kill_track(); //theStep->GetTrack()->SetTrackStatus(fStopAndKill);
-
-      //Get the status of both arms. check their track status.
-      //if we're in dual-arm mode, we have to wait for both positron and electron to reach the end before they can be saved. 
-      if (event_writer.GetArmMode() == ArmMode::kBoth) { 
-
-        if (track_data_R.status == track_data_L.status == TrackData_t::kQ1) { 
-          event_writer.SaveEvent(); 
-          if (GetVerbose() >= 2) cout << "-(saved)" << flush; 
-        }
-        
-      } else { // if we're in single-arm mode, we can save each event that makes it to the apporpriate arm. 
-
-        event_writer.SaveEvent(); 
-        if (GetVerbose() >= 2) cout << "-(saved)" << flush; 
+      if (track_data_R.status == track_data_L.status == TrackData_t::kQ1) { 
+	event_writer.SaveEvent(); 
+	if (GetVerbose() >= 2) cout << "-(saved)" << flush; 
       }
-      
+        
+    } else { // if we're in single-arm mode, we can save each event that makes it to the apporpriate arm. 
+
+      event_writer.SaveEvent(); 
+      if (GetVerbose() >= 2) cout << "-(saved)" << flush; 
     }
-      
+          
+    kill_track(); //theStep->GetTrack()->SetTrackStatus(fStopAndKill);
+
     return;
   }
 }
