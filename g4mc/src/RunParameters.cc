@@ -126,6 +126,15 @@ RunParameters::RunParameters()
         "Horizontal raster amplitude"
     ); 
 
+    //expected number of events to keep
+    fMessenger->AddCommand_int(
+        pfx_global + "expected_n_events_kept", 
+        "expected_n_events_kept", 
+        &RunParameters::Set_ExpectedNEventsKept, 
+        0,
+        "Horizontal raster amplitude"
+    ); 
+
     //set which target mode to use  
     fMessenger->AddCommand_string(
         pfx_generator + "target_mode",  //command name

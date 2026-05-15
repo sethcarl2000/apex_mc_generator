@@ -29,6 +29,8 @@ private:
 
     TargetMode::Bit f_target_mode{TargetMode::kNone}; 
 
+    G4int f_expected_n_events_kept; 
+
 public: 
     //_________________________________________________________________________
     // 
@@ -44,7 +46,8 @@ public:
     void Set_MomentumLow(G4double _x)   { f_momentum_low=_x; }
     void Set_MomentumHigh(G4double _x)  { f_momentum_high=_x; }
     void Set_VerticalRasterAmplitude(G4double _x)   { f_vertical_raster_amplitude=_x; }
-    void Set_HorizontalRasterAmplitude(G4double _x)   { f_horizontal_raster_amplitude=_x; }
+    void Set_HorizontalRasterAmplitude(G4double _x) { f_horizontal_raster_amplitude=_x; }
+    void Set_ExpectedNEventsKept(G4int _x)          { f_expected_n_events_kept=_x; }
     void Set_TargetMode(G4String); 
 
 
@@ -59,6 +62,7 @@ public:
     G4double Get_MomentumHigh() const   { return f_momentum_high; }
     G4double Get_VerticalRasterAmplitude() const    { return f_vertical_raster_amplitude; }
     G4double Get_HorizontalRasterAmplitude() const  { return f_horizontal_raster_amplitude; }
+    G4int    Get_ExpectedNEventsKept() const        { return f_expected_n_events_kept; }
     TargetMode::Bit Get_TargetMode() const          { return f_target_mode; }
     
     bool RHRS_is_active() const { return f_arm_mode & ArmMode::kRHRS; }
