@@ -1,8 +1,9 @@
 /run/verbose 2
 /control/verbose 0
 /tracking/verbose 0
-/stepping/verbose 0
-/mydet/verbose 0
+/stepping/verbose 3
+/mydet/verbose 3
+/generator/verbose 3 
 /tracking/particleOnly e-
 
 /stepping/makeTXToutput false
@@ -13,46 +14,28 @@
 /tracking/thisTrackOnly 0
 #see the same variable in HRSUsage.ini
 
+# specify which arm to save data for - both, RHRS or LHRS
+/global/arm_mode RHRS
 
-# vertex bounds for uniform generation. These reflect the approximate 'box'
-# from which the raster/ APEX tungsten foil targets may generate vertices. 
+# specify rel. path to save data to
+/global/outfile_path test.root
 
-/mydet/gunXLow  -3.5 mm
-/mydet/gunXHigh  3.5 mm
+# specify momentum generation / saving range
+/global/momentum_low 1000 MeV
+/global/momentum_high 1200 MeV
 
-/mydet/gunYLow  -3.5 mm
-/mydet/gunYHigh  3.5 mm
+# specify acceptance on the face of the sieve (specified for RHRS, but applied to both arms)
+/generator/sieve_x_low  -85 mm
+/generator/sieve_x_high +85 mm
+/generator/sieve_y_low  -80 mm
+/generator/sieve_y_high +70 mm
 
-/mydet/gunZLow  -240.0 mm
-/mydet/gunZHigh  330.0 mm
+# raster amplitude
+/generator/vertical_raster_amplitude 2 mm
+/generator/horizontal_raster_amplitude 2 mm
 
+# which target to simulate: production, V1, V2, V3. 
+/generator/target_mode V2
 
-# track positions (projected onto the sieve plane)
-
-/mydet/simulateSieve false
-
-/mydet/sieveXLow   -85.0 mm
-/mydet/sieveXHigh   85.0 mm
-
-# RHRS settings
-# /mydet/sieveYLow   -100.0 mm 
-# /mydet/sieveYHigh    20.0 mm
-
-# LHRS settings
-#/mydet/sieveYLow    -20.0 mm 
-#/mydet/sieveYHigh   100.0 mm
-
-/mydet/sieveYLow   -100.0 mm 
-/mydet/sieveYHigh   100.0 mm
-
-
-/mydet/particle1/momentumLow  1058 MeV
-/mydet/particle1/momentumHigh 1149 MeV
-
-/mydet/particleNum 1
-/mydet/particle1/particleName e-
-# /mydet/particle2/particleName pi-
-
-/mydet/use_RHRS true
-
-/mydet/outfile no_sieve_out_R.root
+# expected number of events to be kept
+/global/expected_n_events_kept 1000
