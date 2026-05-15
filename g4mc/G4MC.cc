@@ -25,6 +25,10 @@
 #include "HRSSteppingAction.hh"
 #include "HRSSteppingVerbose.hh"
 
+#include "EventWriter.hh"
+#include "RunParameters.hh"
+#include "ArmMode.hh"
+
 #include "UsageManager.hh"
 #include "HRSGlobal.hh"
 
@@ -55,9 +59,6 @@ using namespace std;
 //global variables
 UsageManager* gConfig; //will be initialized in main() before all other classes
 //HRSRootTree* gHRSTree=0; //will be initialized in main() after G4RunManager start up before user-action start
-
-TFileHandler* fOutFile; 
-
 
 int main(int argc,char** argv)
 {
@@ -213,19 +214,20 @@ gConfig->GetArgument("NoSecondary",iNoSecondary);    {
 
   UImanager->ApplyCommand(cmd);
 
-  
+  const auto& run_params = RunParameters::Instance();
+
   //auto out_file = unique_ptr<TFileHandler>(new TFileHandler("out_Q1.root"));
-  string outfile_path = hrs_primary_generator_action->Get_outfile_path().data(); 
+  string outfile_path = run_params.Get_OutfilePath(); 
   
-  fOutFile = new TFileHandler( outfile_path.data(),
-			       hrs_primary_generator_action->Is_RHRS() ); 
+  //initialize the event writer 
+  auto& event_writer = EventWriter::Instance(); 
+  event_writer.Initialize( 
+    run_params.Get_ArmMode(),
+    run_params.Get_OutfilePath(), 
+    run_params.Get_ExpectedNEventsKept()
+  );
   
   printf("<%s>: Outfile path is: %s\n", here, outfile_path.data()); 
-  
-  printf("Gun Z Lo/Hi :[% 5.f, % 5.f]\n",
-	 hrs_primary_generator_action->GetGunZLow(),
-	 hrs_primary_generator_action->GetGunZHigh()); 
-
   
   macro_name = gConfig->GetArgument("MacFile2"); 
   
@@ -234,9 +236,6 @@ gConfig->GetArgument("NoSecondary",iNoSecondary);    {
   sprintf(cmd,"/control/execute %s",macro_name.data()); 
   
   UImanager->ApplyCommand(cmd);
-
-  
-  
   
   //By Jixie: Might change the trigger for this part later
   //gConfig->GetArgument("UseRootNtuple",pUseRootNtuple); 
@@ -281,6 +280,9 @@ gConfig->GetArgument("NoSecondary",iNoSecondary);    {
   ////////////////////////////////////////////////////////////////////
   //	if(gHRSTree) delete gHRSTree;
 
+  //write & close the output file 
+  event_writer.WriteOutputFile(); 
+
 #ifdef G4VIS_USE
   delete visManager;
   //G4cout << "Vis manager deleted..." << G4endl;
@@ -295,9 +297,7 @@ gConfig->GetArgument("NoSecondary",iNoSecondary);    {
   delete runManager;
   //G4cout << "Run manager deleted..." << G4endl;
 
-  fOutFile->CloseFile(); 
-  delete fOutFile; 
-  
+
   return 0;
 }
 
