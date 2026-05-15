@@ -16,14 +16,7 @@ namespace ArmMode {
     constexpr bool kLHRS_bool = false;
     
     /// @return std::string corresponding to the name of a particular arm mode, for error reporting purposes. 
-    std::string Name(EMode mode) {
-        switch (mode) {
-            case EMode::kBoth : return "Both"; 
-            case EMode::kRHRS : return "RHRS"; 
-            case EMode::kLHRS : return "LHRS";
-            default : return "none";
-        }
-    }
-}
+    std::string Name(EMode mode);
+}; 
 
 #endif
