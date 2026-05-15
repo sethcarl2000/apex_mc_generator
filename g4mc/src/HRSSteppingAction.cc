@@ -23,6 +23,9 @@
 #include <memory>
 #include "HRSCoordinate.hh"
 #include "TrackData_t.hh" 
+#include "Vec3.hh"
+#include "EventWriter.hh"
+#include "ArmMode.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -41,8 +44,6 @@ extern G4VPhysicalVolume *physVol_Q1_left;
 extern G4VPhysicalVolume *physVol_Q1_right;
 //extern G4VPhysicalVolume *physVol_Sieve_left;
 //extern G4VPhysicalVolume *physVol_Sieve_right;
-
-extern TFileHandler *fOutFile; 
 
 using namespace std; 
 //..............................................................................
@@ -205,21 +206,20 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   // but the same is not true for G4ThreeVector-s. There is almost certainly a
   // more elegant way to do this, which probably involves making the 'G4ThreeVector'
   // class compatable with TTree-s, but I don't really care to do all that extra effort.
-  auto Get_TVector3_from_G4ThreeVector = [](TVector3 &out, G4ThreeVector in)
+  auto Get_Vec3_from_G4ThreeVector = [](const G4ThreeVector& in)
   {
-    out.SetXYZ( in.x(), in.y(), in.z() ); 
+    return Vec3{ in.x(), in.y(), in.z() }; 
   };
       
   //the track we will be measuring / operating on 
   G4Track *track = theStep->GetTrack(); 
     
   //this struct keeps information about the track that we will need
-  TrackData_t *track_data_p = fOutFile->Get_TData_p(); 
-  TrackData_t *track_data_e = fOutFile->Get_TData_e();
-  
-  auto positron = G4Positron::Positron();
-  auto electron = G4Electron::Electron(); 
-  
+  //TrackData_t *track_data_p = fOutFile->Get_TData_p(); 
+  //TrackData_t *track_data_e = fOutFile->Get_TData_e();
+
+  const auto positron = G4Positron::Positron();
+  const auto electron = G4Electron::Electron(); 
   
   //get the event number. check if this is a new track or not. 
   int event_id = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
@@ -239,35 +239,44 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
 	   << ", type=" << track->GetDefinition()->GetParticleName() <<")\n"; 
   };
   
+  auto& event_writer = EventWriter::Instance(); 
+
+  auto& track_data_R = event_writer.GetTrackData(ArmMode::kRHRS_bool);
+  auto& track_data_L = event_writer.GetTrackData(ArmMode::kLHRS_bool);
+
   //reset the track data, if its a new event/track. 
-  if (event_id != track_data_e->event_id) {
+  if (event_id != track_data_L.event_id) {
 
     if (GetVerbose()>=3)
       printf("\nin <%s>: new event. id=%i\n", __func__, event_id);  
 
-    track_data_p->event_id = event_id;
-    track_data_e->event_id = event_id;
-    
-    track_data_p->track_id = -1; //track_id;
-    track_data_e->track_id = -1; //track_id; 
+    //track_data_R.event_id = event_id;
+    //track_data_L.event_id = event_id;
+    track_data_R.event_id = event_id; 
+    track_data_L.event_id = event_id; 
+
+    //track_data_R.track_id = -1; //track_id;
+    //track_data_L.track_id = -1; //track_id; 
+    track_data_R.track_id = -1; 
+    track_data_L.track_id = -1; 
   }
   
   //if the new positron / electron have not had their id recorded, then
   // record their track id's 
-  if (track_definition == positron && track_data_p->track_id < 0) {
+  if (track_definition == positron && track_data_R.track_id < 0) {
     if (GetVerbose()>=3)
       cout << "-(Primary positron id=" << track_id << ")"; 
-    track_data_p->track_id = track_id; 
+    track_data_R.track_id = track_id; 
   }
   
-  if (track_definition == electron && track_data_e->track_id < 0) {
+  if (track_definition == electron && track_data_L.track_id < 0) {
     if (GetVerbose()>=3)
       cout << "-(Primary electron id=" << track_id << ")"; 
-    track_data_e->track_id = track_id;
+    track_data_L.track_id = track_id;
   }
 
-  int id_p = track_data_p->track_id;
-  int id_e = track_data_e->track_id;
+  int id_p = track_data_R.track_id;
+  int id_e = track_data_L.track_id;
   
   //check for secondary tracks
   if (iNoSecondary && (track_id != id_p) && (track_id != id_e)) {
@@ -450,15 +459,30 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   
   
   //        if (theStep->GetTrack()->GetTrackID()==1)
-  if ((*physVol_current == *physVol_Q1_left) || 
-      (*physVol_current == *physVol_Q1_right)) {
+  if ((*physVol_current == *physVol_Q1_left) || (*physVol_current == *physVol_Q1_right)) {
+  
+    const bool is_RHRS(*physVol_current == *physVol_Q1_right); 
 
-    //we're assuming that a positron could never reach the Q1 face on the left...
-    bool is_RHRS(track_definition == positron);
+    if (is_RHRS) { //RHRS
     
-    auto track_data = is_RHRS ? track_data_p : track_data_e; 
+      //check to make sure it's a positron
+      if (track_definition != positron) { kill_track(); return; }
 
-    track_data->particle_type = is_RHRS ? TrackData_t::kPositron : TrackData_t::kElectron;
+      //check to make sure that the RHRS is active (data is being saved for it)
+      if (!event_writer.RHRS_active()) { kill_track(); return; }
+    
+    } else {  //LHRS
+      
+      //check to make sure it's an electron
+      if (track_definition != electron) { kill_track(); return; }
+
+      //check to make sure that the LHRS is active (data is being saved for it)
+      if (!event_writer.LHRS_active()) { kill_track(); return; }
+    }
+
+    auto& track_data = event_writer.GetTrackData(is_RHRS);
+
+    track_data.particle_type = is_RHRS ? TrackData_t::kPositron : TrackData_t::kElectron;
     
     if (GetVerbose()>=2) cout << "-(at Q1_" << (is_RHRS?"R)":"L)") << flush; 
     
@@ -481,8 +505,8 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
       = track->GetVertexPosition() - ApexTargetGeometry::Get_APEX_Target_center(); 
     
     //These are saved in Hall coordinates (no need to rotate them). 
-    Get_TVector3_from_G4ThreeVector( track_data->position_vtx, position_vtx/1000. );
-    Get_TVector3_from_G4ThreeVector( track_data->momentum_vtx, momentum_vtx );
+    track_data.position_vtx = Get_Vec3_from_G4ThreeVector( position_vtx/1000. );
+    track_data.momentum_vtx = Get_Vec3_from_G4ThreeVector( momentum_vtx );
     
     //Now, we're going to compute their projections at the sieve-plane. 
     position_vtx.rotateY( -sieve_angle );
@@ -525,11 +549,9 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     //shift the position vector relative to the sieve offset. 
     position_vtx = position_vtx - sieve_D0; 
 
-    
     //These are saved in Hall coordinates (no need to rotate them). 
-    Get_TVector3_from_G4ThreeVector( track_data->position_sieve, position_vtx/1000. );
-    Get_TVector3_from_G4ThreeVector( track_data->momentum_sieve, momentum_vtx );
-
+    track_data.position_sieve = Get_Vec3_from_G4ThreeVector( position_vtx/1000. );
+    track_data.momentum_sieve = Get_Vec3_from_G4ThreeVector( momentum_vtx );
     
     /*if (GetVerbose()>=2) printf("-(pQ1[% 1.3f,% 1.3f,% 1.3f])",
 				position_vtx.x()*100, 
@@ -583,12 +605,12 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
 
     
     //now we're ready to fill them into th TrackData_t struct
-    Get_TVector3_from_G4ThreeVector( track_data->position_Q1, position_Q1/1000. );
-    Get_TVector3_from_G4ThreeVector( track_data->momentum_Q1, momentum_Q1 );
+    track_data.position_Q1 = Get_Vec3_from_G4ThreeVector( position_Q1/1000. );
+    track_data.momentum_Q1 = Get_Vec3_from_G4ThreeVector( momentum_Q1 );
     
     //now, we record this track (tell the TFileHelper object to write it to the output file)
-    track_data->event_id = event_id;
-    track_data->track_id = track_id; 
+    track_data.event_id = event_id;
+    track_data.track_id = track_id; 
 
     //kill this track; if septum is on (in apex mode, we don't simulate the HRS). 
     if (mSeptumOn && Do_killAtQ1()) {
@@ -597,22 +619,31 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
       //fOutFile->WriteTrack();
 
       //set status of this track
-      fOutFile->SetStatus(is_RHRS, TFileHandler::kQ1); 
+      track_data.status = TrackData_t::kQ1; 
+
+      //fOutFile->SetStatus(is_RHRS, TFileHandler::kQ1); 
 
       kill_track(); //theStep->GetTrack()->SetTrackStatus(fStopAndKill);
 
       //Get the status of both arms. check their track status.
-      if ( (fOutFile->GetStatus(true) ==TFileHandler::kQ1) &&
-	   (fOutFile->GetStatus(false)==TFileHandler::kQ1) ) {
+      //if we're in dual-arm mode, we have to wait for both positron and electron to reach the end before they can be saved. 
+      if (event_writer.GetArmMode() == ArmMode::kBoth) { 
 
-	fOutFile->WriteTrack();
-	if (GetVerbose() >= 2) cout << "-(saved)" << flush; 
+        if (track_data_R.status == track_data_L.status == TrackData_t::kQ1) { 
+          event_writer.SaveEvent(); 
+          if (GetVerbose() >= 2) cout << "-(saved)" << flush; 
+        }
+        
+      } else { // if we're in single-arm mode, we can save each event that makes it to the apporpriate arm. 
+
+        event_writer.SaveEvent(); 
+        if (GetVerbose() >= 2) cout << "-(saved)" << flush; 
       }
-      return;
+      
     }
-    
+      
+    return;
   }
-  
 }
 
 //..............................................................................

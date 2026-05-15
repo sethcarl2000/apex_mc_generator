@@ -132,9 +132,6 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 
   // index of target. ex;  'V1' would have code 'V' and num '1'. 
   int target_num; 
-
-  auto& event_writer = EventWriter::Instance(); 
-
   //choose a vertex 
 
   switch (fTargetMode)
