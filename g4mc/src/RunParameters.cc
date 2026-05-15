@@ -106,6 +106,26 @@ RunParameters::RunParameters()
         "Maximum y-val of target point on sieve-face"
     ); 
 
+    //vertical raster amplitude
+    fMessenger->AddCommand_doubleWithUnit(
+        pfx_generator + "vertical_raster_amplitude", 
+        "vertical_raster_amplitude", 
+        &RunParameters::Set_VerticalRasterAmplitude, 
+        2*mm,
+        "mm",
+        "Vertical raster amplitude"
+    ); 
+
+    //horizontal raster amplitude
+    fMessenger->AddCommand_doubleWithUnit(
+        pfx_generator + "horizontal_raster_amplitude", 
+        "horizontal_raster_amplitude", 
+        &RunParameters::Set_HorizontalRasterAmplitude, 
+        2*mm,
+        "mm",
+        "Horizontal raster amplitude"
+    ); 
+
     //set which target mode to use  
     fMessenger->AddCommand_string(
         pfx_generator + "target_mode",  //command name

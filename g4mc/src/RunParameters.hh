@@ -22,6 +22,8 @@ private:
     
     ArmMode::EMode f_arm_mode;
 
+    G4double f_vertical_raster_amplitude, f_horizontal_raster_amplitude; 
+
     G4double f_sieve_x_low, f_sieve_x_high, f_sieve_y_low, f_sieve_y_high;
     G4double f_momentum_low, f_momentum_high; 
 
@@ -41,20 +43,27 @@ public:
     void Set_SieveYHigh(G4double _x)    { f_sieve_x_high=_x; }    
     void Set_MomentumLow(G4double _x)   { f_momentum_low=_x; }
     void Set_MomentumHigh(G4double _x)  { f_momentum_high=_x; }
+    void Set_VerticalRasterAmplitude(G4double _x)   { f_vertical_raster_amplitude=_x; }
+    void Set_HorizontalRasterAmplitude(G4double _x)   { f_horizontal_raster_amplitude=_x; }
     void Set_TargetMode(G4String); 
 
 
-    G4String Get_OutfilePath() const { return f_outfile_path; }  
-    G4String Get_InfilePath()  const { return f_infile_path; }  
-    ArmMode::EMode Get_ArmMode()  const { return f_arm_mode; } 
+    G4String Get_OutfilePath() const    { return f_outfile_path; }  
+    G4String Get_InfilePath() const     { return f_infile_path; }  
+    ArmMode::EMode Get_ArmMode() const  { return f_arm_mode; } 
+    G4double Get_SieveXLow() const      { return f_sieve_x_low; }
     G4double Get_SieveXHigh() const     { return f_sieve_x_high; }
     G4double Get_SieveYLow() const      { return f_sieve_y_low; }
     G4double Get_SieveYHigh() const     { return f_sieve_x_high; }    
     G4double Get_MomentumLow() const    { return f_momentum_low; }
     G4double Get_MomentumHigh() const   { return f_momentum_high; }
-    TargetMode::Bit Get_TargetMode() const { return f_target_mode; }
+    G4double Get_VerticalRasterAmplitude() const    { return f_vertical_raster_amplitude; }
+    G4double Get_HorizontalRasterAmplitude() const  { return f_horizontal_raster_amplitude; }
+    TargetMode::Bit Get_TargetMode() const          { return f_target_mode; }
     
-    
+    bool RHRS_is_active() const { return f_arm_mode & ArmMode::kRHRS; }
+    bool LHRS_is_active() const { return f_arm_mode & ArmMode::kLHRS; }
+     
     //delete copy constructor
     RunParameters(const RunParameters&) = delete; 
     
