@@ -1,6 +1,12 @@
 # vscode files 
 .vscode
 
+# septum table (too big to put on github)
+g4mc/septum/Septa-JB_map.table
+
+# tarballs / zipped tarballs
+**.tar
+**.gz 
 
 # build files
 **/build
