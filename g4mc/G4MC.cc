@@ -103,7 +103,8 @@ int main(int argc,char** argv)
   // RunManager construction
   ////////////////////////////////////////////////////////////////////
   auto runManager = new G4RunManager;
-  
+
+  auto& run_params = RunParameters::Instance(); 
   
   ////////////////////////////////////////////////////////////////////
   // Visualization manager construction	
@@ -214,20 +215,6 @@ gConfig->GetArgument("NoSecondary",iNoSecondary);    {
 
   UImanager->ApplyCommand(cmd);
 
-  const auto& run_params = RunParameters::Instance();
-
-  //auto out_file = unique_ptr<TFileHandler>(new TFileHandler("out_Q1.root"));
-  string outfile_path = run_params.Get_OutfilePath(); 
-  
-  //initialize the event writer 
-  auto& event_writer = EventWriter::Instance(); 
-  event_writer.Initialize( 
-    run_params.Get_ArmMode(),
-    run_params.Get_OutfilePath(), 
-    run_params.Get_ExpectedNEventsKept()
-  );
-  
-  printf("<%s>: Outfile path is: %s\n", here, outfile_path.data()); 
   
   macro_name = gConfig->GetArgument("MacFile2"); 
   
@@ -279,6 +266,14 @@ gConfig->GetArgument("NoSecondary",iNoSecondary);    {
   //free the memory
   ////////////////////////////////////////////////////////////////////
   //	if(gHRSTree) delete gHRSTree;
+  
+  //auto out_file = unique_ptr<TFileHandler>(new TFileHandler("out_Q1.root"));
+  string outfile_path = run_params.Get_OutfilePath(); 
+  
+  //get the event writer
+  auto& event_writer = EventWriter::Instance(); 
+  
+  printf("<%s>: Outfile path is: %s\n", here, outfile_path.data()); 
 
   //write & close the output file 
   event_writer.WriteOutputFile(); 
