@@ -2,6 +2,8 @@
 #include "G4String.hh"
 #include "RunParameters.hh"
 
+#include <cmath> 
+
 //initialize ptr to static singleton instance 
 G4ThreadLocal HRSRunManager* HRSRunManager::fRunManager = nullptr; 
 
@@ -46,8 +48,17 @@ void HRSRunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_select)
 {
     //if we're using input events, then run **only** that many events. 
     if (UseInputFile()) {
-        fEventReader = new EventReader(Get_InputFilePath()); 
-        n_event = (G4int)fEventReader->GetNEvents(); //only read this many events from the event reader 
+        
+        //create the event reader 
+        fEventReader = new EventReader(Get_InputFilePath());
+
+        //only read this many events from the event reader 
+        n_event = std::min(
+            (G4int)fEventReader->GetNEvents(),
+            n_event
+        );
+
+        G4cout << "in <HRSRunManager::BeamOn>: EventReader created. Running "<<n_event<<" events." << G4endl; 
     }
     G4RunManager::BeamOn(n_event, macroFile, n_select); 
 }
