@@ -99,6 +99,7 @@ HRSPrimaryGeneratorAction::HRSPrimaryGeneratorAction()
 
 HRSPrimaryGeneratorAction::~HRSPrimaryGeneratorAction()
 {
+  if (fMessenger) delete fMessenger; 
   delete fParticleGun;
 }
 

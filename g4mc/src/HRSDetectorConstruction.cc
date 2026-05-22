@@ -42,7 +42,7 @@
 
 #include "G4SDManager.hh"
 #include "G4VSensitiveDetector.hh"
-#include "G4RunManager.hh"
+#include "HRSRunManager.hh"
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 #include "G4ios.hh"

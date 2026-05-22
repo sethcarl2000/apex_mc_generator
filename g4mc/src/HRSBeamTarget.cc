@@ -3,7 +3,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4VSolid.hh"
 #include "G4Material.hh"
-#include "G4RunManager.hh"
+#include "HRSRunManager.hh"
 #include "G4GeometryManager.hh"
 #include "UsageManager.hh"
 
@@ -158,7 +158,7 @@ void HRSBeamTarget::SetTargetLen(G4double z){
     }
 
 
-    G4RunManager* runManager = G4RunManager::GetRunManager();
+    HRSRunManager* runManager = HRSRunManager::GetRunManager();
     runManager->GeometryHasBeenModified();
 
     UpdateInfo();
@@ -192,7 +192,7 @@ void HRSBeamTarget::SetTargetPos(G4double z){
 	G4GeometryManager::GetInstance()->CloseGeometry(true, false, (*it));
     }
 
-    G4RunManager* runManager = G4RunManager::GetRunManager();
+    HRSRunManager* runManager = HRSRunManager::GetRunManager();
     runManager->GeometryHasBeenModified();
 
     UpdateInfo();

@@ -18,7 +18,7 @@
 #include "HRSEMField.hh"
 #include "G4Event.hh"
 #include "G4Run.hh"
-#include "G4RunManager.hh"
+#include "HRSRunManager.hh"
 #include "HRSPrimaryGeneratorAction.hh"
 #include <memory>
 #include "HRSCoordinate.hh"
@@ -340,7 +340,7 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
   double edeposit   =  theStep->GetTotalEnergyDeposit();
   //e_sum+=edeposit/1000.;
   //        G4int eID = 0;
-  //        const G4Event* evt = G4RunManager::GetRunManager()->GetCurrentEvent();
+  //        const G4Event* evt = HRSRunManager::GetRunManager()->GetCurrentEvent();
   //        if(evt) eID = evt->GetEventID();
   
   
