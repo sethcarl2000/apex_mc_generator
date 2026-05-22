@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <iostream>
 //#include "HRSRootTree.hh"
-#include "G4RunManager.hh"
+#include "HRSRunManager.hh"
 #include "QGSP_BERT.hh"
 
 #include "HRSUIExecutive.hh"
@@ -58,7 +58,7 @@ using namespace std;
 
 //global variables
 UsageManager* gConfig; //will be initialized in main() before all other classes
-//HRSRootTree* gHRSTree=0; //will be initialized in main() after G4RunManager start up before user-action start
+//HRSRootTree* gHRSTree=0; //will be initialized in main() after HRSRunManager start up before user-action start
 
 int main(int argc,char** argv)
 {
@@ -102,7 +102,7 @@ int main(int argc,char** argv)
   ////////////////////////////////////////////////////////////////////
   // RunManager construction
   ////////////////////////////////////////////////////////////////////
-  auto runManager = new G4RunManager;
+  auto runManager = new HRSRunManager;
 
   auto& run_params = RunParameters::Instance(); 
   
