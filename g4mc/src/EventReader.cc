@@ -16,6 +16,8 @@ EventReader::EventReader(G4String path_input, G4String tree_name)
     //try to open the input file 
     try {
     
+
+
         if (ROOT::IsImplicitMTEnabled()) ROOT::DisableImplicitMT();
 
         ROOT::RDataFrame df(tree_name.c_str(), path_input.c_str()); 
@@ -24,12 +26,12 @@ EventReader::EventReader(G4String path_input, G4String tree_name)
             .Define("input_particle_info", [](
                 double px, double py, double pz, 
                 double rx, double ry, double rz, 
-                char particle_type
+                int particle_type
             ) {
                 return ParticleInput::Info_t{
                     .position_vtx = Vec3{ rx, ry, rz },
                     .momentum_vtx = Vec3{ px, py, pz },
-                    .particle_type = particle_type
+                    .particle_type = (char)particle_type
                 }; 
             }, {
                 "momentum_sieve_x", "momentum_sieve_y", "momentum_sieve_z", 
