@@ -224,22 +224,7 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   fParticleGun->SetParticlePosition(vertex); 
 
   auto& event_writer = EventWriter::Instance(); 
-  
-  //take a position on the sieve-face, and convert it to hall coordinates (displaced from the apex scat. chamber center)
-  auto sieve_pos_to_HCS = [](double x_sv, double y_sv, ArmMode::EMode mode) 
-  { 
-    bool is_RHRS = (mode == ArmMode::kRHRS); 
-
-    G4ThreeVector pos_on_sieve = 
-      G4ThreeVector( x_sv, y_sv, 0. ) + 
-      ApexTargetGeometry::Get_sieve_pos(is_RHRS); 
-
-      pos_on_sieve.rotateZ( -CLHEP::pi/2. );
-      pos_on_sieve.rotateY( ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
-
-      return pos_on_sieve; 
-
-  }; 
+ 
   
   // right-arm (positron)
   if (RHRS_is_active()) {
@@ -249,7 +234,7 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     double y_sv = RandRange( f_sieve_y_min, f_sieve_y_max );  
     
     //now, rotate this intercept back to sieve-coordinates
-    auto sieve_intercept = sieve_pos_to_HCS(x_sv, y_sv, ArmMode::kRHRS); 
+    auto sieve_intercept = ApexTargetGeometry::Get_sieve_intercept_HCS(ArmMode::kRHRS_bool, x_sv, y_sv); 
     
     double momentum_mag = RandRange( f_momentum_min, f_momentum_max );
 
@@ -282,7 +267,7 @@ void HRSPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     double y_sv = RandRange( -f_sieve_y_max, -f_sieve_y_min ); 
     
     //now, rotate this intercept back to sieve-coordinates
-    auto sieve_intercept = sieve_pos_to_HCS(x_sv, y_sv, ArmMode::kLHRS); 
+    auto sieve_intercept = ApexTargetGeometry::Get_sieve_intercept_HCS(ArmMode::kLHRS_bool, x_sv, y_sv); 
     
     double momentum_mag = RandRange( f_momentum_min, f_momentum_max );
 

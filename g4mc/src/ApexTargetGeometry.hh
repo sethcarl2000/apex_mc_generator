@@ -54,15 +54,34 @@ namespace ApexTargetGeometry {
   // all units in mm for sieve hole positions and sizes. 
   std::vector<SieveHole> Construct_sieve_holes(bool _is_RHRS); 
 
-  /// @param v vector in HCS representing displacement from HCS origin 
+  /// @param v vector in HCS representing DISPLACEMENT from HCS origin 
   /// @param is_RHRS right(true) or left(false) arm
   /// @return vector in SCS representing displacement from SCS origin
   G4ThreeVector HCS_to_SCS(const G4ThreeVector& v, bool is_RHRS); 
 
-  /// @param v vector in HCS representing displacement from SCS origin 
+  /// @param v vector in HCS representing DISPLACEMENT from SCS origin 
   /// @param is_RHRS right(true) or left(false) arm
   /// @return vector in SCS representing displacement from HCS origin
   G4ThreeVector SCS_to_HCS(const G4ThreeVector& v, bool is_RHRS); 
+
+  /// @brief Project a position & displacement (given in HCS) onto the face of the sieve
+  /// @param is_RHRS right(true) or left(false) HRS
+  /// @param R displacement from center of HCS (center of APEX scattering chamber)
+  /// @param S vector representing direction in HCS
+  /// @param x x_sv
+  /// @param y y_sv
+  /// @param dxdz dx/dz_sv
+  /// @param dydz dy/dz_sv
+  void Project_HCS_onto_sieve(bool is_RHRS, const G4ThreeVector& R, const G4ThreeVector& S, double &x, double &y, double& dxdz, double& dydz); 
+
+  /// @brief Given a position on the face of the sieve, return that point's position in HCS 
+  /// @param is_RHRS right / left arm 
+  /// @param x_sv x-pos on sieve face 
+  /// @param y_sv y-pos on sieve face 
+  /// @return Displacement from this point on the face of the sieve relative to the APEX scattering chamber center. 
+  inline G4ThreeVector Get_sieve_intercept_HCS(bool is_RHRS, double x_sv, double y_sv) {
+    return SCS_to_HCS(G4ThreeVector(x_sv, y_sv, 0.), is_RHRS); 
+  };
 
 }; 
 

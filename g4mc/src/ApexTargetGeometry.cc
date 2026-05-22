@@ -14,7 +14,7 @@ vector<ApexTargetGeometry::SieveHole> ApexTargetGeometry::Construct_sieve_holes(
     // of one another
     const double dy = _is_RHRS ? 4.826 : -4.826;
     
-    //the first row is 8 rows above (-x) the center hole
+    //the first row is 8 rows above (-x) the center holex
     const double x0 = -dx * 8.; 
     //the first column is 7-spaces +y from the center
     const double y0 =  dy * 7.; 
@@ -87,20 +87,35 @@ vector<ApexTargetGeometry::SieveHole> ApexTargetGeometry::Construct_sieve_holes(
 //_________________________________________________________________________________________
 G4ThreeVector ApexTargetGeometry::HCS_to_SCS(const G4ThreeVector& v, bool is_RHRS)
 {
-  G4ThreeVector v_SCS{v};
-  v_SCS.rotateY( -ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
-  v_SCS.rotateZ( CLHEP::pi/2. );
-  return v_SCS;
+  G4ThreeVector ret{v};
+  ret.rotateY( -ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
+  ret.rotateZ( CLHEP::pi/2. );
+  ret += -1.*ApexTargetGeometry::Get_sieve_pos(is_RHRS);
+  return ret;
 }
 //_________________________________________________________________________________________
 G4ThreeVector ApexTargetGeometry::SCS_to_HCS(const G4ThreeVector& v, bool is_RHRS)
 {
-  G4ThreeVector v_HCS{v};
-  v_HCS.rotateZ( -CLHEP::pi/2. );
-  v_HCS.rotateY( ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
-  return v_HCS;
+  G4ThreeVector ret{v};
+  ret += ApexTargetGeometry::Get_sieve_pos(is_RHRS);
+  ret.rotateZ( -CLHEP::pi/2. );
+  ret.rotateY( ApexTargetGeometry::Get_sieve_angle(is_RHRS) );
+  return ret;
 }
 //_________________________________________________________________________________________
+void ApexTargetGeometry::Project_HCS_onto_sieve(bool is_RHRS, const G4ThreeVector& R, const G4ThreeVector& S, double &x, double &y, double& dxdz, double& dydz)
+{
+    auto R2 = HCS_to_SCS(R + S, is_RHRS); 
+    auto R1 = HCS_to_SCS(R,     is_RHRS);
+
+    double dz = R2.z() - R1.z();
+
+    dxdz = (R2.x() - R1.x())/dz; 
+    dydz = (R2.y() - R1.y())/dz; 
+
+    x = R1.x() + dxdz*(0. - R1.z());
+    y = R1.y() + dydz*(0. - R1.z());
+}
 //_________________________________________________________________________________________
 //_________________________________________________________________________________________
 //_________________________________________________________________________________________

@@ -531,55 +531,39 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     track_data.position_vtx = Get_Vec3_from_G4ThreeVector( position_vtx/1000. );
     track_data.momentum_vtx = Get_Vec3_from_G4ThreeVector( momentum_vtx );
     
-    //Now, we're going to compute their projections at the sieve-plane. 
-    position_vtx.rotateY( -sieve_angle );
-    momentum_vtx.rotateY( -sieve_angle );  
-    
-    //In TCS (which is what SIMC is expecting), the x-axis points to the floor of the
-    // hall, and the y-axis points to the left (if you're facing into the opening of
-    // the spectrometer.) 
-        
-    position_vtx.rotateZ( CLHEP::pi/2. ); 
-    momentum_vtx.rotateZ( CLHEP::pi/2. ); 
-    
-    //These are hard-coded offsets which reflect measurements from the APEX survey.
-    //Since we've already converted to meters, These values are also in meters. 
-    G4ThreeVector sieve_D0 = ApexTargetGeometry::Get_sieve_pos(is_RHRS); 
-    
-    /*G4ThreeVector sieve_D0(  is_RHRS ?  -1.101e-3 :  -1.301e-3,
-			     is_RHRS ?  -3.885e-3 :   6.672e-3,
-			     is_RHRS ? 794.609e-3 : 795.766e-3 ); */ 
-
-    
     //Project these onto the sieve plane. in sieve coordinates, the target-facing
     //opening of the central large hole is defined as the origin.
     // the x-axis is normal to the hall floor (pointing down).
     // the z-axis is coaxial with the central large hole, pointing into the septum (away
     // from target). the y-axis, then, is parallel to the hall floor, pointing away from the
     // beam (and tangent to the face of the sieve).
-    double dz,dxdz,dydz; 
-    
-    dz   = sieve_D0.z() - position_vtx.z();
-    dxdz = momentum_vtx.x()/momentum_vtx.z();
-    dydz = momentum_vtx.y()/momentum_vtx.z();
-    
-    
-    //project this track onto the plane of the sieve's front face
-    position_vtx(0) += dxdz*dz;
-    position_vtx(1) += dydz*dz;
-    position_vtx(2) = sieve_D0.z();
-    
-    //shift the position vector relative to the sieve offset. 
-    position_vtx = position_vtx - sieve_D0; 
+    double 
+      x_sv, 
+      y_sv, 
+      dxdz_sv, 
+      dydz_sv; 
+
+    ApexTargetGeometry::Project_HCS_onto_sieve(
+      is_RHRS, position_vtx, momentum_vtx,   
+      x_sv, y_sv,   
+      dxdz_sv, dydz_sv 
+    ); 
+
+    G4ThreeVector position_sieve( x_sv, y_sv, 0. );
+
+    G4ThreeVector momentum_sieve( dxdz_sv, dydz_sv, 1. );
+    momentum_sieve *= momentum_vtx.mag() / momentum_sieve.mag(); 
 
     //These are saved in Hall coordinates (no need to rotate them). 
-    track_data.position_sieve = Get_Vec3_from_G4ThreeVector( position_vtx/1000. );
-    track_data.momentum_sieve = Get_Vec3_from_G4ThreeVector( momentum_vtx );
+    track_data.position_sieve = Get_Vec3_from_G4ThreeVector( position_sieve/1000. );
+    track_data.momentum_sieve = Get_Vec3_from_G4ThreeVector( momentum_sieve );
     
-    /*if (GetVerbose()>=2) printf("-(pQ1[% 1.3f,% 1.3f,% 1.3f])",
+    /*
+    if (GetVerbose()>=2) printf("-(pQ1[% 1.3f,% 1.3f,% 1.3f])",
 				position_vtx.x()*100, 
 				position_vtx.y()*100, 
-				position_vtx.z()*100);*/ 
+				position_vtx.z()*100);
+    */ 
     
 
     // - Q1 position / momentum
@@ -597,7 +581,6 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
       position_Q1.x()*100, 
       position_Q1.y()*100, 
       position_Q1.z()*100);*/ 
-    
     
     position_Q1.rotateY( -hrs_angle ); 
     momentum_Q1.rotateY( -hrs_angle ); 
@@ -618,13 +601,13 @@ void HRSSteppingAction::UserSteppingAction(const G4Step* theStep)
     //project these tracks back onto the Q1 front plane
     const double Q1_front_z = 1710.95; //in mm, in rotated-HCS
     
-    dz   = position_Q1.z() - Q1_front_z;
-    dxdz = momentum_Q1.x()/momentum_Q1.z(); 
-    dydz = momentum_Q1.y()/momentum_Q1.z(); 
+    double dz   = position_Q1.z() - Q1_front_z;
+    double dxdz = momentum_Q1.x()/momentum_Q1.z(); 
+    double dydz = momentum_Q1.y()/momentum_Q1.z(); 
     
-    position_Q1(0) += -(dz*dxdz); //x
-    position_Q1(1) += -(dz*dydz); //y
-    position_Q1(3)  = Q1_front_z; //z
+    position_Q1[0] += -(dz*dxdz); //x
+    position_Q1[1] += -(dz*dydz); //y
+    position_Q1[2]  = Q1_front_z; //z
 
     
     //now we're ready to fill them into th TrackData_t struct

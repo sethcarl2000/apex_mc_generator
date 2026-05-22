@@ -294,8 +294,6 @@ void AprimeGenerator::Project_onto_sieve(bool is_RHRS, const G4ThreeVector& R1_h
   
   auto S  = R2 - R1;
 
-  R1 += -1.*ApexTargetGeometry::Get_sieve_pos(is_RHRS); 
-
   x_sv = R1.x() + (S.x()/S.z())*(0. - R1.z());
   y_sv = R1.y() + (S.y()/S.z())*(0. - R1.z());
   return; 
