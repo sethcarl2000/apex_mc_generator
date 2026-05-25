@@ -30,6 +30,7 @@
 #include "RunParameters.hh"
 #include "ApexTargetGeometry.hh"
 #include "DetectorConstruction.hh"
+#include "EnergyAngleGeneratorFactory.hh"
 
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
@@ -41,6 +42,7 @@
 #include "G4Electron.hh"
 #include "G4Positron.hh"
 #include "Randomize.hh"
+#include "G4Exception.hh"
 
 #include <cmath> 
 
@@ -76,8 +78,27 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   //fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
   //fParticleGun->SetParticleEnergy(run_params->GetBeamEnergy());
 
+  
   G4String target_name = run_params->GetTargetName(); 
   
+  switch (run_params->GetGeneratorMode()) {
+
+    case kElastic           : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Elastic(); break; 
+    case kTrident_electron  : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Trident_Electron(); break; 
+    case kTrident_positron  : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Trident_Positron(); break; 
+    case kBHPhotoproduction : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::BetheHeitlerPhotoproduction(); break; 
+    default : {
+      G4Exception(
+        "PrimaryGeneratorAction::PrimaryGeneratorAction", 
+        "Unsupported particle generator type",
+        G4ExceptionSeverity::RunMustBeAborted, 
+        "Particle type gotten from RunParameters is unsupported."
+      );
+    }
+  }
+
+  fParticleGun->SetParticleDefinition(fEnergyAngleGenerator->GetDefinition()); 
+
   //set the electron beam generation spot to be a little upstream
   fTargetPosition  
     = ApexTargetGeometry::GetTargetPosition(target_name); 
@@ -93,17 +114,10 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 
   f_is_RHRS = run_params->Is_RHRS(); 
 
-  fSieveRotation =
+  fSieveRotation = 
     CLHEP::HepRotationY(ApexTargetGeometry::Get_sieve_angle(f_is_RHRS)) * CLHEP::HepRotationZ(-CLHEP::pi/2); 
   
 
-  if ((fGeneratorMode == kPairProduction) || (fGeneratorMode == kFlat)) {
-    if (run_params->Is_RHRS()) {
-      fParticleGun -> SetParticleDefinition(G4Positron::Positron()); 
-    } else {
-      fParticleGun -> SetParticleDefinition(G4Electron::Electron()); 
-    }
-  }    
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -124,82 +138,33 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   
   auto run_params = RunParameters::Instance(); 
 
-  switch (fGeneratorMode)
-  {
-  case kPairProduction: {
-      // beam energy 
-      G4double beam_E = fBeamEnergy; 
+  //pick a reaction vertex
+  G4ThreeVector vertex(
+    fTargetPosition.x(), 
+    fTargetPosition.y() + (1 - 2*G4UniformRand())*fRasterAmplitude_vertical,
+    fTargetPosition.z() 
+  ); 
 
-      // pick a random decay invariant mass
-      G4double mass = fMin_restMass  +  (fMax_restMass - fMin_restMass)*G4UniformRand(); 
+  //G4cout << "Updating generator..." << G4endl; 
+  fEnergyAngleGenerator->Update(); 
 
-      // cosine between decay particle direction and beam (in the restframe of the particle)
-      G4double cosine_restframe = (1 - 2*G4UniformRand());  
+  fParticleGun->SetParticleEnergy( fEnergyAngleGenerator->GetEnergy() );
 
-      // azimuthal angle of lepton around beam (defined so that phi=0 means it's in the horizontal plane)
-      G4double phi = kPhi_max * (1 - 2*G4UniformRand()); 
+  double cos = fEnergyAngleGenerator->GetCosTheta(); 
 
-      G4double sine_restframe = sqrt( 1. - cosine_restframe*cosine_restframe ); 
+  G4ThreeVector momentum_direction(
+    std::sqrt( 1. - cos*cos ), 
+    0., 
+    cos 
+  );
 
-      // we're pretending the lepton is massless. 
-      auto p_lepton = G4ThreeVector( 
-        cos(phi) * sine_restframe * (f_is_RHRS ? -1 : +1), 
-        sin(phi) * sine_restframe, 
-        cosine_restframe
-      );
-      p_lepton *= (mass/2);
+  //rotate phi by a random angle 
+  momentum_direction.rotateZ( (G4UniformRand()*2. - 1.)*CLHEP::pi/2. );
 
-      // gamma factor of decaying particle in lab frame
-      G4double gamma = beam_E/mass; 
+  //flip the direction if it's the RHRS 
+  if (RunParameters::Instance()->Is_RHRS()) momentum_direction[1] *= -1.; 
 
-      // boost the lepton to the lab frame
-      p_lepton[2] = gamma*( p_lepton[2] + (mass/2)*sqrt(1. - 1./(gamma*gamma)) );  
-
-      fParticleGun->SetParticleEnergy(p_lepton.mag()); 
-      fParticleGun->SetParticleMomentumDirection(p_lepton); 
-
-      // now, pick a random reaction vertex at the target
-      fParticleGun->SetParticlePosition(
-        G4ThreeVector(
-          fTargetPosition.x(), 
-          fTargetPosition.y() + (1 - 2*G4UniformRand())*fRasterAmplitude_vertical,
-          fTargetPosition.z() 
-        )
-      );
-      break;       
-    }
-    case kFlat : {
-
-      //pick a reaction vertex
-      G4ThreeVector vertex(
-        fTargetPosition.x(), 
-        fTargetPosition.y() + (1 - 2*G4UniformRand())*fRasterAmplitude_vertical,
-        fTargetPosition.z() 
-      ); 
-      
-      //set the particle's energy 
-      G4double energy 
-        = run_params->GetGunEnergy_min() 
-        + (run_params->GetGunEnergy_max() - run_params->GetGunEnergy_min())*G4UniformRand(); 
-
-      fParticleGun->SetParticleEnergy(energy); 
-
-      //pick a random spot on the sieve-face
-      G4ThreeVector sieve_intercept = ApexTargetGeometry::Get_sieve_pos(f_is_RHRS); 
-
-      sieve_intercept[0] += DetectorConstruction::Sieve_dx()*( G4UniformRand() - 0.5 );
-      sieve_intercept[1] += DetectorConstruction::Sieve_dy()*( G4UniformRand() - 0.5 );
-
-      //rotate it back to hall-coordinates
-      sieve_intercept = fSieveRotation * sieve_intercept; 
-
-      //now, set the particle's direction
-      fParticleGun->SetParticleMomentumDirection(sieve_intercept - vertex);
-      
-      break; 
-    }
-    default: break;
-  }
+  fParticleGun->SetParticleMomentumDirection(momentum_direction);  
   
   fParticleGun->GeneratePrimaryVertex(event);
 }

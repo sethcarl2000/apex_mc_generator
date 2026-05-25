@@ -7,9 +7,11 @@
 namespace B1 
 {
     /// @brief enum to represent types of event generation
-    enum EGeneratorMode { 
-      kPairProduction=1, 
-      kFlat
+    enum EGeneratorMode {
+        kElastic=1,
+        kBHPhotoproduction, 
+        kTrident_electron,
+        kTrident_positron
     }; 
     
     enum ESieveMode { kAll=0, kSmall, kBig, kWideBack }; 
@@ -46,7 +48,7 @@ private:
     // center of target we're using
     G4ThreeVector fTargetPosition; 
     // the mode of paritlce generation 
-    EGeneratorMode fGeneratorMode{kPairProduction}; 
+    EGeneratorMode fGeneratorMode{kElastic}; 
 
     // the type of sieve generation (single-hole or all?)
     ESieveMode fSieveMode{kAll}; 

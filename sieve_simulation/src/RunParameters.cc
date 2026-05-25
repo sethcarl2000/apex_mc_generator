@@ -83,8 +83,8 @@ RunParameters::RunParameters()
         generator_prefix + "mode", 
         "generator_mode",
         &RunParameters::SetGeneratorMode,
-        "pair_production",
-        "pair_production flat", 
+        "elastic",
+        "elastic bh_photoproduction trident_electron trident_positron", 
         "Set the mode of e-/e+ generation for the particle gun"
     );
 
@@ -154,8 +154,10 @@ RunParameters* RunParameters::Instance()
 //______________________________________________________________________________
 void RunParameters::SetGeneratorMode(G4String mode)
 { 
-  if (mode == "pair_production")    { fGeneratorMode = kPairProduction; return; }
-  if (mode == "flat")               { fGeneratorMode = kFlat; return; }
+  if (mode == "elastic")            { fGeneratorMode = kElastic; return; }
+  if (mode == "bh_photoproduction") { fGeneratorMode = kBHPhotoproduction; return; }
+  if (mode == "trident_electron")   { fGeneratorMode = kTrident_electron; return; }
+  if (mode == "trident_positron")   { fGeneratorMode = kTrident_positron; return; }
 }
 //______________________________________________________________________________
 void RunParameters::SetSieveMode(G4String mode)

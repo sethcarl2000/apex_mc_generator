@@ -29,10 +29,15 @@
 #ifndef B1PrimaryGeneratorAction_h
 #define B1PrimaryGeneratorAction_h 1
 
+#include "EnergyAngleGenerator.hh"
+
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "UserMessenger.hh"
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
+
+#include <memory> 
+
 
 class G4ParticleGun;
 class G4Event;
@@ -46,10 +51,7 @@ namespace B1
 /// The default kinematic is a 6 MeV gamma, randomly distribued
 /// in front of the phantom across 80% of the (X,Y) phantom size.
 
-class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
-{
-  private:     
-
+class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
   public:
     PrimaryGeneratorAction();
     ~PrimaryGeneratorAction() override;
@@ -60,12 +62,16 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     // method to access particle gun
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
 
+    std::unique_ptr<EnergyAngleGenerator> fGenerator_BH_photoproduction; 
+
   private:
     
     UserMessenger<PrimaryGeneratorAction> *fMessenger; 
   
     // center of the chosen target
     G4ThreeVector fTargetPosition; 
+
+    EnergyAngleGenerator *fEnergyAngleGenerator; 
 
     // mode of the particle generator
     G4int fGeneratorMode; 
