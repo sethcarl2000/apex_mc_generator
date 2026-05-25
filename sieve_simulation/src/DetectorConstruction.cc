@@ -258,37 +258,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   );
   fScoringVolume = logic_scoringVolume; 
 
-  /* 
-  //now, we construct the target
-  G4String target_name = run_params->GetTargetName(); 
-
-  G4VSolid *solid_target = nullptr; 
-  G4RotationMatrix *rotation_target = nullptr; 
-
-  solid_target = new G4Tubs(
-    G4String("solid_" + target_name), 
-    0., 100./2.*um, 
-    1.*cm,
-    0., 2.*CLHEP::pi
-  ); 
-  rotation_target = new G4RotationMatrix( CLHEP::HepRotationX(CLHEP::pi/2.) ); 
-  
-  auto logic_target = new G4LogicalVolume(
-    solid_target, 
-    tungsten_mat, 
-    G4String("logic_" + target_name)
-  ); 
-
-  new G4PVPlacement(
-    rotation_target,
-    ApexTargetGeometry::GetTargetPosition(target_name),
-    logic_target, 
-    "Target", 
-    logic_World, 
-    false, 
-    0, 
-    false
-  );*/ 
 
   //
   //  always return the physical World

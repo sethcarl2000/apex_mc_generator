@@ -6,6 +6,7 @@
 
 #include "Bound.hh"
 #include "G4ParticleDefinition.hh"
+#include "Randomize.hh"
 
 namespace B1
 {
@@ -28,13 +29,10 @@ private:
 
     double fScanRate_energy, fScanRate_cosTheta; 
 
-    std::uniform_real_distribution<double> fRndm{0., 1.}; 
-    std::mt19937 fTwister; 
 
-    inline double Table(int iE, int iC) const { return fTable[iE*fNpts_energy + iC]; }
+    inline double Table(int iE, int iC) const { return fTable[iE*fNpts_cosTheta + iC]; }
 
-    
-    inline double Rndm() { return fRndm(fTwister); }
+    inline double RndmRange(double min, double max) const { return min + (max-min)*G4UniformRand(); }
 
 public: 
 
