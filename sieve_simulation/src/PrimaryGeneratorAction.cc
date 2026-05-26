@@ -97,8 +97,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     }
   }
 
-  fParticleGun->SetParticleDefinition(fEnergyAngleGenerator->GetDefinition()); 
-
   //set the electron beam generation spot to be a little upstream
   fTargetPosition  
     = ApexTargetGeometry::GetTargetPosition(target_name); 
@@ -162,10 +160,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   momentum_direction.rotateZ( (G4UniformRand()*2. - 1.)*CLHEP::pi/2. );
 
   //flip the direction if it's the RHRS 
-  if (RunParameters::Instance()->Is_RHRS()) momentum_direction[1] *= -1.; 
+  if (RunParameters::Instance()->Is_RHRS()) momentum_direction.rotateZ( CLHEP::pi );
 
   fParticleGun->SetParticleMomentumDirection(momentum_direction);  
   
+  fParticleGun->SetParticleDefinition(fEnergyAngleGenerator->GetDefinition()); 
+
   fParticleGun->GeneratePrimaryVertex(event);
 }
 

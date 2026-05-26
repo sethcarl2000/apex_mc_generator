@@ -8,12 +8,18 @@
 #include "G4ParticleDefinition.hh"
 #include "Randomize.hh"
 
+#include "RunParameters.hh"
+
 namespace B1
 {
 
 // an implementation of a MHMC aglorithm using a table of energy-angle values
 class EnergyAngleGenerator {
+public:
+
 private: 
+
+    ESamplingMode fMode; 
 
     G4ParticleDefinition* fParticleDef; 
 
@@ -27,8 +33,10 @@ private:
     //current state of the generator
     double fCosTheta, fEnergy, fAmplitude; 
 
-    double fScanRate_energy, fScanRate_cosTheta; 
+    //max amplitude, for rejection techniques
+    double fMaxAmplitude; 
 
+    double fScanRate_energy, fScanRate_cosTheta; 
 
     inline double Table(int iE, int iC) const { return fTable[iE*fNpts_cosTheta + iC]; }
 

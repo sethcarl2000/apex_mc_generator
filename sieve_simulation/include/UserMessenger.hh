@@ -7,8 +7,10 @@
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithABool.hh"
+#include "G4Exception.hh"
 #include <functional>
 #include <vector>
+#include <algorithm> 
 
 namespace B1 
 {
@@ -87,6 +89,74 @@ public:
         //add this command to the list of all commands
         fCommands.push_back(new_ui_command); 
     }
+
+    struct name_and_index_t { 
+        G4String name; G4int index; 
+    }; 
+
+    /// @brief Add a list of options, paired with int's (can be enums). First element in list it default. 
+    /// @param cmd_name 
+    /// @param parameter_name 
+    /// @param signal_slot 
+    /// @param option_map 
+    /// @param guidance 
+    void AddCommand_optionList(
+        G4String cmd_name, 
+        G4String parameter_name, 
+        void (UserClass::*signal_slot)(G4int), 
+        const std::vector<name_and_index_t>& option_list, 
+        G4String guidance=""
+    )
+    {
+        auto cmd = new G4UIcmdWithAString(cmd_name, this);
+
+        G4String candidates{""}; 
+        for (size_t i=0; i<option_list.size(); i++) {
+            candidates += (i>0 ? " " : "") + option_list[i].name; 
+        } 
+        cmd->SetCandidates(candidates); 
+
+        cmd->SetParameterName(parameter_name, this); 
+        cmd->SetDefaultValue(option_list[0].name);
+
+        if (guidance != "") cmd->SetGuidance(guidance); 
+
+        /// construct a 'signal function' which tells the DetectorConstruction class about our updated command
+        auto signal_fcn = [this, signal_slot, option_list](G4UIcommand* parent_ptr, G4String new_val)
+        {
+            auto cmd_ptr = dynamic_cast<G4UIcmdWithAString*>(parent_ptr);
+
+            //search the list of commands for a valid value
+            const auto it = std::find_if(
+                option_list.begin(), 
+                option_list.end(), 
+                [&new_val](const name_and_index_t& opt) { return opt.name == new_val; }
+            ); 
+            if (it == option_list.end()) {
+
+                G4Exception(
+                    "UserMessenger::AddCommand_optionList",
+                    "Invalid option provided to command",
+                    G4ExceptionSeverity::RunMustBeAborted, 
+                    "Invalid option provided to G4String command."
+                );
+                return; 
+            }
+
+            (fTarget->*signal_slot)(it->index);
+            return; 
+        }; 
+        
+        // our new UI command  
+        UIcommand_t new_ui_command {
+            .ptr = cmd, 
+            .fcn = signal_fcn
+        };
+        
+        //add this command to the list of all commands
+        fCommands.push_back(new_ui_command); 
+    }
+
 
     /// @brief a small macro add a G4String-command to the list of commands 
     /// @param cmd_name name of the command, as it appears in a macro

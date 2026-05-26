@@ -105,6 +105,15 @@ RunParameters::RunParameters()
         "all small big wide_back",
         "Set which mode the sieve will be generated in"
     ); 
+    
+    fMessenger->AddCommand_optionList(
+        generator_prefix + "sampling_mode",
+        "generator_sampling_mode", 
+        &RunParameters::SetSamplingMode, 
+        {{"metropolis",  kMetropolis},
+         {"rejection",   kRejection}}, 
+        "Set the sampling strategy for the generator"
+    );
 
     fMessenger->AddCommand_doubleWithUnit(
         generator_prefix + "gunEnergy_min",

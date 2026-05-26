@@ -1,8 +1,11 @@
 #include <EnergyAngleGenerator.hh> 
+#include <RunParameters.hh>
+
+#include "Randomize.hh"
+
 #include <cmath> 
 #include <stdio.h>
 #include <limits> 
-#include "Randomize.hh"
 
 namespace {
     constexpr double kInfinity = std::numeric_limits<double>::infinity(); 
@@ -33,6 +36,12 @@ EnergyAngleGenerator::EnergyAngleGenerator(
 
     fScanRate_cosTheta = fBound_cosTheta.span()/8.;
     fScanRate_energy   = fBound_energy.span()/100.; 
+
+    fMode = RunParameters::Instance()->GetSamplingMode(); 
+
+    //find the maximum amplitude 
+    fMaxAmplitude = fTable.front(); 
+    for (double amp : fTable) if (amp > fMaxAmplitude) fMaxAmplitude = amp; 
 }; 
 //_____________________________________________________________________________________________
 double EnergyAngleGenerator::Amplitude(double energy, double cos_theta) const
@@ -90,30 +99,50 @@ void EnergyAngleGenerator::Update()
     //propose update 
     //fCosTheta += (1. - 2.*Rndm())*fScanRate_cosTheta; 
 
-    double cos_theta_min = fBound_cosTheta.enforce( fCosTheta - fScanRate_cosTheta );
-    double cos_theta_max = fBound_cosTheta.enforce( fCosTheta + fScanRate_cosTheta );
+    switch (fMode) {
+        //__________________________________________________________________________________________________
+        case kMetropolis : {
+            double cos_theta_min = fBound_cosTheta.enforce( fCosTheta - fScanRate_cosTheta );
+            double cos_theta_max = fBound_cosTheta.enforce( fCosTheta + fScanRate_cosTheta );
 
-    double energy_min = fBound_energy.enforce( fEnergy - fScanRate_energy );
-    double energy_max = fBound_energy.enforce( fEnergy + fScanRate_energy );
+            double energy_min = fBound_energy.enforce( fEnergy - fScanRate_energy );
+            double energy_max = fBound_energy.enforce( fEnergy + fScanRate_energy );
 
-    double energy = RndmRange( energy_min, energy_max );
-    double cos_theta = RndmRange( cos_theta_min, cos_theta_max ); 
+            double energy = RndmRange( energy_min, energy_max );
+            double cos_theta = RndmRange( cos_theta_min, cos_theta_max ); 
 
-    double new_amplitude = Amplitude(energy, cos_theta);
+            double new_amplitude = Amplitude(energy, cos_theta);
 
-    /*std::printf("energy: %6.1f MeV, cos(theta): %6.4f, new / old amplitude: %.3f;",
-        energy, cos_theta, new_amplitude/fAmplitude
-    );*/
+            /*std::printf("energy: %6.1f MeV, cos(theta): %6.4f, new / old amplitude: %.3f;",
+                energy, cos_theta, new_amplitude/fAmplitude
+            );*/
 
-    if ( G4UniformRand() < new_amplitude/fAmplitude ) {
-        //std::printf(" accepted\n");
-        //accept update 
-        fEnergy = energy;
-        fCosTheta = cos_theta; 
-        fAmplitude = new_amplitude;
-    } else {
-        //std::printf("\n"); 
+            if ( G4UniformRand() < new_amplitude/fAmplitude ) {
+                //std::printf(" accepted\n");
+                //accept update 
+                fEnergy = energy;
+                fCosTheta = cos_theta; 
+                fAmplitude = new_amplitude;
+            } 
+            break; 
+        } 
+        //__________________________________________________________________________________________________
+        case kRejection : {
+
+            double cos, energy; 
+            
+            do {
+
+                cos = RndmRange( fBound_cosTheta.min, fBound_cosTheta.max ); 
+                energy = RndmRange( fBound_energy.min, fBound_energy.max ); 
+
+            } while (G4UniformRand() > Amplitude(energy, cos)/fMaxAmplitude); 
+
+            fCosTheta = cos; 
+            fEnergy = energy; 
+        }   
     }
+    
 }
 //_____________________________________________________________________________________________
 //_____________________________________________________________________________________________

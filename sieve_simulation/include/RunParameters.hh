@@ -13,6 +13,11 @@ namespace B1
         kTrident_electron,
         kTrident_positron
     }; 
+
+    enum ESamplingMode : int {
+        kMetropolis=1, 
+        kRejection
+    };
     
     enum ESieveMode { kAll=0, kSmall, kBig, kWideBack }; 
 
@@ -49,6 +54,8 @@ private:
     G4ThreeVector fTargetPosition; 
     // the mode of paritlce generation 
     EGeneratorMode fGeneratorMode{kElastic}; 
+    // the sampling technique the generator will use 
+    ESamplingMode fSamplingMode{kMetropolis};
 
     // the type of sieve generation (single-hole or all?)
     ESieveMode fSieveMode{kAll}; 
@@ -73,6 +80,7 @@ public:
     void SetTargetName(G4String _val)   { fTargetName=_val; }
     void SetBeamEnergy(G4double _val)   { fBeamEnergy=_val; }
     void SetGeneratorMode(G4String mode); 
+    void SetSamplingMode(int mode) { fSamplingMode=(ESamplingMode)mode; } 
     void SetVerticalRasterAmplitude(G4double amplitude) { fVerticalRasterAmplitude=amplitude; }
     void SetMass_min(G4double _x) { fMin_restMass=_x; }
     void SetMass_max(G4double _x) { fMax_restMass=_x; }
@@ -105,6 +113,9 @@ public:
 
     /// @return the mode of particle generation
     EGeneratorMode GetGeneratorMode() const { return fGeneratorMode; }
+
+    /// @return the mode of particle generation
+    ESamplingMode GetSamplingMode() const { return fSamplingMode; }
 
     /// @return (full) amplitude of the vertical raster
     G4double GetRasterAmplitude_vertical() const { return fVerticalRasterAmplitude; }
