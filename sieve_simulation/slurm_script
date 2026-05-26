@@ -13,12 +13,12 @@ source ~/.login
 
 
 #check if we're within a slurm job; if not, then "${SLURM_JOB_ID}"=""
-if [ ! "${SLURM_JOB_ID}" ]
+if [[ -z "${SLURM_JOB_ID}" ]]
 then
     #We aren't in slurm mode. 
     run_id=0000
-    n_cpus=20
-    echo "We are not in a slurm job..." 
+    n_cpus=$(nproc)
+    echo "We are not in a slurm job. n_cpus=${n_cpus}, run_id=${run_id}" 
     
 else
     run_id=${SLURM_JOB_ID}
@@ -27,7 +27,9 @@ else
 fi
 
 arm=${1}
-n_events=${2}
+target=${2}
+process=${3}
+n_events=${4}
 
 # Path to source directory 
 SRC_DIR="${WORK_APEX}/apex_mc_generator/sieve_simulation" 
@@ -57,11 +59,19 @@ echo "/run/numberOfThreads ${n_cpus}" >> my_run.mac
 
 echo "" >> my_run.mac
 echo "# Set output file" >> my_run.mac
-echo "/global/path_outfile ${OUTPUT_DIR}/sieve_trk_${arm}_${run_id}.root" >> my_run.mac
+echo "/global/path_outfile ${OUTPUT_DIR}/out_sieve_${arm}_${target}_${process}_${run_id}.root" >> my_run.mac
 
 echo "" >> my_run.mac
 echo "# Pick which arm to use" >> my_run.mac
 echo "/global/active_arm ${arm}" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Pick which target to simulate" >> my_run.mac
+echo "/generator/target ${target}" >> my_run.mac
+
+echo "" >> my_run.mac
+echo "# Pick which process to simulate" >> my_run.mac
+echo "/generator/mode ${process}" >> my_run.mac
 
 echo "" >> my_run.mac
 echo "# Start the run" >> my_run.mac
