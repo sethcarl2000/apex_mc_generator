@@ -104,8 +104,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   if (run_params->Is_RHRS()) {
     if (track->GetParticleDefinition() != G4Positron::Positron() ) { kill_track(); return; }
   } else {
-    if (track->GetParticleDefinition() != G4Electron::Electron() ) { kill_track(); return; }  
-  } 
+    if (track->GetParticleDefinition() != G4Electron::Electron() ) { kill_track(); return; }
+  }
+
+  G4double charge = run_params->Is_RHRS() ? +1. : -1.; 
 
       
   //get the analysis manager, and fill out relevant information. 
@@ -125,6 +127,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   analysisManager->FillNtupleDColumn(i_col++, r_track.y());
   analysisManager->FillNtupleDColumn(i_col++, r_track.z());
 
+  analysisManager->FillNtupleDColumn(i_col++, charge);
+  
   //save this as a distinct event 
   analysisManager->AddNtupleRow(); 
 

@@ -91,10 +91,11 @@ void RunAction::BeginOfRunAction(const G4Run*)
     "momentum_sieve_z",
     "position_sieve_x",
     "position_sieve_y",
-    "position_sieve_z" 
+    "position_sieve_z",
+    "particle_charge"
   };
   for (auto branch : branches) analysisManager->CreateNtupleDColumn(branch); 
-
+  
   analysisManager->FinishNtuple(); 
   
   analysisManager->SetDefaultFileType("root"); 
