@@ -79,12 +79,15 @@ RunParameters::RunParameters()
         "Beam energy"
     ); 
         
-    fMessenger->AddCommand_string(
+    fMessenger->AddCommand_optionList(
         generator_prefix + "mode", 
         "generator_mode",
         &RunParameters::SetGeneratorMode,
-        "elastic",
-        "elastic bh_photoproduction trident_electron trident_positron", 
+        {{"elastic",            kElastic},
+         {"bh_electron",        kBH_electron},
+         {"bh_photon",          kBH_photon},
+         {"trident_electron",   kTrident_electron},
+         {"trident_positron",   kTrident_positron}}, 
         "Set the mode of e-/e+ generation for the particle gun"
     );
 
@@ -159,14 +162,6 @@ RunParameters* RunParameters::Instance()
 {
     if (fInstance==nullptr) fInstance = new RunParameters(); 
     return fInstance; 
-}
-//______________________________________________________________________________
-void RunParameters::SetGeneratorMode(G4String mode)
-{ 
-  if (mode == "elastic")            { fGeneratorMode = kElastic; return; }
-  if (mode == "bh_photoproduction") { fGeneratorMode = kBHPhotoproduction; return; }
-  if (mode == "trident_electron")   { fGeneratorMode = kTrident_electron; return; }
-  if (mode == "trident_positron")   { fGeneratorMode = kTrident_positron; return; }
 }
 //______________________________________________________________________________
 void RunParameters::SetSieveMode(G4String mode)

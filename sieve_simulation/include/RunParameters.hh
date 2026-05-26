@@ -9,7 +9,8 @@ namespace B1
     /// @brief enum to represent types of event generation
     enum EGeneratorMode {
         kElastic=1,
-        kBHPhotoproduction, 
+        kBH_electron,
+        kBH_photon, 
         kTrident_electron,
         kTrident_positron
     }; 
@@ -79,8 +80,8 @@ public:
     void SetMomentum_max(G4double _val) { fMomentum_max=_val; }
     void SetTargetName(G4String _val)   { fTargetName=_val; }
     void SetBeamEnergy(G4double _val)   { fBeamEnergy=_val; }
-    void SetGeneratorMode(G4String mode); 
-    void SetSamplingMode(int mode) { fSamplingMode=(ESamplingMode)mode; } 
+    void SetGeneratorMode(G4int mode)   { fGeneratorMode=(EGeneratorMode)mode; } 
+    void SetSamplingMode(int mode)      { fSamplingMode=(ESamplingMode)mode; } 
     void SetVerticalRasterAmplitude(G4double amplitude) { fVerticalRasterAmplitude=amplitude; }
     void SetMass_min(G4double _x) { fMin_restMass=_x; }
     void SetMass_max(G4double _x) { fMax_restMass=_x; }

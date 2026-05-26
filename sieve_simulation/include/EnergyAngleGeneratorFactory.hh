@@ -20,7 +20,10 @@ public:
     static EnergyAngleGenerator* Elastic(); 
 
     /// @return Energy-Angle generator corresponding to electron scattering off nuclear target (with photon produced)
-    static EnergyAngleGenerator* BetheHeitlerPhotoproduction(); 
+    static EnergyAngleGenerator* BetheHeitler_electron(); 
+
+    /// @return Energy-Angle generator corresponding to the hard photon produced by electron scattering off of nuclear target
+    static EnergyAngleGenerator* BetheHeitler_photon(); 
 
     /// @return Energy-Angle generator corresponding to electron production in trident process
     static EnergyAngleGenerator* Trident_Electron(); 
