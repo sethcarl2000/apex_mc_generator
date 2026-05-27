@@ -86,7 +86,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     case kElastic           : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Elastic(); break; 
     case kTrident_electron  : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Trident_Electron(); break; 
     case kTrident_positron  : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Trident_Positron(); break; 
-    case kBHPhotoproduction : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::BetheHeitlerPhotoproduction(); break; 
+    case kBH_electron       : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::BetheHeitler_electron(); break; 
+    case kBH_photon         : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::BetheHeitler_photon(); break;
     default : {
       G4Exception(
         "PrimaryGeneratorAction::PrimaryGeneratorAction", 
