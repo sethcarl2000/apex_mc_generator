@@ -20,14 +20,15 @@ EnergyAngleGenerator::EnergyAngleGenerator(
     int npts_energy, int npts_cos_theta, 
     double min_energy, double max_energy, 
     double min_costheta, double max_costheta, 
-    G4ParticleDefinition* particle
+    G4ParticleDefinition* particle, 
+    G4String description
 )
     : fTable{_data}, 
     fNpts_energy{npts_energy},
     fNpts_cosTheta{npts_cos_theta},
     fBound_energy{min_energy, max_energy}, 
     fBound_cosTheta{min_costheta, max_costheta}, 
-    fParticleDef{particle}
+    fParticleDef{particle}, fDescription{description}
 {
     //start with the largest value of Cos & Energy 
     fCosTheta   = fBound_cosTheta.max; 
@@ -39,9 +40,19 @@ EnergyAngleGenerator::EnergyAngleGenerator(
 
     fMode = RunParameters::Instance()->GetSamplingMode(); 
 
-    //find the maximum amplitude 
+    //find the maximum amplitude & compute total cross section 
+    double dE   = fNpts_energy > 1   ? fBound_energy.span() / ((double)fNpts_energy-1)     : 1.;
+    double dCos = fNpts_cosTheta > 1 ? fBound_cosTheta.span() / ((double)fNpts_cosTheta-1) : 1.; 
+    fTotalCrossSection =0.; 
+
     fMaxAmplitude = fTable.front(); 
-    for (double amp : fTable) if (amp > fMaxAmplitude) fMaxAmplitude = amp; 
+
+    for (double amp : fTable) { 
+
+        fTotalCrossSection += dE*dCos * amp; 
+        
+        if (amp > fMaxAmplitude) fMaxAmplitude = amp; 
+    }
 }; 
 //_____________________________________________________________________________________________
 double EnergyAngleGenerator::Amplitude(double energy, double cos_theta) const

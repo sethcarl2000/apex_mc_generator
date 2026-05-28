@@ -3,6 +3,7 @@
 
 #include "EnergyAngleGenerator.hh"
 #include "G4String.hh"
+
 //this class will instantiate an energy-angle generator, when requested. 
 
 namespace B1 

@@ -7,6 +7,7 @@
 #include "Bound.hh"
 #include "G4ParticleDefinition.hh"
 #include "Randomize.hh"
+#include "G4String.hh"
 
 #include "RunParameters.hh"
 
@@ -19,22 +20,28 @@ public:
 
 private: 
 
-    ESamplingMode fMode; 
+    ESamplingMode fMode{ESamplingMode::kMetropolis}; 
 
-    G4ParticleDefinition* fParticleDef; 
+    G4ParticleDefinition* fParticleDef{nullptr}; 
+
+    //descriptive name of the process
+    G4String fDescription{"none"}; 
 
     //table
-    std::vector<double> fTable; 
+    std::vector<double> fTable{}; 
     int fNpts_energy, fNpts_cosTheta; 
 
     //bounds for generation
-    Bound<double> fBound_cosTheta, fBound_energy; 
+    Bound<double> fBound_cosTheta{}, fBound_energy{}; 
 
     //current state of the generator
     double fCosTheta, fEnergy, fAmplitude; 
 
     //max amplitude, for rejection techniques
     double fMaxAmplitude; 
+
+    // cross section integrated over total energy-angle region
+    double fTotalCrossSection; 
 
     double fScanRate_energy, fScanRate_cosTheta; 
 
@@ -49,13 +56,19 @@ public:
         int npts_energy, int npts_cos_theta, 
         double min_energy, double max_energy, 
         double min_costheta, double max_costheta, 
-        G4ParticleDefinition* particle
+        G4ParticleDefinition* particle, 
+        G4String description
     ); 
     
     EnergyAngleGenerator() {};
 
+    G4String GetDescription() const { return fDescription; } 
+
     //return the amplitude at a particular phase-space point
     double Amplitude(double energy, double cos_theta) const; 
+
+    /// @return total integrated cross section 
+    double GetTotalCS() const { return fTotalCrossSection; }
 
     //get particle definition
     G4ParticleDefinition* GetDefinition() { return fParticleDef; } 
