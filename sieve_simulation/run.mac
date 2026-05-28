@@ -41,7 +41,7 @@
 /global/active_arm RHRS
 
 # specify output file
-/global/path_outfile data/test_multiparticle_sieve_RHRS.root
+/global/path_outfile data/test_mem.root
 
 
 # Start the run 

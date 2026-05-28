@@ -12,9 +12,12 @@
 # Say whether sieve should be constructed
 /detector/build_sieve true
 
+# 
+/global/save_all_particle_types false 
+
 # momenutm cuts
-/global/min_momentum  999 MeV
-/global/max_momentum 2201 MeV 
+/global/min_momentum 1000 MeV
+/global/max_momentum 1200 MeV 
 
 #### Set some parameters of the particle generator ####
 # 
