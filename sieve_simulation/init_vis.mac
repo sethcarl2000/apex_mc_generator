@@ -15,7 +15,7 @@
 #### Set some parameters of the particle generator ####
 #
 # mode of generation
-/generator/mode trident_positron
+/generator/mode all_types
 #
 # vertical raster amplitude
 /generator/raster_amplitude 2 mm

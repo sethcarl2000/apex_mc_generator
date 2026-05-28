@@ -4,21 +4,25 @@
 # or interactively: Idle> /control/execute run1.mac
 #
 # Change the default number of workers (in multi-threading mode) 
-/run/numberOfThreads 1
+/run/numberOfThreads 20
 
 # Set verbosity 
 /control/verbose 0
 /run/verbose 0
 /event/verbose 0
 /tracking/verbose 0
+/generator/verbose 0
 #
 # specify whether sieve should be built
-/detector/build_sieve false
+/detector/build_sieve true
+
+# specify if all particle types should be saved
+/global/save_all_particle_types false 
 
 #### Set some parameters of the particle generator ####
 #
 # mode of generation
-/generator/mode trident_electron
+/generator/mode all_types
 #
 /generator/sampling_mode rejection
 #
@@ -30,18 +34,18 @@
 
 
 # specify minimum and maximum momentum to be written to file 
-/global/min_momentum  999 MeV
-/global/max_momentum 2201 MeV
+/global/min_momentum 1000 MeV
+/global/max_momentum 1200 MeV
 
-# specify which arm to use
-/global/active_arm LHRS
+# specify which arm to use  
+/global/active_arm RHRS
 
 # specify output file
-/global/path_outfile test_trident_electron.root
+/global/path_outfile data/test_multiparticle_sieve_RHRS.root
 
 
 # Start the run 
 /run/initialize
-/run/beamOn 1000000
+/run/beamOn 400000
 
 
