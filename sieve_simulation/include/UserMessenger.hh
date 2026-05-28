@@ -7,6 +7,7 @@
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAnInteger.hh"
 #include "G4Exception.hh"
 #include <functional>
 #include <vector>
@@ -76,6 +77,41 @@ public:
         auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
         {
             auto cmd_ptr = dynamic_cast<G4UIcmdWithAString*>(parent_ptr);
+            (fTarget->*signal_slot)(new_val);
+            return; 
+        }; 
+        
+        // our new UI command  
+        UIcommand_t new_ui_command {
+            .ptr = cmd, 
+            .fcn = signal_fcn
+        }; 
+        
+        //add this command to the list of all commands
+        fCommands.push_back(new_ui_command); 
+    }
+
+    /// @brief a small macro add a G4int ui-command
+    /// @param cmd_name command name
+    /// @param parameter_name parameter name
+    /// @param signal_slot signal to propagate signal to 
+    /// @param default_value default value
+    void AddCommand_integer(
+        G4String cmd_name, 
+        G4String parameter_name, 
+        void (UserClass::*signal_slot)(G4Sint), 
+        G4int default_value
+    )
+    { 
+        auto cmd = new G4UIcmdWithAnInteger(cmd_name, this);
+
+        cmd->SetParameterName(parameter_name, this); 
+        cmd->SetDefaultValue(default_value);
+        
+        /// construct a 'signal function' which tells the DetectorConstruction class about our updated command
+        auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
+        {
+            auto cmd_ptr = dynamic_cast<G4UIcmdWithAnInteger*>(parent_ptr);
             (fTarget->*signal_slot)(new_val);
             return; 
         }; 
