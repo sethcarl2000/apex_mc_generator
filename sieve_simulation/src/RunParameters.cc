@@ -57,6 +57,14 @@ RunParameters::RunParameters()
     ); 
     
 
+    fMessenger->AddCommand_bool(
+        cmd_prefix + "save_all_particle_types",
+        "save_all_particle_types",
+        &RunParameters::SetSaveAllParticleTypes,
+        false, 
+        "if true, then all particle types will be saved"
+    );
+
     G4String generator_prefix = "/generator/";
 
     //choose which target to use 
@@ -83,7 +91,8 @@ RunParameters::RunParameters()
         generator_prefix + "mode", 
         "generator_mode",
         &RunParameters::SetGeneratorMode,
-        {{"elastic",            kElastic},
+        {{"all_types",          kAllTypes},
+         {"elastic",            kElastic},
          {"bh_electron",        kBH_electron},
          {"bh_photon",          kBH_photon},
          {"trident_electron",   kTrident_electron},
@@ -151,6 +160,15 @@ RunParameters::RunParameters()
         "MeV",
         "Set the maximum of the decaying-particle rest-mass"
     ); 
+
+
+    //verbosity of different steps
+    fMessenger->AddCommand_integer(
+        generator_prefix + "verbose",
+        "generator_verbose",
+        &RunParameters::SetVerbosity_generator,
+        0
+    );
 }   
 //______________________________________________________________________________
 void RunParameters::SetArm(G4String arm)

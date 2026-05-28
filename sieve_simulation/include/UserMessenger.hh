@@ -99,7 +99,7 @@ public:
     void AddCommand_integer(
         G4String cmd_name, 
         G4String parameter_name, 
-        void (UserClass::*signal_slot)(G4Sint), 
+        void (UserClass::*signal_slot)(G4int), 
         G4int default_value
     )
     { 
@@ -112,7 +112,7 @@ public:
         auto signal_fcn = [this, signal_slot](G4UIcommand* parent_ptr, G4String new_val)
         {
             auto cmd_ptr = dynamic_cast<G4UIcmdWithAnInteger*>(parent_ptr);
-            (fTarget->*signal_slot)(new_val);
+            (fTarget->*signal_slot)(cmd_ptr->GetNewIntValue(new_val));
             return; 
         }; 
         

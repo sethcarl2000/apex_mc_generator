@@ -23,9 +23,11 @@ private:
     //update 'probability stack' 
     void UpdateProbStack(); 
 
+    G4int fVerbose; 
+
 public: 
 
-    MultiParticleGenerator() : fProbStack{}, fGenerators{} {};
+    MultiParticleGenerator();
     ~MultiParticleGenerator();
 
     /// @brief update the generator

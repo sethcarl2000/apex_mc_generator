@@ -30,6 +30,7 @@
 #define B1PrimaryGeneratorAction_h 1
 
 #include "EnergyAngleGenerator.hh"
+#include "MultiParticleGenerator.hh"
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "UserMessenger.hh"
@@ -62,8 +63,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     // method to access particle gun
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
 
-    std::unique_ptr<EnergyAngleGenerator> fGenerator_BH_photoproduction; 
-
   private:
     
     UserMessenger<PrimaryGeneratorAction> *fMessenger; 
@@ -71,10 +70,13 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     // center of the chosen target
     G4ThreeVector fTargetPosition; 
 
-    EnergyAngleGenerator *fEnergyAngleGenerator; 
+    EnergyAngleGenerator* fEnergyAngleGenerator; 
+    MultiParticleGenerator* fMultiParticleGenerator; 
 
     // mode of the particle generator
     G4int fGeneratorMode; 
+
+    G4int fVerbose; 
 
     // min/max invariant mass to generate
     G4double fMin_restMass, fMax_restMass;

@@ -39,10 +39,13 @@
 #include "G4ThreeVector.hh"
 #include "G4Electron.hh"
 #include "G4Positron.hh"
+#include "G4Gamma.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 
 #include <math.h>
+#include <map> 
+#include <limits> 
 
 namespace {
   //the minimum angle between the beam and an electron/positron that may make it into the detector
@@ -101,11 +104,15 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
       p_track_mag > run_params->GetMomentum_max() ) { kill_track(); return; }
   
   //only save positrons for the right arm, and electrons for the left
-  if (run_params->Is_RHRS()) {
-    if (track->GetParticleDefinition() != G4Positron::Positron() ) { kill_track(); return; }
-  } else {
-    if (track->GetParticleDefinition() != G4Electron::Electron() ) { kill_track(); return; }  
-  } 
+  const auto particle_def = track->GetParticleDefinition(); 
+  
+  if (run_params->SaveAllParticleTypes() == false) {
+    if (run_params->Is_RHRS()) {
+      if (particle_def != G4Positron::Positron() ) { kill_track(); return; }
+    } else {
+      if (particle_def != G4Electron::Electron() ) { kill_track(); return; }  
+    } 
+  }
 
       
   //get the analysis manager, and fill out relevant information. 
@@ -125,6 +132,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   analysisManager->FillNtupleDColumn(i_col++, r_track.y());
   analysisManager->FillNtupleDColumn(i_col++, r_track.z());
 
+  analysisManager->FillNtupleDColumn(i_col++, GetParticleCharge(particle_def));
+
   //save this as a distinct event 
   analysisManager->AddNtupleRow(); 
 
@@ -133,5 +142,24 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+double SteppingAction::GetParticleCharge(const G4ParticleDefinition* def)
+{
+  static const std::map<const G4ParticleDefinition *const, double> particle_charge{
+    {G4Electron::Electron(), -1.},
+    {G4Gamma::Gamma(),        0.},
+    {G4Positron::Positron(), +1.}
+  };
+
+  auto charge_it = particle_charge.find(def);
+  if (charge_it == particle_charge.end()) { 
+    return std::numeric_limits<double>::quiet_NaN(); 
+  }
+
+  return charge_it->second; 
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 }  // namespace B1

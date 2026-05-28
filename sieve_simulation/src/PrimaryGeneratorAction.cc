@@ -45,6 +45,7 @@
 #include "G4Exception.hh"
 
 #include <cmath> 
+#include <memory> 
 
 namespace
 { 
@@ -67,11 +68,12 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 
   G4String command_prefix = "/generator/"; 
 
-
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
 
   auto run_params = RunParameters::Instance(); 
+
+  fVerbose = run_params->Verbosity_generator(); 
 
   // default particle kinematic
   //fParticleGun->SetParticleDefinition(G4Electron::Electron());
@@ -81,8 +83,25 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   
   G4String target_name = run_params->GetTargetName(); 
   
-  switch (run_params->GetGeneratorMode()) {
+  
+  fGeneratorMode = run_params->GetGeneratorMode(); 
 
+  //creating generator
+  if (fVerbose>=3) std::cout << "in <"<<__func__<<">: setting up generator...\n";     
+  switch (fGeneratorMode) {
+
+    case kAllTypes       : {
+
+      if (fVerbose>=2) std::cout << "making multi-particle generator...\n";
+      fMultiParticleGenerator = new MultiParticleGenerator; 
+
+      fMultiParticleGenerator->AddProcess(EnergyAngleGeneratorFactory::Elastic());
+      fMultiParticleGenerator->AddProcess(EnergyAngleGeneratorFactory::Trident_Electron());
+      fMultiParticleGenerator->AddProcess(EnergyAngleGeneratorFactory::Trident_Positron());
+      fMultiParticleGenerator->AddProcess(EnergyAngleGeneratorFactory::BetheHeitler_electron());
+      fMultiParticleGenerator->AddProcess(EnergyAngleGeneratorFactory::BetheHeitler_photon());
+      break;
+    }
     case kElastic           : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Elastic(); break; 
     case kTrident_electron  : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Trident_Electron(); break; 
     case kTrident_positron  : fEnergyAngleGenerator = EnergyAngleGeneratorFactory::Trident_Positron(); break; 
@@ -97,7 +116,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
       );
     }
   }
-
+  
   //set the electron beam generation spot to be a little upstream
   fTargetPosition  
     = ApexTargetGeometry::GetTargetPosition(target_name); 
@@ -105,8 +124,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fRasterAmplitude_vertical = run_params->GetRasterAmplitude_vertical(); 
 
   fBeamEnergy = run_params->GetBeamEnergy(); 
-
-  fGeneratorMode = run_params->GetGeneratorMode(); 
 
   fMin_restMass = run_params->GetMass_min();
   fMax_restMass = run_params->GetMass_max();
@@ -124,6 +141,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   delete fParticleGun;
+  if (fEnergyAngleGenerator) delete fEnergyAngleGenerator;
+  if (fMultiParticleGenerator) delete fMultiParticleGenerator; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -145,11 +164,47 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   ); 
 
   //G4cout << "Updating generator..." << G4endl; 
-  fEnergyAngleGenerator->Update(); 
+  
+  double cos, energy; 
+  G4ParticleDefinition* def; 
 
-  fParticleGun->SetParticleEnergy( fEnergyAngleGenerator->GetEnergy() );
+  if (fGeneratorMode == EGeneratorMode::kAllTypes) {
+    
+    if (fVerbose>=2) std::cout << "Getting particle information...";    
+  
+    if (!fMultiParticleGenerator) {
+      G4Exception("PrimaryGeneratorAction::GeneratePrimaries", 
+        "generator is null",
+        G4ExceptionSeverity::RunMustBeAborted,
+        "The generator (fMultiParticleGenerator) is null"
+      );
+      return; 
+    }
+    if (fVerbose>=3) std::cout << "Updating...\n";
 
-  double cos = fEnergyAngleGenerator->GetCosTheta(); 
+    fMultiParticleGenerator->Update(); 
+    cos = fMultiParticleGenerator->GetCosTheta(); 
+    energy = fMultiParticleGenerator->GetEnergy(); 
+    def = fMultiParticleGenerator->GetParticleDef();
+    
+  } else {
+    
+    if (!fEnergyAngleGenerator) {
+      G4Exception("PrimaryGeneratorAction::GeneratePrimaries", 
+        "generator is null",
+        G4ExceptionSeverity::RunMustBeAborted,
+        "The generator (fMultiParticleGenerator) is null"
+      );
+      return; 
+    }
+    fEnergyAngleGenerator->Update(); 
+    cos = fEnergyAngleGenerator->GetCosTheta(); 
+    energy = fEnergyAngleGenerator->GetEnergy(); 
+    def = fMultiParticleGenerator->GetParticleDef(); 
+  }
+  //std::cout << "Done." << std::endl; 
+
+  fParticleGun->SetParticleEnergy( energy );
 
   G4ThreeVector momentum_direction(
     std::sqrt( 1. - cos*cos ), 
@@ -165,7 +220,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 
   fParticleGun->SetParticleMomentumDirection(momentum_direction);  
   
-  fParticleGun->SetParticleDefinition(fEnergyAngleGenerator->GetDefinition()); 
+  fParticleGun->SetParticleDefinition(def); 
 
   fParticleGun->GeneratePrimaryVertex(event);
 }

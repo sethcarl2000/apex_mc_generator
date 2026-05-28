@@ -3,6 +3,8 @@
 #include "MultiParticleGenerator.hh"
 #include "Randomize.hh"
 
+#include "G4Exception.hh"
+
 #include "RunParameters.hh"
 
 #include <algorithm> 
@@ -11,34 +13,38 @@
 namespace B1
 {
 //____________________________________________________________________________________________
+//____________________________________________________________________________________________
+//____________________________________________________________________________________________
+MultiParticleGenerator::MultiParticleGenerator()
+    : fGenerators{}, fProbStack{}
+{
+    fVerbose = RunParameters::Instance()->Verbosity_generator(); 
+}
+//____________________________________________________________________________________________
 MultiParticleGenerator::~MultiParticleGenerator()
 {
     for (auto& process : fGenerators) { if (process) delete process; process = nullptr; } 
     fGenerators.clear(); 
 }
 //____________________________________________________________________________________________
-
-//____________________________________________________________________________________________
 void MultiParticleGenerator::AddProcess(EnergyAngleGenerator* process)
 {
     //sort all cross sections so that the largest cross-sections are first in the list. 
-    for (auto it = fGenerators.begin(); it != fGenerators.end(); it++) {
+    size_t i=0; 
+    while (i < fGenerators.size() && (process->GetTotalCS() < fGenerators[i]->GetTotalCS())) { ++i; }
 
-        if (process->GetTotalCS() > (*it)->GetTotalCS()) {
-
-            fGenerators.insert(it, process); 
-            break; 
-        }
-    }
+    fGenerators.insert( fGenerators.begin()+i, process );
 
     //update the list of process probabilities 
     UpdateProbStack(); 
 
-    if (RunParameters::Instance()->Verbosity_generator() >= 3) {
+    if (fVerbose >= 3) {
         std::printf(
             " in <MultiParticleGenerator>:  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            "   new process added. total: %zi\n"
+            "   new process added: '%s'\n"
+            "   total n. processes: %zi\n"
             "   processes: \n",
+            process->GetDescription().c_str(),
             fGenerators.size()
         );
 
@@ -47,7 +53,7 @@ void MultiParticleGenerator::AddProcess(EnergyAngleGenerator* process)
 
             const auto process = fGenerators[i];
             std::printf(
-                "   --- %zi/%zi, cross-section: % .5e GeV^-2, (%5.1f%%). process: %s\n",
+                "   --- %zi/%zi, cross-section: % .5e MeV^-2, (%7.4f%%). process: %s\n",
                 i,fGenerators.size(), 
                 process->GetTotalCS(), 
                 100.*(fProbStack[i]-last_prob), 
@@ -82,16 +88,24 @@ void MultiParticleGenerator::UpdateProbStack()
 //____________________________________________________________________________________________
 void MultiParticleGenerator::Update()
 {
+    if (fGenerators.empty()) {
+        G4Exception(
+            "MultiParticleGenerator::Update()",
+            "No processes have been added before Update() was called", 
+            G4ExceptionSeverity::RunMustBeAborted, 
+            "'Update()' cannot be called when no processes have been added."
+        );
+        return; 
+    }
+
     //pick a random particle to generate
     double p = G4UniformRand(); 
     int i=0; 
-    while (p < fProbStack.at(i)) { 
-        std::printf("p[%i] = % .8e\n",i,fProbStack.at(i)); 
+    while (p > fProbStack[i]) { 
+        if (fVerbose >= 3) { std::printf("P[%i] = % .8f\n", i, fProbStack.at(i)); } 
         ++i; 
     }
     
-    std::cout << "Index is " << i << std::endl; 
-
     if (i >= fGenerators.size()) {
         G4Exception(
             "MutliParticleGenerator::Update()", 

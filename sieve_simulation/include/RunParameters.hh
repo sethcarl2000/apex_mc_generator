@@ -8,7 +8,8 @@ namespace B1
 {
     /// @brief enum to represent types of event generation
     enum EGeneratorMode {
-        kElastic=1,
+        kAllTypes=1,
+        kElastic,
         kBH_electron,
         kBH_photon, 
         kTrident_electron,
@@ -49,6 +50,10 @@ private:
     G4double fGunEnergy_max; 
     G4double fGunEnergy_min; 
     
+    //verbosity levels
+    G4int fVerbosity_generator{0}; 
+
+
     // (full) amplitude of the vertical raster 
     G4double fVerticalRasterAmplitude; 
     // center of target we're using
@@ -60,6 +65,9 @@ private:
 
     // the type of sieve generation (single-hole or all?)
     ESieveMode fSieveMode{kAll}; 
+
+    // if true, all particle types are saved 
+    G4bool fSaveAllParticleTypes; 
 
 public: 
 
@@ -85,7 +93,9 @@ public:
     void SetVerticalRasterAmplitude(G4double amplitude) { fVerticalRasterAmplitude=amplitude; }
     void SetMass_min(G4double _x) { fMin_restMass=_x; }
     void SetMass_max(G4double _x) { fMax_restMass=_x; }
+    void SetSaveAllParticleTypes(G4bool _x) { fSaveAllParticleTypes=_x; }
     void SetSieveMode(G4String _v);
+    void SetVerbosity_generator(G4int _v) { fVerbosity_generator=_v; }
 
     void SetGunEnergy_min(G4double _x) { fGunEnergy_min=_x; }
     void SetGunEnergy_max(G4double _x) { fGunEnergy_max=_x; }
@@ -115,6 +125,9 @@ public:
     /// @return the mode of particle generation
     EGeneratorMode GetGeneratorMode() const { return fGeneratorMode; }
 
+    /// @return verbosity of different aspects of the simulation
+    G4int Verbosity_generator() const { return fVerbosity_generator; }
+
     /// @return the mode of particle generation
     ESamplingMode GetSamplingMode() const { return fSamplingMode; }
 
@@ -135,6 +148,9 @@ public:
 
     /// @return max particle gun energy 
     G4double GetGunEnergy_max() const { return fGunEnergy_max; }
+
+    /// @return if 'true' save all particle types
+    G4bool SaveAllParticleTypes() const { return fSaveAllParticleTypes; }
 }; 
 
 }

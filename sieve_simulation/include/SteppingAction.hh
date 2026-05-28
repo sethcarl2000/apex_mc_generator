@@ -33,6 +33,7 @@
 
 class G4LogicalVolume;
 class G4Step;
+class G4ParticleDefinition; 
 
 namespace B1
 {
@@ -51,6 +52,10 @@ class SteppingAction : public G4UserSteppingAction
     void UserSteppingAction(const G4Step*) override;
 
   private:
+ 
+    /// @return given a particle, returns it's charge (returns NaN if not a photon, electron or positron.)
+    double GetParticleCharge(const G4ParticleDefinition*);
+
     EventAction* fEventAction = nullptr;
     G4LogicalVolume* fScoringVolume = nullptr;
 
